@@ -12,7 +12,8 @@ else:
 build_exe_options = {
     "packages": ["os"],
     "excludes": ["tkinter"],
-    "include_files": []
+    "include_files": [],
+    "icon": "om-128px.png"
 }
 
 if OSNAME == 'Windows':
@@ -27,7 +28,7 @@ base = None
 #    base = "Win32GUI"
 
 def get_data_files():
-    return [('', ['qt.conf'])]
+    return [('', [])]
 
 setup(  name = "PKMidiStroke",
         version = "0.1",

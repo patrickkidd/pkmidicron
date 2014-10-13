@@ -1,21 +1,10 @@
 #!/usr/bin/env python3
 
 import os, sys
+from pyqt_shim import *
 import rtmidi
-import module_locator
-
-#if module_locator.we_are_frozen():
-#    print("frozen")
-#    DIRNAME = os.path.dirname(os.path.realpath(sys.argv[0]))
-#    os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.path.join(DIRNAME, 'platforms')
-#    print("QT_QPA_PLATFORM_PLUGIN_PATH = " +  os.path.join(DIRNAME, 'platforms'))
-#else:
-#    print("not frozen")
-
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 from binding import Binding
-
+import util
 
 
 def msg2str(midi):
@@ -29,7 +18,6 @@ def msg2str(midi):
     return s
 
 
-#_settings = QSettings('settings', QSettings.NativeFormat)
 _settings = QSettings('vedanamedia', 'PKMidiStroke')
 
 class PKMidiStroke(QWidget):
@@ -40,6 +28,7 @@ class PKMidiStroke(QWidget):
 
         self.resize(600, 200)
         device = rtmidi.RtMidiIn()
+
         self.portBox = QComboBox(self)
         portName = self.settings.value('portName', type=str)
         iPort = None
@@ -48,35 +37,38 @@ class PKMidiStroke(QWidget):
             self.portBox.addItem(name)
             if name == portName:
                 iPort = i
-        self.portBox.activated[int].connect(self.setInterfaceName)
+        self.portBox.activated[int].connect(self.setInterfaceIndex)
         self.collector = Collector(self)
         self.collector.midi.connect(self.onMidi)
         if not iPort is None:
-            self.setInterfaceName(iPort)
-        self.activityLabel = QTextEdit(self)
-
-        self.bindingsBox = QWidget(self)
+            self.setInterfaceIndex(iPort)
+        self.activityLog = QTextEdit(self)
+        self.activityLog.setReadOnly(True)
 
         self.bindings = []
         self.addButton = QPushButton("+", self)
         self.addButton.setMaximumSize(50, 50)
         self.addButton.clicked.connect(self.addBinding)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.portBox)
+        Layout = QVBoxLayout()
+        Layout.addWidget(self.portBox)
+        Layout.addWidget(self.activityLog)
         #
-        BindingsLayout = QVBoxLayout()
-        BindingsLayout.setContentsMargins(0, 11, 0, 11)
-        self.bindingsBox.setLayout(BindingsLayout)
-        layout.addWidget(self.bindingsBox)
+        self.bindingsLayout = QVBoxLayout()
+        self.bindingsLayout.setContentsMargins(0, 0, 0, 0)
+        self.bindingsLayout.setSpacing(5)
+        Layout.addLayout(self.bindingsLayout)
         #
-        layout.addWidget(self.activityLabel)
-        self.setLayout(layout)
+        self.ctlLayout = QHBoxLayout()
+        self.ctlLayout.setContentsMargins(0, 0, 0, 0)
+        self.ctlLayout.setSpacing(0)
+        self.ctlLayout.addWidget(self.addButton)
+        self.ctlLayout.addStretch(100)
+        Layout.addLayout(self.ctlLayout)
         #
-        AddLayout = QHBoxLayout()
-        AddLayout.addWidget(self.addButton)
-        AddLayout.addItem(QSpacerItem(10, 10, QSizePolicy.Maximum, QSizePolicy.Maximum))
-        layout.addLayout(AddLayout)
+        self.setLayout(Layout)
+
+        ## init
         
         self.readSettings(self.settings)
 
@@ -100,12 +92,9 @@ class PKMidiStroke(QWidget):
             i += 1
         settings.endGroup()
 
-    def writeSettings(self, settings=None):
+    def writeBindingsSettings(self, settings=None):
         if settings is None:
-            settings = self.settings
-        settings.setValue('size', self.size())
-#        settings.setValue('width', self.width())
-#        settings.setValue('height', self.height())
+            settings = self.settings        
         settings.remove('bindings')
         settings.beginGroup('bindings')
         for i, b in enumerate(self.bindings):
@@ -113,9 +102,15 @@ class PKMidiStroke(QWidget):
             b.writeSettings(settings)
             settings.endGroup()
         settings.endGroup()
+
+    def writeSettings(self, settings=None):
+        if settings is None:
+            settings = self.settings
+        settings.setValue('size', self.size())
+        self.writeBindingsSettings()
         settings.sync()
     
-    def setInterfaceName(self, iPort):
+    def setInterfaceIndex(self, iPort):
         device = rtmidi.RtMidiIn()
         self.portBox.setCurrentIndex(iPort)
         self.settings.setValue('portName', device.getPortName(iPort))
@@ -123,27 +118,27 @@ class PKMidiStroke(QWidget):
         self.collector.setDevice(device)
     
     def addBinding(self, save=True):
-        b = Binding(self.bindingsBox)
-        self.bindingsBox.layout().addWidget(b)
-        b.changed.connect(self.writeSettings)
-        self.layout().addWidget(b)
+        b = Binding(self)
+        self.bindingsLayout.addWidget(b)
+        b.changed.connect(self.writeBindingsSettings)
         self.bindings.append(b)
         self.settings.beginGroup('bindings/%s' % (len(self.bindings) - 1))
         b.writeSettings(self.settings)
         self.settings.endGroup()
         b.removeMe.connect(self.removeBinding)
+        self.resize(self.width(), self.height() + b.height())
         if save:
             self.settings.sync()
         return b
         
     def removeBinding(self, b):
-        self.bindingsBox.layout().removeWidget(b)
-        b.setParent(None)
+        self.bindingsLayout.removeWidget(b)
         self.bindings.remove(b)
+        b.setParent(None)
 
     def onMidi(self, midi):
         s = midi.__str__().replace('<', '').replace('>', '')
-        self.activityLabel.append(s)
+        self.activityLog.append(s)
         for b in self.bindings:
             b.match(midi)
 
@@ -172,13 +167,42 @@ class Collector(QThread):
             if self.mutex.tryLock(250):
                 msg = self.device.getMessage(250)
                 self.mutex.unlock()
-                if msg:
+                if not msg is None:
                     self.midi.emit(msg)
+
+
+class Mine(QWidget):
+    def __init__(self, parent=None):
+        QWidget.__init__(self, parent)
+
+        self.one = QWidget(self)
+        self.one.setMinimumHeight(100)
+        util.setBackgroundColor(self.one, Qt.green)
+
+        self.two = QWidget(self)
+        util.setBackgroundColor(self.two, Qt.blue)
+
+        lowerLayout = QHBoxLayout()
+        self.two.setLayout(lowerLayout)
+
+        for i in range(5):
+            b = QPushButton('bleh %s' % i, self.two)
+            lowerLayout.addWidget(b)
+
+        Layout = QVBoxLayout()
+        self.setLayout(Layout)
+        Layout.addWidget(self.one)
+        Layout.addWidget(self.two)
+
+        Layout.setContentsMargins(0, 0, 0, 0)
+        Layout.setSpacing(0)
 
 
 
 def main():
     app = QApplication(sys.argv)
+    icon = QIcon('om-128px.png')
+    app.setWindowIcon(icon)
     w = PKMidiStroke()
     w.show()
     app.exec()
