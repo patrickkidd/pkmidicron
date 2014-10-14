@@ -23,6 +23,7 @@ class MainWindow(QWidget):
         self.simulator.received.connect(self.onMidiMessage)
         self.simulatorTabs.addTab(self.simulator, '&Simulator')
 
+        self.activityCount = 0
         self.activityTabs = QTabWidget(self)
         self.activityLog = QTextEdit()
         self.activityLog.setReadOnly(True)
@@ -109,7 +110,8 @@ class MainWindow(QWidget):
         
     def onMidiMessage(self, portName, midi):
         s = midi.__str__().replace('<', '').replace('>', '')
-        self.activityLog.append('%s: %s' % (portName, midi))
+        self.activityCount += 1
+        self.activityLog.append('#%i %s: %s' % (self.activityCount, portName, midi))
         for b in self.bindings:
             b.match(portName, midi)
 

@@ -15,6 +15,7 @@ class MidiEdit(QWidget):
         self.typeBox = QComboBox(self)
         self.typeBox.addItem("Note")
         self.typeBox.addItem("CC")
+        self.typeBox.addItem("Aftertouch")
         self.typeBox.currentIndexChanged.connect(self.setType)
 
         self.ccNumBox = QComboBox(self)
@@ -48,6 +49,20 @@ class MidiEdit(QWidget):
             self.noteVelBox.addItem(ANY_TEXT)
         self.noteVelBox.currentIndexChanged.connect(self.setNoteVel)
 
+        self.atNumBox = QComboBox(self)
+        for i in range(128):
+            self.atNumBox.addItem('%i (%s)' % (i, MidiMessage.getMidiNoteName(i)))
+        if any:
+            self.atNumBox.addItem(ANY_TEXT)
+        self.atNumBox.currentIndexChanged.connect(self.updateAndEmit)
+
+        self.atValueBox = QComboBox(self)
+        for i in range(128):
+            self.atValueBox.addItem(str(i))
+        if any:
+            self.atValueBox.addItem(ANY_TEXT)
+        self.atValueBox.currentIndexChanged.connect(self.updateAndEmit)
+
         Layout = QHBoxLayout()
         Layout.setContentsMargins(0, 0, 0, 0)
         Layout.addWidget(self.typeBox)
@@ -55,6 +70,8 @@ class MidiEdit(QWidget):
         Layout.addWidget(self.ccValueBox)
         Layout.addWidget(self.noteNumBox)
         Layout.addWidget(self.noteVelBox)
+        Layout.addWidget(self.atNumBox)
+        Layout.addWidget(self.atValueBox)
         self.setLayout(Layout)
 
         # init
@@ -67,12 +84,14 @@ class MidiEdit(QWidget):
             1: { # cc
                 self.ccNumBox,
                 self.ccValueBox
+            },
+            2: { #aftertouch
+                self.atNumBox,
+                self.atValueBox
             }
         }
 
         self.setType(0)
-        self.changed.connect(self._onChanged)
-        self._onChanged()
 
     def readSettings(self, settings):
         self.setType(settings.value('type', type=int))
@@ -80,6 +99,9 @@ class MidiEdit(QWidget):
         self.setNoteVel(settings.value('noteVel', type=int))
         self.setCCNum(settings.value('ccNum', type=int))
         self.setCCValue(settings.value('ccValue', type=int))
+        self.atNumBox.setCurrentIndex(settings.value('atNum', type=int))
+        self.atValueBox.setCurrentIndex(settings.value('atValue', type=int))
+        self.updateAndEmit()
 
     def writeSettings(self, settings):        
         settings.setValue('type', self.typeBox.currentIndex())
@@ -87,8 +109,10 @@ class MidiEdit(QWidget):
         settings.setValue('noteVel', self.noteVelBox.currentIndex())
         settings.setValue('ccNum', self.ccNumBox.currentIndex())
         settings.setValue('ccValue', self.ccValueBox.currentIndex())
+        settings.setValue('atNum', self.atNumBox.currentIndex())
+        settings.setValue('atValue', self.atValueBox.currentIndex())
 
-    def _onChanged(self):
+    def _updateMidi(self):
         if self.typeBox.currentIndex() == 0:
             self.midi = MidiMessage.noteOn(1,
                                            self.noteNumBox.currentIndex(),
@@ -97,7 +121,14 @@ class MidiEdit(QWidget):
             self.midi = MidiMessage.controllerEvent(1,
                                                     self.ccNumBox.currentIndex(),
                                                     self.ccValueBox.currentIndex())
-        
+        elif self.typeBox.currentIndex() == 2:
+            self.midi = MidiMessage.aftertouchChange(1,
+                                                     self.atNumBox.currentIndex(),
+                                                     self.atValueBox.currentIndex())
+
+    def updateAndEmit(self):
+        self._updateMidi()
+        self.changed.emit(self.midi)
 
     def setType(self, iType):
         self.typeBox.setCurrentIndex(iType)
@@ -106,24 +137,24 @@ class MidiEdit(QWidget):
                 v2.hide()
         for w in self.typeMap[iType]:
             w.show()
-        self.changed.emit(self.midi)
+        self.updateAndEmit()
 
     def setCCNum(self, x):
         if x != self.ccNumBox.currentIndex():
             self.ccNumBox.setCurrentIndex(x)
-        self.changed.emit(self.midi)
+        self.updateAndEmit()
 
     def setCCValue(self, x):
         if x != self.ccValueBox.currentIndex():
             self.ccValueBox.setCurrentIndex(x)
-        self.changed.emit(self.midi)
+        self.updateAndEmit()
 
     def setNoteNum(self, x):
         if x != self.noteNumBox.currentIndex():
             self.noteNumBox.setCurrentIndex(x)
-        self.changed.emit(self.midi)
+        self.updateAndEmit()
 
     def setNoteVel(self, x):
         if x != self.noteVelBox.currentIndex():
             self.noteVelBox.setCurrentIndex(x)
-        self.changed.emit(self.midi)
+        self.updateAndEmit()

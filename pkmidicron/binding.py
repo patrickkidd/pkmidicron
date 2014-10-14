@@ -172,6 +172,16 @@ class Binding(QFrame):
                                                  m2.getControllerNumber(),
                                                  m1.getControllerValue())
 
+        elif m2.isAftertouch():
+            if self.midiEdit.atNumBox.currentText() == ANY_TEXT:
+                m2 = MidiMessage.aftertouchChange(m2.getChannel(),
+                                                  m1.getNoteNumber(),
+                                                  m2.getAfterTouchValue())
+            if self.midiEdit.atValueBox.currentText() == ANY_TEXT:
+                m2 = MidiMessage.aftertouchChange(m2.getChannel(),
+                                                  m2.getNoteNumber(),
+                                                  m1.getAfterTouchValue())
+
         if m1 == m2:
             self.activityLED.flash()
             cmd = self.cmdEdit.text()
