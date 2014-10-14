@@ -1,43 +1,29 @@
 from pyqt_shim import *
 from .binding import *
 import rtmidi
-import util
 
 class MainWindow(QWidget):
     def __init__(self, settings=None, parent=None):
         QWidget.__init__(self, parent)
 
+        self.bindings = []
         self.settings = settings and settings or QSettings()
 
         self.resize(600, 200)
         device = rtmidi.RtMidiIn()
 
-        self.portBox = QComboBox(self)
-        portName = self.settings.value('portName', type=str)
-        iPort = None
-        for i in range(device.getPortCount()):
-            name = device.getPortName(i)
-            self.portBox.addItem(name)
-            if name == portName:
-                iPort = i
-        self.portBox.activated[int].connect(self.setInterfaceIndex)
-
         self.collector = CollectorBin(self)
         self.collector.message.connect(self.onMidiMessage)
         self.collector.start()
-        if not iPort is None:
-            self.setInterfaceIndex(iPort)
 
         self.activityLog = QTextEdit(self)
         self.activityLog.setReadOnly(True)
 
-        self.bindings = []
         self.addButton = QPushButton("+", self)
         self.addButton.setMaximumSize(50, 50)
         self.addButton.clicked.connect(self.addBinding)
 
         Layout = QVBoxLayout()
-        Layout.addWidget(self.portBox)
         Layout.addWidget(self.activityLog)
         #
         self.bindingsLayout = QVBoxLayout()
@@ -96,17 +82,12 @@ class MainWindow(QWidget):
         settings.setValue('size', self.size())
         self.writeBindingsSettings()
         settings.sync()
-    
-    def setInterfaceIndex(self, iPort):
-        self.portBox.setCurrentIndex(iPort)
-        self.settings.setValue('portName', self.portBox.currentText())
-    
+        
     def onMidiMessage(self, portName, midi):
-        if portName == self.portBox.currentText():
-            s = midi.__str__().replace('<', '').replace('>', '')
-            self.activityLog.append(s)
-            for b in self.bindings:
-                b.match(midi)
+        s = midi.__str__().replace('<', '').replace('>', '')
+        self.activityLog.append('%s: %s' % (portName, midi))
+        for b in self.bindings:
+            b.match(portName, midi)
 
     def addBinding(self, save=True):
         b = Binding(self)

@@ -1,8 +1,10 @@
 import os
 from pyqt_shim import *
 from rtmidi import *
-import util
+from .util import *
 
+
+ANY_TEXT = '** ANY **'
 
 class Binding(QFrame):
 
@@ -25,7 +27,7 @@ class Binding(QFrame):
         self.summaryLabel = QLabel(self)
         self.summaryLabel.setMinimumWidth(300)
 
-        self.activityLED = util.Led(self.frontWidget)
+        self.activityLED = Led(self.frontWidget)
 
         self.expandButton = QPushButton(">>>", self.frontWidget)
         self.expandButton.setMaximumSize(50, 50)
@@ -39,6 +41,12 @@ class Binding(QFrame):
 
         self.detailsWidget = QWidget(self)
 
+        self.device = rtmidi.RtMidiIn()
+        self.portBox = QComboBox(self)
+        for i in range(self.device.getPortCount()):
+            self.portBox.addItem(self.device.getPortName(i))
+        self.portBox.addItem(ANY_TEXT)
+
         self.typeBox = QComboBox(self.detailsWidget)
         self.typeBox.addItem("Note")
         self.typeBox.addItem("CC")
@@ -50,17 +58,26 @@ class Binding(QFrame):
             if name:
                 name = ': (%s)' % name
             self.ccNumBox.addItem('%i %s' % (i, name))
+        self.ccNumBox.addItem(ANY_TEXT)
         self.ccNumBox.currentIndexChanged.connect(self.setCCNum)
 
         self.ccValueBox = QComboBox(self.detailsWidget)
         for i in range(128):
             self.ccValueBox.addItem(str(i))
+        self.ccValueBox.addItem(ANY_TEXT)
         self.ccValueBox.currentIndexChanged.connect(self.setCCValue)
 
         self.noteNumBox = QComboBox(self.detailsWidget)
         for i in range(128):
-            self.noteNumBox.addItem('%i : (%s)' % (i, MidiMessage.getMidiNoteName(i)))
+            self.noteNumBox.addItem('%i (%s)' % (i, MidiMessage.getMidiNoteName(i)))
+        self.noteNumBox.addItem(ANY_TEXT)
         self.noteNumBox.currentIndexChanged.connect(self.setNoteNum)
+
+        self.noteVelBox = QComboBox(self.noteNumBox)
+        for i in range(128):
+            self.noteVelBox.addItem(str(i))
+        self.noteVelBox.addItem(ANY_TEXT)
+        self.noteVelBox.currentIndexChanged.connect(self.setNoteVel)
 
         self.openCheckBox = QCheckBox('Open', self)
 
@@ -94,8 +111,10 @@ class Binding(QFrame):
         DetailsMidi = QHBoxLayout()
         DetailsMidi.setSpacing(10)
         self.detailsLayout.addLayout(DetailsMidi)
+        DetailsMidi.addWidget(self.portBox)
         DetailsMidi.addWidget(self.typeBox)
         DetailsMidi.addWidget(self.noteNumBox)
+        DetailsMidi.addWidget(self.noteVelBox)
         DetailsMidi.addWidget(self.ccNumBox)
         DetailsMidi.addWidget(self.ccValueBox)
         DetailsMidi.addStretch(5)
@@ -130,8 +149,13 @@ class Binding(QFrame):
 
     
     def readSettings(self, settings):
+        portName = settings.value('portName', type=str)
+        if self.portBox.findText(portName) == -1:
+            self.portBox.addItem(portName)
+        self.portBox.setCurrentText(portName)
         self.setType(settings.value('type', type=int))
         self.setNoteNum(settings.value('noteNum', type=int))
+        self.setNoteVel(settings.value('noteVel', type=int))
         self.setCCNum(settings.value('ccNum', type=int))
         self.setCCValue(settings.value('ccValue', type=int))
         self.setCmd(settings.value('cmd', type=str))
@@ -139,9 +163,11 @@ class Binding(QFrame):
         self.openCheckBox.setChecked(settings.value('open', type=bool))
         self.setExpanded(settings.value('expanded', type=bool))
 
-    def writeSettings(self, settings):
+    def writeSettings(self, settings):        
+        settings.setValue('portName', self.portBox.currentText())
         settings.setValue('type', self.typeBox.currentIndex())
         settings.setValue('noteNum', self.noteNumBox.currentIndex())
+        settings.setValue('noteVel', self.noteVelBox.currentIndex())
         settings.setValue('ccNum', self.ccNumBox.currentIndex())
         settings.setValue('ccValue', self.ccValueBox.currentIndex())
         settings.setValue('cmd', self.cmdEdit.text())
@@ -158,14 +184,13 @@ class Binding(QFrame):
     def setExpanded(self, on):
         if on:
             self.detailsWidget.show()
-            util.setBackgroundColor(self, QColor(Qt.lightGray).lighter(115))
+            setBackgroundColor(self, QColor(Qt.lightGray).lighter(115))
         else:
             self.detailsWidget.hide()
-            util.clearBackgroundColor(self)
+            clearBackgroundColor(self)
         self.expanded = on
 
     def setType(self, iType):
-        #if iType == self.typeBox.currentIndex():
         self.typeBox.setCurrentIndex(iType)
         for w in self.typeMap['all']:
             w.hide()
@@ -174,33 +199,35 @@ class Binding(QFrame):
         self.changed.emit()
 
     def setCCNum(self, x):
-        if x == self.ccNumBox.currentIndex():
-            return
-        self.ccNumBox.setCurrentIndex(x)
+        if x != self.ccNumBox.currentIndex():
+            self.ccNumBox.setCurrentIndex(x)
         self.changed.emit()
 
     def setCCValue(self, x):
-        if x == self.ccValueBox.currentIndex():
-            return
-        self.ccValueBox.setCurrentIndex(x)
+        if x != self.ccValueBox.currentIndex():
+            self.ccValueBox.setCurrentIndex(x)
         self.changed.emit()
 
     def setNoteNum(self, x):
-        if x == self.noteNumBox.currentIndex():
-            return
-        self.noteNumBox.setCurrentIndex(x)
+        if x != self.noteNumBox.currentIndex():
+            self.noteNumBox.setCurrentIndex(x)
+        self.changed.emit()
+
+    def setNoteVel(self, x):
+        if x != self.noteVelBox.currentIndex():
+            self.noteVelBox.setCurrentIndex(x)
         self.changed.emit()
 
     def setCmd(self, text):
-        if text == self.cmdEdit.text():
-            return
-        self.cmdEdit.setText(text)
+        if text != self.cmdEdit.text():
+            self.cmdEdit.setText(text)
         self.changed.emit()
 
     def _onChanged(self):
         if self.typeBox.currentIndex() == 0:
             self.midi = MidiMessage.noteOn(1,
-                                           self.noteNumBox.currentIndex(), 100)
+                                           self.noteNumBox.currentIndex(),
+                                           self.noteVelBox.currentIndex())
         elif self.typeBox.currentIndex() == 1:
             self.midi = MidiMessage.controllerEvent(1,
                                                     self.ccNumBox.currentIndex(),
@@ -215,10 +242,25 @@ class Binding(QFrame):
         if ret[0]:
             self.setCmd(ret[0])
 
-    def match(self, m):
-        if m.isNoteOn(): # note mode
-            m.setVelocity(100 / 127.0)
-        if m == self.midi:
+    def match(self, portName, m):
+        if self.portBox.currentText() != ANY_TEXT and portName != self.portBox.currentText():
+            return
+
+        m1 = MidiMessage(m)
+        m2 = MidiMessage(self.midi)
+
+        if m2.isNoteOn():
+            if self.noteNumBox.currentText() == ANY_TEXT:
+                m2.setNoteNumber(m1.getNoteNumber())
+            if self.noteVelBox.currentText() == ANY_TEXT:
+                m2.setVelocity(m1.getVelocity() / 127.0)
+        elif m2.isControllerEvent():
+            if self.ccNumBox.currentText() == ANY_TEXT:
+                m2.setControllerNumber(m1.getControllerNumber())
+            if self.ccValueBox.currentText() == ANY_TEXT:
+                m2.setControllerValue(m1.getControllerValue())
+
+        if m1 == m2:
             self.activityLED.flash()
             cmd = self.cmdEdit.text()
             if self.openCheckBox.isChecked():
