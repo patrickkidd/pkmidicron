@@ -8,31 +8,38 @@ if hasattr(os, 'uname'):
 else:
     OSNAME = 'Windows'
 
-# Dependencies are automatically detected, but it might need fine tuning.
-build_exe_options = {
-    "packages": ["os"],
-    "excludes": ["tkinter"],
-    "include_files": [],
-    "icon": "om-128px.png"
+base = None
+options = {
+    # Dependencies are automatically detected, but it might need fine tuning.
+    "build_exe": {
+        "packages": ["os"],
+        "excludes": ["tkinter"],
+        "include_files": [],
+        "icon": "om-128px.png"
+    }
 }
 
 if OSNAME == 'Windows':
     build_exe_options['include_files'] = [
         os.path.relpath('C:\Python34\Lib\site-packages\PyQt5\LibEGL.dll')
     ]
+    # Comment out for a console app
+    #if sys.platform == "win32":
+    #    base = "Win32GUI"
 
-
-base = None
-# Comment out for a console app
-#if sys.platform == "win32":
-#    base = "Win32GUI"
 
 def get_data_files():
     return [('', [])]
 
-setup(  name = "PKMidiStroke",
+setup(  name = "PKMidiCron",
         version = "0.1",
         description = "Trigger the triggers!",
-        options = {"build_exe": build_exe_options},
-        executables = [Executable("pkmidistroke.py", base=base)],
+        options = options,
+        executables = [
+            Executable(
+                "main.py",
+                targetName="PKMidiCron",
+                base=base
+            )
+        ],
         data_files=get_data_files())
