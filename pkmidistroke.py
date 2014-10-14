@@ -7,17 +7,6 @@ from binding import Binding
 import util
 
 
-def msg2str(midi):
-    s = '<rtmidi.MidiMessage>'
-    if midi.isNoteOn():
-        s = 'NOTE ON: (%s) %s, %s' % (midi.getChannel(), midi.getMidiNoteName(midi.getNoteNumber()), midi.getVelocity())
-    elif midi.isNoteOff():
-        s = 'NOTE OFF: (%s) %s' % (midi.getChannel(), midi.getMidiNoteName(midi.getNoteNumber()))
-    elif midi.isController():
-        s = 'CONTROLLER (%s) %s, %s' % (midi.getChannel(), midi.getControllerNumber(), midi.getControllerValue())
-    return s
-
-
 _settings = QSettings('vedanamedia', 'PKMidiStroke')
 
 class PKMidiStroke(QWidget):
@@ -38,10 +27,13 @@ class PKMidiStroke(QWidget):
             if name == portName:
                 iPort = i
         self.portBox.activated[int].connect(self.setInterfaceIndex)
-        self.collector = Collector(self)
-        self.collector.midi.connect(self.onMidi)
+
+        self.collector = CollectorBin(self)
+        self.collector.message.connect(self.onMidiMessage)
+        self.collector.start()
         if not iPort is None:
             self.setInterfaceIndex(iPort)
+
         self.activityLog = QTextEdit(self)
         self.activityLog.setReadOnly(True)
 
@@ -74,6 +66,7 @@ class PKMidiStroke(QWidget):
 
     def __del__(self):
         self.writeSettings(self.settings)
+        self.collector.stop()
 
     def readSettings(self, settings):
         self.resize(settings.value('size', type=QSize))
@@ -111,12 +104,16 @@ class PKMidiStroke(QWidget):
         settings.sync()
     
     def setInterfaceIndex(self, iPort):
-        device = rtmidi.RtMidiIn()
         self.portBox.setCurrentIndex(iPort)
-        self.settings.setValue('portName', device.getPortName(iPort))
-        device.openPort(iPort)
-        self.collector.setDevice(device)
+        self.settings.setValue('portName', self.portBox.currentText())
     
+    def onMidiMessage(self, portName, midi):
+        if portName == self.portBox.currentText():
+            s = midi.__str__().replace('<', '').replace('>', '')
+            self.activityLog.append(s)
+            for b in self.bindings:
+                b.match(midi)
+
     def addBinding(self, save=True):
         b = Binding(self)
         self.bindingsLayout.addWidget(b)
@@ -136,11 +133,18 @@ class PKMidiStroke(QWidget):
         self.bindings.remove(b)
         b.setParent(None)
 
-    def onMidi(self, midi):
-        s = midi.__str__().replace('<', '').replace('>', '')
-        self.activityLog.append(s)
-        for b in self.bindings:
-            b.match(midi)
+
+
+class CollectorBin(QObject, rtmidi.CollectorBin):
+
+    message = pyqtSignal(str, rtmidi.MidiMessage)
+
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
+        rtmidi.CollectorBin.__init__(self, self._callback)
+
+    def _callback(self, collector, msg):
+        self.message.emit(collector.portName, msg)
 
 
 class Collector(QThread):
