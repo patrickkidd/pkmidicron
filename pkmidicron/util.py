@@ -1,5 +1,8 @@
 import pyqt_shim as qt
 
+ANY_TEXT = '** ANY **'
+ALL_TEXT = '** ALL **'
+
 def setBackgroundColor(w, c):
     if not hasattr(w, '_orig_palette'):
         w._orig_palette = w.palette()

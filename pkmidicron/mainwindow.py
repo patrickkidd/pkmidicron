@@ -1,10 +1,12 @@
 from pyqt_shim import *
 from .binding import *
+from .simulator import *
 import rtmidi
 
 class MainWindow(QWidget):
     def __init__(self, settings=None, parent=None):
         QWidget.__init__(self, parent)
+        self.setMinimumWidth(875)
 
         self.bindings = []
         self.settings = settings and settings or QSettings()
@@ -16,29 +18,42 @@ class MainWindow(QWidget):
         self.collector.message.connect(self.onMidiMessage)
         self.collector.start()
 
-        self.tabs = QTabWidget(self)
+        self.simulatorTabs = QTabWidget(self)
+        self.simulator = Simulator()
+        self.simulator.received.connect(self.onMidiMessage)
+        self.simulatorTabs.addTab(self.simulator, '&Simulator')
 
+        self.activityTabs = QTabWidget(self)
         self.activityLog = QTextEdit()
         self.activityLog.setReadOnly(True)
+        self.activityTabs.addTab(self.activityLog, "&Activity")
+
+        self.bindingsScroller = QScrollArea(self)
+        self.bindingsScroller.setWidgetResizable(True)
+        self.bindingsWidget = QWidget()
+        self.bindingsScroller.setWidget(self.bindingsWidget)
 
         self.addButton = QPushButton("+", self)
         self.addButton.setMaximumSize(50, 50)
         self.addButton.clicked.connect(self.addBinding)
 
         Layout = QVBoxLayout()
-        Layout.addWidget(self.tabs)
+        Layout.addWidget(self.simulatorTabs, 0)
+        Layout.addWidget(self.activityTabs, 1)
         #
         self.bindingsLayout = QVBoxLayout()
         self.bindingsLayout.setContentsMargins(0, 0, 0, 0)
         self.bindingsLayout.setSpacing(5)
-        Layout.addLayout(self.bindingsLayout)
+        self.bindingsWidget.setLayout(self.bindingsLayout)
+        self.bindingsLayout.addStretch(10)
+        Layout.addWidget(self.bindingsScroller, 1)
         #
         self.ctlLayout = QHBoxLayout()
         self.ctlLayout.setContentsMargins(0, 0, 0, 0)
         self.ctlLayout.setSpacing(0)
         self.ctlLayout.addWidget(self.addButton)
-        self.ctlLayout.addStretch(100)
-        Layout.addLayout(self.ctlLayout)
+        self.ctlLayout.addStretch(10)
+        Layout.addLayout(self.ctlLayout, 0)
         #
         self.setLayout(Layout)
 
@@ -66,6 +81,9 @@ class MainWindow(QWidget):
             settings.endGroup()
             i += 1
         settings.endGroup()
+        settings.beginGroup('simulator')
+        self.simulator.readSettings(settings)
+        settings.endGroup()
 
     def writeBindingsSettings(self, settings=None):
         if settings is None:
@@ -76,6 +94,10 @@ class MainWindow(QWidget):
             settings.beginGroup(str(i))
             b.writeSettings(settings)
             settings.endGroup()
+        settings.endGroup()
+        settings.beginGroup('simulator')
+        if hasattr(self, 'simulator'): # exceptions..
+            self.simulator.writeSettings(settings)
         settings.endGroup()
 
     def writeSettings(self, settings=None):
@@ -92,15 +114,14 @@ class MainWindow(QWidget):
             b.match(portName, midi)
 
     def addBinding(self, save=True):
-        b = Binding(self)
-        self.bindingsLayout.addWidget(b)
+        b = Binding(self.bindingsWidget)
+        self.bindingsLayout.insertWidget(0, b)
         b.changed.connect(self.writeBindingsSettings)
         self.bindings.append(b)
         self.settings.beginGroup('bindings/%s' % (len(self.bindings) - 1))
         b.writeSettings(self.settings)
         self.settings.endGroup()
         b.removeMe.connect(self.removeBinding)
-        self.resize(self.width(), self.height() + b.height())
         if save:
             self.settings.sync()
         return b

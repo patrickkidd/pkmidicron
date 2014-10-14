@@ -2,7 +2,7 @@ import os
 from pyqt_shim import *
 from rtmidi import *
 from .util import *
-from .midiedit import MidiEdit
+
 
 
 class Binding(QFrame):
@@ -20,10 +20,10 @@ class Binding(QFrame):
         self.frontWidget = QWidget(self)
 
         self.nameEdit = QLineEdit(self.frontWidget)
-        self.nameEdit.setFixedWidth(150)
+        self.nameEdit.setMinimumWidth(150)
 
         self.summaryLabel = QLabel(self)
-        self.summaryLabel.setMinimumWidth(100)
+        self.summaryLabel.setMinimumWidth(300)
 
         self.activityLED = Led(self.frontWidget)
 
@@ -44,9 +44,8 @@ class Binding(QFrame):
         for i in range(self.device.getPortCount()):
             self.portBox.addItem(self.device.getPortName(i))
         self.portBox.addItem(ANY_TEXT)
-        self.portBox.currentIndexChanged[int].connect(self.updateSummary)
 
-        self.midiEdit = MidiEdit(self, any=True)
+        self.midiEdit = MessageEdit(self)
 
         self.openCheckBox = QCheckBox('Open', self)
 
@@ -65,12 +64,12 @@ class Binding(QFrame):
 
         self.frontLayout = QHBoxLayout()
         self.frontLayout.setContentsMargins(0, 0, 0, 0)
-        self.frontLayout.addWidget(self.activityLED, 0)
-        self.frontLayout.addWidget(self.nameEdit, 0)
-        self.frontLayout.addWidget(self.summaryLabel, 1)
-        self.frontLayout.addWidget(self.expandButton, 0)
-        self.frontLayout.addWidget(self.removeButton, 0)
         self.frontWidget.setLayout(self.frontLayout)
+        self.frontLayout.addWidget(self.activityLED)
+        self.frontLayout.addWidget(self.nameEdit)
+        self.frontLayout.addWidget(self.summaryLabel)
+        self.frontLayout.addWidget(self.expandButton)
+        self.frontLayout.addWidget(self.removeButton)
         Layout.addWidget(self.frontWidget)
 
         self.detailsLayout = QVBoxLayout()
@@ -94,8 +93,8 @@ class Binding(QFrame):
         # init
 
         self.expanded = True
-        self.midiEdit.changed.connect(self.updateSummary)
-        self.updateSummary(self.midiEdit.midi)
+        self.midiEdit.changed.connect(self._onChanged)
+        self._onChanged(self.midiEdit.midi)
     
     def readSettings(self, settings):
         portName = settings.value('portName', type=str)
@@ -136,11 +135,8 @@ class Binding(QFrame):
             self.cmdEdit.setText(text)
         self.changed.emit()
 
-    def updateSummary(self, midi=None):
-        if midi is None:
-            midi = self.midiEdit.midi
-        summary = '%s: %s' % (self.portBox.currentText(), str(self.midiEdit.midi))
-        self.summaryLabel.setText(summary)
+    def _onChanged(self, midi):
+        self.summaryLabel.setText(str(self.midiEdit.midi))
 
 
     def findCommand(self):
@@ -155,22 +151,18 @@ class Binding(QFrame):
             return
 
         m1 = MidiMessage(m)
-        m2 = MidiMessage(self.midiEdit.midi)
+        m2 = MidiMessage(self.midi)
 
         if m2.isNoteOn():
-            if self.midiEdit.noteNumBox.currentText() == ANY_TEXT:
+            if self.noteNumBox.currentText() == ANY_TEXT:
                 m2.setNoteNumber(m1.getNoteNumber())
-            if self.midiEdit.noteVelBox.currentText() == ANY_TEXT:
+            if self.noteVelBox.currentText() == ANY_TEXT:
                 m2.setVelocity(m1.getVelocity() / 127.0)
         elif m2.isController():
-            if self.midiEdit.ccNumBox.currentText() == ANY_TEXT:
-                m2 = MidiMessage.controllerEvent(m2.getChannel(),
-                                                 m1.getControllerNumber(),
-                                                 m2.getControllerValue())
-            if self.midiEdit.ccValueBox.currentText() == ANY_TEXT:
-                m2 = MidiMessage.controllerEvent(m2.getChannel(),
-                                                 m2.getControllerNumber(),
-                                                 m1.getControllerValue())
+            if self.ccNumBox.currentText() == ANY_TEXT:
+                m2.setControllerNumber(m1.getControllerNumber())
+            if self.ccValueBox.currentText() == ANY_TEXT:
+                m2.setControllerValue(m1.getControllerValue())
 
         if m1 == m2:
             self.activityLED.flash()

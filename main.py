@@ -44,7 +44,11 @@ def main():
         w.show()
         app.exec()
     except:
+        print()
         import traceback
-        traceback.print_tb(sys.exc_info()[2])
+        exc = sys.exc_info()
+        traceback.print_tb(exc[2])
+        print(exc[0].__name__ + ':', exc[1])
+        print()
     rtmidi.CollectorBin.cleanup()
 main()
