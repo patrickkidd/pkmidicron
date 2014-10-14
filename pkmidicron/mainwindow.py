@@ -16,7 +16,9 @@ class MainWindow(QWidget):
         self.collector.message.connect(self.onMidiMessage)
         self.collector.start()
 
-        self.activityLog = QTextEdit(self)
+        self.tabs = QTabWidget(self)
+
+        self.activityLog = QTextEdit()
         self.activityLog.setReadOnly(True)
 
         self.addButton = QPushButton("+", self)
@@ -24,7 +26,7 @@ class MainWindow(QWidget):
         self.addButton.clicked.connect(self.addBinding)
 
         Layout = QVBoxLayout()
-        Layout.addWidget(self.activityLog)
+        Layout.addWidget(self.tabs)
         #
         self.bindingsLayout = QVBoxLayout()
         self.bindingsLayout.setContentsMargins(0, 0, 0, 0)
