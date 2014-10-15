@@ -14,8 +14,13 @@ options = {
     "build_exe": {
         "packages": ["os"],
         "excludes": ["tkinter"],
-        "include_files": [],
-        "icon": "om-128px.png"
+        "include_files": []
+    },
+    "bdist_mac": {
+        "iconfile": "icon.icns",
+        "bundle_name": "PKMidiCron",
+        "custom_info_plist": "Info.plist",
+        "qt_menu_nib": "/Applications/Qt-5.3/5.3/Src/qtbase/src/plugins/platforms/cocoa/qt_menu.nib"
     }
 }
 

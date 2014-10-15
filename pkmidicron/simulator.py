@@ -1,5 +1,5 @@
-from pyqt_shim import *
 import rtmidi
+from .pyqt_shim import *
 from .util import *
 from .midiedit import MidiEdit
 
@@ -9,6 +9,7 @@ CRAZY_INTERVAL = 10
 class Simulator(QWidget):
 
     received = pyqtSignal(str, rtmidi.MidiMessage)
+    changed = pyqtSignal()
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
@@ -35,6 +36,7 @@ class Simulator(QWidget):
         self.portBox.addItem(ALL_TEXT)
 
         self.midiEdit = MidiEdit(self)
+        self.midiEdit.changed.connect(self.changed.emit)
 
         self.sendButton = QPushButton("&Send", self)
         self.sendButton.clicked.connect(self.send)
@@ -51,20 +53,20 @@ class Simulator(QWidget):
         Layout.addStretch(1)
         self.setLayout(Layout)
         
-    def readSettings(self, settings):
-        portName = settings.value('portName', type=str)
+    def readPatch(self, patch):
+        portName = patch.value('portName', type=str)
         if not portName:
             portName = ALL_TEXT
         elif self.portBox.findText(portName) == -1:
             self.portBox.addItem(portName)
         self.portBox.setCurrentText(portName)
-        self.midiEdit.readSettings(settings)
-        self.fakeBox.setChecked(settings.value('fake', type=bool))
+        self.midiEdit.readPatch(patch)
+        self.fakeBox.setChecked(patch.value('fake', type=bool))
 
-    def writeSettings(self, settings):   
-        settings.setValue('portName', self.portBox.currentText())
-        settings.setValue('fake', self.fakeBox.isChecked())
-        self.midiEdit.writeSettings(settings)
+    def writePatch(self, patch):
+        patch.setValue('portName', self.portBox.currentText())
+        patch.setValue('fake', self.fakeBox.isChecked())
+        self.midiEdit.writePatch(patch)
 
     def send(self, msg=None):
         def _send(portName, m):

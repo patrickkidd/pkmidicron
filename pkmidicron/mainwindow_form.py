@@ -1,0 +1,101 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
+#
+# Created: Wed Oct 15 14:45:37 2014
+#      by: PyQt5 UI code generator 5.3.2
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(700, 600)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
+        self.tabWidget.setObjectName("tabWidget")
+        self.tabWidgetPage1 = QtWidgets.QWidget()
+        self.tabWidgetPage1.setObjectName("tabWidgetPage1")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.tabWidgetPage1)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.simulator = Simulator(self.tabWidgetPage1)
+        self.simulator.setObjectName("simulator")
+        self.verticalLayout_3.addWidget(self.simulator)
+        self.tabWidget.addTab(self.tabWidgetPage1, "")
+        self.verticalLayout.addWidget(self.tabWidget)
+        self.splitter = QtWidgets.QSplitter(self.centralwidget)
+        self.splitter.setOrientation(QtCore.Qt.Vertical)
+        self.splitter.setObjectName("splitter")
+        self.activityLog = QtWidgets.QTextEdit(self.splitter)
+        self.activityLog.setReadOnly(True)
+        self.activityLog.setObjectName("activityLog")
+        self.bindingScroller = QtWidgets.QScrollArea(self.splitter)
+        self.bindingScroller.setWidgetResizable(True)
+        self.bindingScroller.setObjectName("bindingScroller")
+        self.bindingsWidget = QtWidgets.QWidget()
+        self.bindingsWidget.setGeometry(QtCore.QRect(0, 0, 674, 155))
+        self.bindingsWidget.setObjectName("bindingsWidget")
+        self.bindingScroller.setWidget(self.bindingsWidget)
+        self.verticalLayout.addWidget(self.splitter)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.addBindingButton = QtWidgets.QPushButton(self.centralwidget)
+        self.addBindingButton.setObjectName("addBindingButton")
+        self.horizontalLayout.addWidget(self.addBindingButton)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.verticalLayout.setStretch(1, 1)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 700, 22))
+        self.menubar.setObjectName("menubar")
+        self.menuFile = QtWidgets.QMenu(self.menubar)
+        self.menuFile.setObjectName("menuFile")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+        self.actionOpen = QtWidgets.QAction(MainWindow)
+        self.actionOpen.setObjectName("actionOpen")
+        self.actionSave = QtWidgets.QAction(MainWindow)
+        self.actionSave.setObjectName("actionSave")
+        self.actionSaveAs = QtWidgets.QAction(MainWindow)
+        self.actionSaveAs.setObjectName("actionSaveAs")
+        self.actionAbout = QtWidgets.QAction(MainWindow)
+        self.actionAbout.setMenuRole(QtWidgets.QAction.AboutRole)
+        self.actionAbout.setObjectName("actionAbout")
+        self.actionNew = QtWidgets.QAction(MainWindow)
+        self.actionNew.setObjectName("actionNew")
+        self.menuFile.addAction(self.actionNew)
+        self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addAction(self.actionSave)
+        self.menuFile.addAction(self.actionSaveAs)
+        self.menuFile.addAction(self.actionAbout)
+        self.menubar.addAction(self.menuFile.menuAction())
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "PKMidiCron"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage1), _translate("MainWindow", "Simulator"))
+        self.addBindingButton.setText(_translate("MainWindow", "+"))
+        self.menuFile.setTitle(_translate("MainWindow", "File"))
+        self.actionOpen.setText(_translate("MainWindow", "&Open"))
+        self.actionOpen.setShortcut(_translate("MainWindow", "Ctrl+O"))
+        self.actionSave.setText(_translate("MainWindow", "&Save..."))
+        self.actionSave.setShortcut(_translate("MainWindow", "Ctrl+S"))
+        self.actionSaveAs.setText(_translate("MainWindow", "S&ave As"))
+        self.actionSaveAs.setShortcut(_translate("MainWindow", "Ctrl+Shift+S"))
+        self.actionAbout.setText(_translate("MainWindow", "About"))
+        self.actionNew.setText(_translate("MainWindow", "New"))
+        self.actionNew.setShortcut(_translate("MainWindow", "Ctrl+N"))
+
+from .simulator import Simulator

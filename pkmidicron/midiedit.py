@@ -1,5 +1,5 @@
-from pyqt_shim import *
 from rtmidi import MidiMessage
+from .pyqt_shim import *
 from .util import *
 
 
@@ -13,7 +13,8 @@ class MidiEdit(QWidget):
         self.midi = MidiMessage()
 
         self.typeBox = QComboBox(self)
-        self.typeBox.addItem("Note")
+        self.typeBox.addItem("Note On")
+        self.typeBox.addItem("Note Off")
         self.typeBox.addItem("CC")
         self.typeBox.addItem("Aftertouch")
         self.typeBox.currentIndexChanged.connect(self.setType)
@@ -77,15 +78,18 @@ class MidiEdit(QWidget):
         # init
 
         self.typeMap = {
-            0: [ # note
+            0: [ # note on
                 self.noteNumBox,
                 self.noteVelBox
             ],
-            1: { # cc
+            1: { # note off
+                self.noteNumBox
+            },
+            2: { # cc
                 self.ccNumBox,
                 self.ccValueBox
             },
-            2: { #aftertouch
+            3: { #aftertouch
                 self.atNumBox,
                 self.atValueBox
             }
@@ -93,35 +97,38 @@ class MidiEdit(QWidget):
 
         self.setType(0)
 
-    def readSettings(self, settings):
-        self.setType(settings.value('type', type=int))
-        self.setNoteNum(settings.value('noteNum', type=int))
-        self.setNoteVel(settings.value('noteVel', type=int))
-        self.setCCNum(settings.value('ccNum', type=int))
-        self.setCCValue(settings.value('ccValue', type=int))
-        self.atNumBox.setCurrentIndex(settings.value('atNum', type=int))
-        self.atValueBox.setCurrentIndex(settings.value('atValue', type=int))
+    def readPatch(self, patch):
+        self.setType(patch.value('type', type=int))
+        self.setNoteNum(patch.value('noteNum', type=int))
+        self.setNoteVel(patch.value('noteVel', type=int))
+        self.setCCNum(patch.value('ccNum', type=int))
+        self.setCCValue(patch.value('ccValue', type=int))
+        self.atNumBox.setCurrentIndex(patch.value('atNum', type=int))
+        self.atValueBox.setCurrentIndex(patch.value('atValue', type=int))
         self.updateAndEmit()
 
-    def writeSettings(self, settings):        
-        settings.setValue('type', self.typeBox.currentIndex())
-        settings.setValue('noteNum', self.noteNumBox.currentIndex())
-        settings.setValue('noteVel', self.noteVelBox.currentIndex())
-        settings.setValue('ccNum', self.ccNumBox.currentIndex())
-        settings.setValue('ccValue', self.ccValueBox.currentIndex())
-        settings.setValue('atNum', self.atNumBox.currentIndex())
-        settings.setValue('atValue', self.atValueBox.currentIndex())
+    def writePatch(self, patch):
+        patch.setValue('type', self.typeBox.currentIndex())
+        patch.setValue('noteNum', self.noteNumBox.currentIndex())
+        patch.setValue('noteVel', self.noteVelBox.currentIndex())
+        patch.setValue('ccNum', self.ccNumBox.currentIndex())
+        patch.setValue('ccValue', self.ccValueBox.currentIndex())
+        patch.setValue('atNum', self.atNumBox.currentIndex())
+        patch.setValue('atValue', self.atValueBox.currentIndex())
 
     def _updateMidi(self):
         if self.typeBox.currentIndex() == 0:
             self.midi = MidiMessage.noteOn(1,
                                            self.noteNumBox.currentIndex(),
                                            self.noteVelBox.currentIndex())
-        elif self.typeBox.currentIndex() == 1:
+        if self.typeBox.currentIndex() == 1:
+            self.midi = MidiMessage.noteOff(1,
+                                           self.noteNumBox.currentIndex())
+        elif self.typeBox.currentIndex() == 2:
             self.midi = MidiMessage.controllerEvent(1,
                                                     self.ccNumBox.currentIndex(),
                                                     self.ccValueBox.currentIndex())
-        elif self.typeBox.currentIndex() == 2:
+        elif self.typeBox.currentIndex() == 3:
             self.midi = MidiMessage.aftertouchChange(1,
                                                      self.atNumBox.currentIndex(),
                                                      self.atValueBox.currentIndex())

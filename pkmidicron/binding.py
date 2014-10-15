@@ -1,6 +1,6 @@
 import os
-from pyqt_shim import *
 from rtmidi import *
+from .pyqt_shim import *
 from .util import *
 from .midiedit import MidiEdit
 
@@ -96,25 +96,29 @@ class Binding(QFrame):
         self.expanded = True
         self.midiEdit.changed.connect(self.updateSummary)
         self.updateSummary(self.midiEdit.midi)
+
+
+    def mouseDoubleClickEvent(self, e):
+        self.toggleDetails()
     
-    def readSettings(self, settings):
-        portName = settings.value('portName', type=str)
+    def readPatch(self, patch):
+        portName = patch.value('portName', type=str)
         if self.portBox.findText(portName) == -1:
             self.portBox.addItem(portName)
         self.portBox.setCurrentText(portName)
-        self.setCmd(settings.value('cmd', type=str))
-        self.nameEdit.setText(settings.value('name', type=str))
-        self.openCheckBox.setChecked(settings.value('open', type=bool))
-        self.setExpanded(settings.value('expanded', type=bool))
-        self.midiEdit.readSettings(settings)
+        self.setCmd(patch.value('cmd', type=str))
+        self.nameEdit.setText(patch.value('name', type=str))
+        self.openCheckBox.setChecked(patch.value('open', type=bool))
+        self.setExpanded(patch.value('expanded', type=bool))
+        self.midiEdit.readPatch(patch)
 
-    def writeSettings(self, settings):        
-        settings.setValue('portName', self.portBox.currentText())
-        settings.setValue('cmd', self.cmdEdit.text())
-        settings.setValue('name', self.nameEdit.text())
-        settings.setValue('open', self.openCheckBox.isChecked())
-        settings.setValue('expanded', self.expanded)
-        self.midiEdit.writeSettings(settings)
+    def writePatch(self, patch):
+        patch.setValue('portName', self.portBox.currentText())
+        patch.setValue('cmd', self.cmdEdit.text())
+        patch.setValue('name', self.nameEdit.text())
+        patch.setValue('open', self.openCheckBox.isChecked())
+        patch.setValue('expanded', self.expanded)
+        self.midiEdit.writePatch(patch)
 
     def _removeMe(self):
         self.removeMe.emit(self)
@@ -141,6 +145,7 @@ class Binding(QFrame):
             midi = self.midiEdit.midi
         summary = '%s: %s' % (self.portBox.currentText(), str(self.midiEdit.midi))
         self.summaryLabel.setText(summary)
+        self.changed.emit()
 
 
     def findCommand(self):
@@ -157,10 +162,10 @@ class Binding(QFrame):
         m1 = MidiMessage(m)
         m2 = MidiMessage(self.midiEdit.midi)
 
-        if m2.isNoteOn():
+        if m2.isNoteOn() or m2.isNoteOff():
             if self.midiEdit.noteNumBox.currentText() == ANY_TEXT:
                 m2.setNoteNumber(m1.getNoteNumber())
-            if self.midiEdit.noteVelBox.currentText() == ANY_TEXT:
+            if m2.isNoteOn() and self.midiEdit.noteVelBox.currentText() == ANY_TEXT:
                 m2.setVelocity(m1.getVelocity() / 127.0)
         elif m2.isController():
             if self.midiEdit.ccNumBox.currentText() == ANY_TEXT:
