@@ -31,9 +31,10 @@ class Binding(QFrame):
         self.expandButton.setMaximumSize(50, 50)
         self.expandButton.clicked.connect(self.toggleDetails)
 
-        self.removeButton = QPushButton("-", self.frontWidget)
+        self.removeButton = QPushButton(self.frontWidget)
         self.removeButton.setMaximumSize(50, 50)
-        self.removeButton.clicked.connect(self._removeMe)
+        self.removeButton.setIcon(QIcon(":/icons/remove.png"))
+        self.removeButton.clicked.connect(self._removeMe)        
 
         ## details panel
 

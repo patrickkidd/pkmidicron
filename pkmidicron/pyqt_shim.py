@@ -11,3 +11,6 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+
+def tr(s):
+    return QCoreApplication.translate('A', s)

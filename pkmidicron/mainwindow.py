@@ -22,20 +22,37 @@ class MainWindow(QMainWindow):
         self.collector.message.connect(self.onMidiMessage)
         self.collector.start()
 
-        # Layout
-
-        self.bindingsLayout = QVBoxLayout()
-        self.bindingsLayout.setContentsMargins(0, 0, 0, 0)
-        self.bindingsLayout.setSpacing(5)
-        self.bindingsLayout.addStretch(10)
-        self.ui.bindingsWidget.setLayout(self.bindingsLayout)
-
+        self.toolbar = self.addToolBar(tr("File"))
+        self.toolbar.setMovable(False)
+        self.toolbar.setIconSize(QSize(40, 40))
+#        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.newAction = self.toolbar.addAction(tr("New"))
+        self.newAction.setIcon(QIcon(':/icons/retina/doc 5.png'))
+        self.newAction.triggered.connect(self.new)
+        self.openAction = self.toolbar.addAction(tr("Open"))
+        self.openAction.setIcon(QIcon(':/icons/retina/folder.png'))
+        self.openAction.triggered.connect(self.open)
+        self.addAction = self.toolbar.addAction(tr('&Add'))
+        self.addAction.setIcon(QIcon(':/icons/retina/plus.png'))
+        self.addAction.triggered.connect(self.addBinding)
+        self.deleteAction = self.toolbar.addAction(tr('Delete'))
+        self.deleteAction.setIcon(QIcon(':/icons/retina/multiply.png'))
+        self.deleteAction.triggered.connect(self.removeSelectedBinding)
+        self.saveAction = self.toolbar.addAction(tr('Save'))
+        self.saveAction.setIcon(QIcon(':/icons/retina/floppy disk.png'))
+        self.saveAction.triggered.connect(self.save)
+        spacer = QWidget(self.toolbar)
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.toolbar.addWidget(spacer)
+        self.removeAction = self.toolbar.addAction(tr('Clear'))
+        self.removeAction.setIcon(QIcon(':/icons/retina/dustbin.png'))
+        self.removeAction.triggered.connect(self.clearActivityLog)
+        
         # Signals
         
         self.activityCount = 0
         self.ui.simulator.received.connect(self.onMidiMessage)
         self.ui.simulator.changed.connect(self.setDirty)
-        self.ui.addBindingButton.clicked.connect(self.addBinding)
         self.ui.actionAbout.triggered.connect(self.showAbout)
         self.ui.actionNew.triggered.connect(self.new)
         self.ui.actionOpen.triggered.connect(self.open)
@@ -49,29 +66,35 @@ class MainWindow(QMainWindow):
         if lastFilePath:
             self.open(lastFilePath)
 
-    def closeEvent(self, e):
+    def confirmSave(self):
         if self.dirty:
             ret = QMessageBox.question(self, "Save changes?",
-                                       "There are unsaved changes. Do you want to save before you quit?",
+                                       "Do you want to save your changes?",
                                        QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
                                        QMessageBox.Yes)
             if ret == QMessageBox.Yes:
                 self.save()
+                return True
             elif ret == QMessageBox.Cancel:
-                e.ignore()
-                return
+                return False
+        return True
+
+    def closeEvent(self, e):
+        if not self.confirmSave():
+            e.ignore()
+            return
         e.accept()
         self.writePrefs()
         self.collector.stop()
 
     def setDirty(self, x=True):
-        if x and not self.dirty:
+        if x and self.dirty is False:
             self.dirty = True
             title = self.windowTitle()
             if not title.endswith('*'):
                 title = title + ' *'
                 self.setWindowTitle(title)
-        elif self.dirty:
+        elif not x and self.dirty is True:
             self.dirty = False
             title = self.windowTitle()
             if title.endswith(' *'):
@@ -134,7 +157,7 @@ class MainWindow(QMainWindow):
 
     def addBinding(self, save=True):
         b = binding.Binding(self.ui.bindingsWidget)
-        self.bindingsLayout.insertWidget(self.bindingsLayout.count()-1, b)
+        self.ui.bindingsLayout.insertWidget(self.ui.bindingsLayout.count()-1, b)
         b.changed.connect(self.bindingChanged)
         self.bindings.append(b)
         self.patch.beginGroup('bindings/%s' % (len(self.bindings) - 1))
@@ -147,12 +170,15 @@ class MainWindow(QMainWindow):
         return b
         
     def removeBinding(self, b, save=True):
-        self.bindingsLayout.removeWidget(b)
+        self.ui.bindingsLayout.removeWidget(b)
         self.bindings.remove(b)
         b.setParent(None)
         if save:
-            self.writeBindingPatch()
+            self.writeBindingsPatch()
         self.setDirty(True)
+
+    def removeSelectedBinding(self):
+        pass
 
     def bindingChanged(self):
         self.writeBindingsPatch(self.patch)
@@ -164,6 +190,8 @@ class MainWindow(QMainWindow):
         dialog.show()
 
     def new(self):
+        if not self.confirmSave():
+            return
         for b in list(self.bindings):
             self.removeBinding(b, False)
         self.prefs.setValue('lastFilePath', '')
@@ -204,6 +232,9 @@ class MainWindow(QMainWindow):
         self.setWindowFilePath(filePath)
         self.setWindowTitle(QFileInfo(filePath).fileName())
         self.setDirty(False)
+
+    def clearActivityLog(self):
+        self.ui.activityLog.clear()
 
             
 

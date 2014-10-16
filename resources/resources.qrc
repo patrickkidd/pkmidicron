@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/retina/doc 5.png</file>
+        <file>icons/retina/dustbin.png</file>
+        <file>icons/retina/floppy disk.png</file>
+        <file>icons/retina/folder.png</file>
+        <file>icons/retina/layout 1.png</file>
+        <file>icons/retina/magic wand.png</file>
+        <file>icons/retina/multiply 2.png</file>
+        <file>icons/retina/multiply.png</file>
+        <file>icons/retina/network.png</file>
+        <file>icons/retina/pencil.png</file>
+        <file>icons/retina/plus.png</file>
+        <file>icons/retina/settings 3.png</file>
+    </qresource>
+</RCC>

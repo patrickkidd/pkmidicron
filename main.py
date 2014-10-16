@@ -2,7 +2,7 @@
 
 import sys
 from pkmidicron import MainWindow, util
-from pkmidicron.pyqt_shim import QSettings, QApplication, QIcon, QWidget, QLibraryInfo
+from pkmidicron.pyqt_shim import Qt, QSettings, QApplication, QIcon, QWidget, QLibraryInfo
 
 
 def main():
@@ -22,6 +22,7 @@ def main():
     import rtmidi
     settings = QSettings('vedanamedia', 'PKMidiCron')
     app = QApplication(sys.argv)
+    app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
     try:
         w = MainWindow(settings)
         w.show()
