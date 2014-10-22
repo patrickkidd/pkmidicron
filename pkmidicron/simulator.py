@@ -13,6 +13,7 @@ class Simulator(QWidget):
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+        self.setFixedHeight(70)
 
         self._timer = 0
         self.randomout = rtmidi.RandomOut()
@@ -34,39 +35,42 @@ class Simulator(QWidget):
             dev.openPort(i)
             self.devices[portName] = dev
         self.portBox.addItem(ALL_TEXT)
+        self.portBox.setMinimumWidth(100)
 
         self.midiEdit = MidiEdit(self)
-        self.midiEdit.changed.connect(self.changed.emit)
+        self.midiEdit.changed.connect(self.setValue)
 
         self.sendButton = QPushButton("&Send", self)
         self.sendButton.clicked.connect(self.send)
 
-        Layout = QHBoxLayout()
+        UpperLayout = QHBoxLayout()
+        UpperLayout.addWidget(self.portBox)
+        UpperLayout.addWidget(self.midiEdit)
+        UpperLayout.addStretch(1)
+        LowerLayout = QHBoxLayout()
+        LowerLayout.addWidget(self.crazyBox)
+        LowerLayout.addWidget(self.fakeBox)
+        LowerLayout.addStretch(1)
+        LowerLayout.addWidget(self.sendButton)
+        Layout = QVBoxLayout()
         Layout.setContentsMargins(0, 0, 0, 0)
         Layout.setSpacing(0)
         Layout.addStretch(1)
-        Layout.addWidget(self.crazyBox)
-        Layout.addWidget(self.fakeBox)
-        Layout.addWidget(self.portBox)
-        Layout.addWidget(self.midiEdit)
-        Layout.addWidget(self.sendButton)
+        Layout.addLayout(UpperLayout)
+        Layout.addLayout(LowerLayout)
         Layout.addStretch(1)
         self.setLayout(Layout)
-        
-    def readPatch(self, patch):
-        portName = patch.value('portName', type=str)
-        if not portName:
-            portName = ALL_TEXT
-        elif self.portBox.findText(portName) == -1:
-            self.portBox.addItem(portName)
-        self.portBox.setCurrentText(portName)
-        self.midiEdit.readPatch(patch)
-        self.fakeBox.setChecked(patch.value('fake', type=bool))
 
-    def writePatch(self, patch):
-        patch.setValue('portName', self.portBox.currentText())
-        patch.setValue('fake', self.fakeBox.isChecked())
-        self.midiEdit.writePatch(patch)
+    def init(self, simulator):
+        self.simulator = simulator
+        self.midiEdit.init(simulator.portName, simulator.midi)
+
+    def clear(self):
+        self.midiEdit.clear()
+        self.simulator = None
+        
+    def setValue(self, portName, midi):
+        self.simulator.setMidi(portName, midi)
 
     def send(self, msg=None):
         def _send(portName, m):
@@ -75,7 +79,7 @@ class Simulator(QWidget):
             else:
                 self.devices[portName].sendMessage(m)
         if msg is None or type(msg) == bool:
-            msg = self.midiEdit.midi
+            msg = self.simulator.midi
         if self.portBox.currentText() == ALL_TEXT:
             for portName, v in self.devices.items():
                 _send(portName, msg)

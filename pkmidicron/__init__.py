@@ -1,4 +1,3 @@
-from .binding import *
 from .mainwindow import *
-from .util import *
+from . import util
 from .resources import *

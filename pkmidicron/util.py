@@ -4,6 +4,112 @@ from .pyqt_shim import QObject, QThread, pyqtSignal
 
 ANY_TEXT = '** ANY **'
 ALL_TEXT = '** ALL **'
+NONE_TEXT = '** NONE **'
+
+MSG_NOTE_ON = 0
+MSG_NOTE_OFF = 1
+MSG_CC = 2
+MSG_AFTERTOUCH = 3
+MSG_ALL_NOTES_OFF = 127
+
+ACTION_SEND_MESSAGE = 0
+ACTION_RUN_PROGRAM = 1
+ACTION_OPEN_FILE = 2
+
+def midiTypeString(midi):
+    if midi.isNoteOn():
+        return 'Note On'
+    elif midi.isNoteOff():
+        return 'Note Off'
+    elif midi.isController():
+        return 'CC'
+    elif midi.isAftertouch():
+        return 'Aftertouch'
+    elif midi.isPitchWheel():
+        return 'Pitch Wheel'
+    elif midi.isProgramChange():
+        return 'Program Change'
+    elif midi.isChannelPressure():
+        return 'Channel Pressure'
+    else:
+        return 'unknown: %s' % midi
+
+def midiDataSummary(midi):
+    if midi.isNoteOn():
+        return '%s (%s), %s' % (midi.getNoteNumber(),
+                                rtmidi.MidiMessage.getMidiNoteName(midi.getNoteNumber(), True, True, 3),
+                                midi.getVelocity())
+    elif midi.isNoteOff():
+        return '%s' % midi.getNoteNumber()
+    elif midi.isController():
+        return '#%s, %s' % (midi.getControllerNumber(), midi.getControllerValue())
+    elif midi.isAftertouch():
+        return '%s (%s), %s' % (midi.getNoteNumber(),
+                           rtmidi.MidiMessage.getMidiNoteName(midi.getNoteNumber(), True, True, 3),
+                           midi.getAfterTouchValue())
+    elif midi.isPitchWheel():
+        return '%s' % midi.getPitchWheelValue()
+    elif midi.isProgramChange():
+        return '%s' % midi.getProgramChangeNumber()
+    elif midi.isChannelPressure():
+        return '%s' % midi.getChannelPressureValue()
+    
+
+
+class HR(qt.QWidget):
+    def __init__(self, parent=None):
+        qt.QWidget.__init__(self, parent)
+
+    def paintEvent(self, e):
+        p = QPainter(e)
+        
+        y = self.height() / 2
+        line = QLine(0, y, self.width(), y)
+        p.setPen(Qt.black)
+        p.drawLine(line)
+
+class CollapsableBox(qt.QFrame):
+    def __init__(self, title, parent=None):
+        qt.QFrame.__init__(self, parent)
+
+        self.isCollapsed = False
+
+        self.header = qt.QWidget(self)
+        self.header.setFixedHeight(40)
+        self.headerButton = qt.QPushButton('-', self)
+        self.headerButton.setFixedWidth(20)
+        self.headerLabel = qt.QLabel(title, self)
+
+        HeaderLayout = qt.QHBoxLayout()
+        HeaderLayout.addWidget(self.headerButton)
+        HeaderLayout.addWidget(self.headerLabel)
+        self.header.setLayout(HeaderLayout)
+
+        self.content = qt.QWidget()
+
+        Layout = qt.QVBoxLayout()
+        Layout.setContentsMargins(0, 0, 0, 0)
+        Layout.setSpacing(0)
+        Layout.addWidget(self.header, 0)
+        Layout.addWidget(self.content, 1)
+        self.setLayout(Layout)
+
+        self.headerButton.clicked.connect(self.toggle)
+
+    def mouseDoubleClickEvent(self, e):
+        self.toggle()
+
+    def toggle(self):
+        if self.isCollapsed:
+            self.content.show()
+            self.headerButton.setText('-')
+            self.isCollapsed = False
+        else:
+            self.content.hide()
+            self.headerButton.setText('+')
+            self.isCollapsed = True
+
+
 
 def setBackgroundColor(w, c):
     if not hasattr(w, '_orig_palette'):
@@ -42,7 +148,7 @@ class Led(qt.QFrame):
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.off)
         self.isOn = False
-        self.setFrameStyle(qt.QFrame.Box)
+#        self.setFrameStyle(qt.QFrame.Box)
 
     def setColor(self, c):
         self._color = c
