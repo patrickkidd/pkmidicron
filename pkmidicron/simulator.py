@@ -38,7 +38,6 @@ class Simulator(QWidget):
         self.portBox.setMinimumWidth(100)
 
         self.midiEdit = MidiEdit(self)
-        self.midiEdit.changed.connect(self.setValue)
 
         self.sendButton = QPushButton("&Send", self)
         self.sendButton.clicked.connect(self.send)
@@ -63,15 +62,12 @@ class Simulator(QWidget):
 
     def init(self, simulator):
         self.simulator = simulator
-        self.midiEdit.init(simulator.portName, simulator.midi)
+        self.midiEdit.init(simulator)
 
     def clear(self):
         self.midiEdit.clear()
         self.simulator = None
         
-    def setValue(self, portName, midi):
-        self.simulator.setMidi(portName, midi)
-
     def send(self, msg=None):
         def _send(portName, m):
             if self.fakeBox.isChecked():

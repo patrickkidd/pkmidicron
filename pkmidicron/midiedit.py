@@ -1,18 +1,17 @@
 from rtmidi import MidiMessage, RtMidiIn
 from .pyqt_shim import *
-#from .util import *
-from . import util
+from . import util, patch
 
 class MidiEdit(QWidget):
-
-    changed = pyqtSignal(str, MidiMessage)
 
     def __init__(self, parent=None, any=False, all=False, portBox=False):
         QWidget.__init__(self, parent)
 
         self.block = False
+        self.any = any
+        self.all = all
 
-        self.midi = MidiMessage()
+        self.midimessage = None
 
         self.portBox = QComboBox()
         self.device = RtMidiIn()
@@ -25,14 +24,18 @@ class MidiEdit(QWidget):
             self.portBox.addItem(util.ALL_TEXT)
         self.portBox.addItem(util.NONE_TEXT)
         self.portBox.setMinimumWidth(100)
-        self.portBox.currentTextChanged.connect(self.setPortName)
+        self.portBox.currentTextChanged.connect(self.updateValue)
         if not portBox:
             self.portBox.hide()
 
         self.channelBox = QComboBox(self)
         for i in range(1, 17):
             self.channelBox.addItem('Channel %i' % i)
-        self.channelBox.currentIndexChanged.connect(self.setChannel)
+        self.channelBox.currentIndexChanged.connect(self.updateValue)
+        if any:
+            self.channelBox.addItem(util.ANY_TEXT)
+        if all:
+            self.channelBox.addItem(util.ALL_TEXT)
 
         self.typeBox = QComboBox(self)
         self.typeBox.addItem("Note On")
@@ -49,42 +52,54 @@ class MidiEdit(QWidget):
             self.ccNumBox.addItem('%i %s' % (i, name))
         if any:
             self.ccNumBox.addItem(util.ANY_TEXT)
-        self.ccNumBox.currentIndexChanged.connect(self.setCCNum)
+        if all:
+            self.ccNumBox.addItem(util.ALL_TEXT)
+        self.ccNumBox.currentIndexChanged.connect(self.updateValue)
 
         self.ccValueBox = QComboBox(self)
         for i in range(128):
             self.ccValueBox.addItem(str(i))
         if any:
             self.ccValueBox.addItem(util.ANY_TEXT)
-        self.ccValueBox.currentIndexChanged.connect(self.setCCValue)
+        if all:
+            self.ccValueBox.addItem(util.ALL_TEXT)
+        self.ccValueBox.currentIndexChanged.connect(self.updateValue)
 
         self.noteNumBox = QComboBox(self)
         for i in range(128):
             self.noteNumBox.addItem('%i (%s)' % (i, MidiMessage.getMidiNoteName(i)))
         if any:
             self.noteNumBox.addItem(util.ANY_TEXT)
-        self.noteNumBox.currentIndexChanged.connect(self.setNoteNum)
+        if all:
+            self.noteNumBox.addItem(util.ALL_TEXT)
+        self.noteNumBox.currentIndexChanged.connect(self.updateValue)
 
         self.noteVelBox = QComboBox(self)
         for i in range(128):
             self.noteVelBox.addItem(str(i))
         if any:
             self.noteVelBox.addItem(util.ANY_TEXT)
-        self.noteVelBox.currentIndexChanged.connect(self.setNoteVel)
+        if all:
+            self.noteVelBox.addItem(util.ALL_TEXT)
+        self.noteVelBox.currentIndexChanged.connect(self.updateValue)
 
         self.atNumBox = QComboBox(self)
         for i in range(128):
             self.atNumBox.addItem('%i (%s)' % (i, MidiMessage.getMidiNoteName(i)))
         if any:
             self.atNumBox.addItem(util.ANY_TEXT)
-        self.atNumBox.currentIndexChanged.connect(self.updateAndEmit)
+        if all:
+            self.atNumBox.addItem(util.ALL_TEXT)
+        self.atNumBox.currentIndexChanged.connect(self.updateValue)
 
         self.atValueBox = QComboBox(self)
         for i in range(128):
             self.atValueBox.addItem(str(i))
         if any:
             self.atValueBox.addItem(util.ANY_TEXT)
-        self.atValueBox.currentIndexChanged.connect(self.updateAndEmit)
+        if all:
+            self.atValueBox.addItem(util.ALL_TEXT)
+        self.atValueBox.currentIndexChanged.connect(self.updateValue)
 
         # keep long boxes from expanding too far
         boxes = self.findChildren(QComboBox, '', Qt.FindDirectChildrenOnly)
@@ -124,36 +139,89 @@ class MidiEdit(QWidget):
                 self.atValueBox
             }
         }
+        self.clear()
 
-        self.setType(0)
+    def init(self, midimessage):
+        self.midimessage = midimessage
+        portName = midimessage.portName
+        midi = midimessage.midi
+        wildcards = midimessage.wildcards
 
-    def init(self, portName, midi):
         self.block = True
         if not portName:
             portName = util.NONE_TEXT
         elif self.portBox.findText(portName) == -1:
             self.portBox.addItem(portName)
         self.portBox.setCurrentText(portName)
-        self.channelBox.setCurrentIndex(midi.getChannel()-1)
+        if wildcards['channel']:
+            if self.any:
+                self.channelBox.setCurrentText(util.ANY_TEXT)
+            elif self.all:
+                self.channelBox.setCurrentText(uti.ALL_TEXT)
+        else:
+            self.channelBox.setCurrentIndex(midi.getChannel()-1)
         if midi.isNoteOn():
             iType = util.MSG_NOTE_ON
-            self.noteNumBox.setCurrentIndex(midi.getNoteNumber())
-            self.noteVelBox.setCurrentIndex(midi.getVelocity())
+            if wildcards['noteNum']:
+                if self.any:
+                    self.noteNumBox.setCurrentText(util.ANY_TEXT)
+                elif self.all:
+                    self.noteNumBox.setCurrentText(util.ALL_TEXT)
+            else:
+                self.noteNumBox.setCurrentIndex(midi.getNoteNumber())
+            if wildcards['noteVel']:
+                if self.any:
+                    self.noteVelBox.setCurrentText(util.ANY_TEXT)
+                elif self.all:
+                    self.noteVelBox.setCurrentText(util.ALL_TEXT)
+            else:
+                self.noteVelBox.setCurrentIndex(midi.getVelocity())
         elif midi.isNoteOff():
             iType = util.MSG_NOTE_OFF
-            self.noteNumBox.setCurrentIndex(midi.getNoteNumber())
+            if wildcards['noteNum']:
+                if self.any:
+                    self.noteNumBox.setCurrentText(util.ANY_TEXT)
+                elif self.all:
+                    self.noteNumBox.setCurrentText(util.ALL_TEXT)
+            else:
+                self.noteNumBox.setCurrentIndex(midi.getNoteNumber())
         elif midi.isController():
             iType = util.MSG_CC
-            self.ccNumBox.setCurrentIndex(midi.getControllerNumber())
-            self.ccValueBox.setCurrentIndex(midi.getControllerValue())
+            if wildcards['ccNum']:
+                if self.any:
+                    self.ccNumBox.setCurrentText(util.ANY_TEXT)
+                elif self.all:
+                    self.ccNumBox.setCurrentText(util.ALL_TEXT)
+            else:
+                self.ccNumBox.setCurrentIndex(midi.getControllerNumber())
+            if wildcards['ccValue']:
+                if self.any:
+                    self.ccValueBox.setCurrentText(util.ANY_TEXT)
+                elif self.all:
+                    self.ccValueBox.setCurrentText(util.ALL_TEXT)
+            else:
+                self.ccValueBox.setCurrentIndex(midi.getControllerValue())
         elif midi.isAftertouch():
             iType = util.MSG_AFTERTOUCH
-            self.atNumBox.setCurrentIndex(midi.getNoteNumber())
-            self.atValueBox.setCurrentIndex(midi.getAfterTouchValue())
+            if wildcards['atNum']:
+                if self.any:
+                    self.atNumBox.setCurrentText(util.ANY_TEXT)
+                elif self.all:
+                    self.atNumBox.setCurrentText(util.ALL_TEXT)
+            else:
+                self.atNumBox.setCurrentIndex(midi.getNoteNumber())
+            if wildcards['atValue']:
+                if self.any:
+                    self.atValueBox.setCurrentText(util.ANY_TEXT)
+                elif self.all:
+                    self.atValueBox.setCurrentText(util.ALL_TEXT)
+            else:
+                self.atValueBox.setCurrentIndex(midi.getAfterTouchValue())
         self.setType(iType)
         self.block = False
 
     def clear(self):
+        self.setType(0)
         self.portBox.setCurrentIndex(0)
         self.channelBox.setCurrentIndex(0)
         self.typeBox.setCurrentIndex(0)
@@ -164,40 +232,44 @@ class MidiEdit(QWidget):
         self.atNumBox.setCurrentIndex(0)
         self.atValueBox.setCurrentIndex(0)
 
-    def updateAndEmit(self):
-        if self.block:
+    def updateValue(self):
+        if self.block or not self.midimessage:
             return
         channel = self.channelBox.currentIndex() + 1
         if self.typeBox.currentIndex() == 0:
-            self.midi = MidiMessage.noteOn(channel,
-                                           self.noteNumBox.currentIndex(),
-                                           self.noteVelBox.currentIndex())
+            midi = MidiMessage.noteOn(channel,
+                                      self.noteNumBox.currentIndex(),
+                                      self.noteVelBox.currentIndex())
         if self.typeBox.currentIndex() == 1:
-            self.midi = MidiMessage.noteOff(channel,
-                                            self.noteNumBox.currentIndex())
+            midi = MidiMessage.noteOff(channel,
+                                       self.noteNumBox.currentIndex())
         elif self.typeBox.currentIndex() == 2:
-            self.midi = MidiMessage.controllerEvent(channel,
-                                                    self.ccNumBox.currentIndex(),
-                                                    self.ccValueBox.currentIndex())
+            midi = MidiMessage.controllerEvent(channel,
+                                               self.ccNumBox.currentIndex(),
+                                               self.ccValueBox.currentIndex())
         elif self.typeBox.currentIndex() == 3:
-            self.midi = MidiMessage.aftertouchChange(channel,
-                                                     self.atNumBox.currentIndex(),
-                                                     self.atValueBox.currentIndex())
+            midi = MidiMessage.aftertouchChange(channel,
+                                                self.atNumBox.currentIndex(),
+                                                self.atValueBox.currentIndex())
         if self.portBox.currentText() == util.NONE_TEXT:
             portName = None
         else:
             portName = self.portBox.currentText()
-        self.changed.emit(portName, self.midi)
-
-    def setChannel(self, x):
-        if x != self.channelBox.currentIndex():
-            self.channelBox.setCurrentIndex(x-1)
-        self.updateAndEmit()
-
-    def setPortName(self, x):
-        if x != self.portBox.currentText():
-            self.portBox.setCurrentText(x)
-        self.updateAndEmit()
+        self.midimessage.setWildcard('channel',
+                                     self.channelBox.currentText() in [util.ANY_TEXT, util.ALL_TEXT], emit=False)
+        self.midimessage.setWildcard('noteNum',
+                                     self.noteNumBox.currentText() in [util.ANY_TEXT, util.ALL_TEXT], emit=False)
+        self.midimessage.setWildcard('noteVel',
+                                     self.noteVelBox.currentText() in [util.ANY_TEXT, util.ALL_TEXT], emit=False)
+        self.midimessage.setWildcard('ccNum',
+                                     self.ccNumBox.currentText() in [util.ANY_TEXT, util.ALL_TEXT], emit=False)
+        self.midimessage.setWildcard('ccValue',
+                                     self.ccValueBox.currentText() in [util.ANY_TEXT, util.ALL_TEXT], emit=False)
+        self.midimessage.setWildcard('atNum',
+                                     self.atNumBox.currentText() in [util.ANY_TEXT, util.ALL_TEXT], emit=False)
+        self.midimessage.setWildcard('atValue',
+                                     self.atValueBox.currentText() in [util.ANY_TEXT, util.ALL_TEXT], emit=False)
+        self.midimessage.setMidi(portName, midi)
 
     def setType(self, iType):
         if iType != self.typeBox.currentIndex():
@@ -207,24 +279,4 @@ class MidiEdit(QWidget):
                 v2.hide()
         for w in self.typeMap[iType]:
             w.show()
-        self.updateAndEmit()
-
-    def setCCNum(self, x):
-        if x != self.ccNumBox.currentIndex():
-            self.ccNumBox.setCurrentIndex(x)
-        self.updateAndEmit()
-
-    def setCCValue(self, x):
-        if x != self.ccValueBox.currentIndex():
-            self.ccValueBox.setCurrentIndex(x)
-        self.updateAndEmit()
-
-    def setNoteNum(self, x):
-        if x != self.noteNumBox.currentIndex():
-            self.noteNumBox.setCurrentIndex(x)
-        self.updateAndEmit()
-
-    def setNoteVel(self, x):
-        if x != self.noteVelBox.currentIndex():
-            self.noteVelBox.setCurrentIndex(x)
-        self.updateAndEmit()
+        self.updateValue()

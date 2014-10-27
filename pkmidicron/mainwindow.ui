@@ -23,7 +23,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QListWidget" name="bindingsList">
+      <widget class="BindingListWidget" name="bindingsList">
        <property name="minimumSize">
         <size>
          <width>200</width>
@@ -232,6 +232,11 @@
    <extends>QWidget</extends>
    <header>.bindingproperties.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>BindingListWidget</class>
+   <extends>QListWidget</extends>
+   <header>.bindinglistwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

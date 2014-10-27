@@ -16,6 +16,15 @@ ACTION_SEND_MESSAGE = 0
 ACTION_RUN_PROGRAM = 1
 ACTION_OPEN_FILE = 2
 
+
+def openPort(name):
+    device = rtmidi.RtMidiOut()
+    for i in range(device.getPortCount()):
+        if device.getPortName(i) == name:
+            device.openPort(i)
+            return device
+
+
 def midiTypeString(midi):
     if midi.isNoteOn():
         return 'Note On'

@@ -2,8 +2,12 @@ import rtmidi
 from .pyqt_shim import *
 from . import util, mainwindow_form, bindinglistitem, patch
 
+
 FILE_TYPES = "PKMidiCron files (*.pmc)"
 CONFIRM_SAVE = False
+
+
+
 
 class MainWindow(QMainWindow):
     def __init__(self, prefs, parent=None):
@@ -62,6 +66,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSave.triggered.connect(self.save)
         self.ui.actionSaveAs.triggered.connect(self.saveAs)
         self.ui.bindingsList.selectionModel().selectionChanged.connect(self.onBindingSelectionChanged)
+        self.ui.bindingsList.deleted.connect(self.onBindingItemRemoved)
 
         # Init
 
@@ -141,6 +146,8 @@ class MainWindow(QMainWindow):
             self.saveAs()
         self.patch.write(filePath)
         self.patch.setDirty(False)
+        self.setWindowFilePath(filePath)
+        self.setWindowTitle(QFileInfo(filePath).fileName())
         self.prefs.setValue('lastFilePath', filePath)
 
     def saveAs(self):
@@ -204,6 +211,9 @@ class MainWindow(QMainWindow):
         item = self.ui.bindingsList.takeItem(iItem)
         self.patch.removeBinding(item.binding)
 
+    def onBindingItemRemoved(self, item):
+        self.patch.removeBinding(item.binding)
+
     def onBindingSelectionChanged(self, x, y):
         if x.indexes():
             self.deleteAction.setEnabled(True)
@@ -215,8 +225,11 @@ class MainWindow(QMainWindow):
 
     def clearActivityLog(self):
         self.ui.activityLog.clearContents()
+        self.ui.activityLog.setRowCount(0)
 
     def onMidiMessage(self, portName, midi):
+        if self.patch.block:
+            return
         s = midi.__str__().replace('<', '').replace('>', '')
         self.activityCount += 1
         items = [

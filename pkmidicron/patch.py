@@ -1,10 +1,11 @@
+import os
 import rtmidi
 from . import util
 from .pyqt_shim import QSettings, QObject, pyqtSignal
 
 class MidiMessage(QObject):
 
-    changed = pyqtSignal(str, rtmidi.MidiMessage)
+    changed = pyqtSignal()
 
     WILDCARD = -1
     
@@ -12,6 +13,15 @@ class MidiMessage(QObject):
         QObject.__init__(self, parent)
         self.portName = None
         self.midi = rtmidi.MidiMessage.noteOn(1, 0, 100)
+        self.wildcards = {
+            "channel": False,
+            "noteNum": False,
+            "noteVel": False,
+            "ccNum": False,
+            "ccValue": False,
+            "atNum": False,
+            "atValue": False,
+        }
 
     def read(self, patch):
         self.portName = patch.value('portName', type=str)
@@ -32,8 +42,10 @@ class MidiMessage(QObject):
             self.midi = rtmidi.MidiMessage.aftertouchChange(channel,
                                                             patch.value('atNum', type=int),
                                                             patch.value('atValue', type=int))
-
-        self.changed.emit(self.portName, self.midi)
+        patch.beginGroup('wildcards')
+        for key in self.wildcards.keys():
+            self.wildcards[key] = patch.value(key, type=bool)
+        patch.endGroup()
 
     def write(self, patch):
         if self.portName is not None:
@@ -54,11 +66,22 @@ class MidiMessage(QObject):
             patch.setValue('type', util.MSG_AFTERTOUCH)
             patch.setValue('atNum', self.midi.getNoteNumber())
             patch.setValue('atValue', self.midi.getAfterTouchValue())
+        patch.beginGroup('wildcards')
+        for key, value in self.wildcards.items():
+            patch.setValue(key, value)
+        patch.endGroup()
 
     def setMidi(self, portName, midi):
         self.portName = portName
         self.midi = midi
-        self.changed.emit(portName, midi)
+        self.changed.emit()
+
+    def setWildcard(self, key, x, emit=True):
+        if not key in self.wildcards:
+            raise KeyError('%s is not a valid MidiMessage value' % key)
+        self.wildcards[key] = x
+        if emit:
+            self.changed.emit()
  
 
 class Simulator(MidiMessage):
@@ -72,36 +95,52 @@ class Criteria(MidiMessage):
         MidiMessage.__init__(self, parent)
 
     def match(self, portName, midi):
-        if portName != self.portName and portName != util.ANY_TEXT:
+        if portName != self.portName and self.portName != util.ANY_TEXT:
             return
 
         m1 = rtmidi.MidiMessage(midi)
         m2 = rtmidi.MidiMessage(self.midi)
 
         if m2.isNoteOn() or m2.isNoteOff():
-            if self.midi.getNoteNumber() == self.WILDCARD:
+            if self.wildcards['noteNum']:
                 m2.setNoteNumber(m1.getNoteNumber())
-            if m2.isNoteOn() and self.midi.getVelocity() == self.WILDCARD:
+            if m2.isNoteOn() and self.wildcards['noteVel']:
                 m2.setVelocity(m1.getVelocity() / 127.0)
+            if self.wildcards['channel']:
+                if m2.isNoteOn():
+                    m2 = rtmidi.MidiMessage.noteOn(m1.getChannel(),
+                                                   m2.getNoteNumber(),
+                                                   m2.getVelocity())
+                elif m2.isNoteOff():
+                    m2 = rtmidi.MidiMessage.noteOff(m1.getChannel(),
+                                                    m2.getNoteNumber())
+                    
         elif m2.isController():
-            if self.midi.getControllerNumber() == self.WILDCARD:
-                m2 = MidiMessage.controllerEvent(m2.getChannel(),
-                                                 m1.getControllerNumber(),
-                                                 m2.getControllerValue())
-            if self.midi.getControllerValue() == self.WILDCARD:
-                m2 = MidiMessage.controllerEvent(m2.getChannel(),
-                                                 m2.getControllerNumber(),
-                                                 m1.getControllerValue())
-
+            if self.wildcards['ccNum']:
+                m2 = rtmidi.MidiMessage.controllerEvent(m2.getChannel(),
+                                                        m1.getControllerNumber(),
+                                                        m2.getControllerValue())
+            if self.wildcards['ccValue']:
+                m2 = rtmidi.MidiMessage.controllerEvent(m2.getChannel(),
+                                                        m2.getControllerNumber(),
+                                                        m1.getControllerValue())
+            if self.wildcards['channel']:
+                m2 = rtmidi.MidiMessage.controllerEvent(m1.getChannel(),
+                                                        m2.getControllerNumber(),
+                                                        m2.getControllerValue())
         elif m2.isAftertouch():
-            if self.midi.getNoteNumber() == self.WILDCARD:
-                m2 = MidiMessage.aftertouchChange(m2.getChannel(),
-                                                  m1.getNoteNumber(),
-                                                  m2.getAfterTouchValue())
-            if self.midi.getAfterTouchValue() == util.ANY_TEXT:
-                m2 = MidiMessage.aftertouchChange(m2.getChannel(),
-                                                  m2.getNoteNumber(),
-                                                  m1.getAfterTouchValue())
+            if self.wildcards['atNum']:
+                m2 = rtmidi.MidiMessage.aftertouchChange(m2.getChannel(),
+                                                         m1.getNoteNumber(),
+                                                         m2.getAfterTouchValue())
+            if self.wildcards['atValue']:
+                m2 = rtmidi.MidiMessage.aftertouchChange(m2.getChannel(),
+                                                         m2.getNoteNumber(),
+                                                         m1.getAfterTouchValue())
+            if self.wildcards['channel']:
+                m2 = rtmidi.MidiMessage.aftertouchChange(m1.getChannel(),
+                                                         m2.getNoteNumber(),
+                                                         m2.getAfterTouchValue())
 
         return m1 == m2
 
@@ -120,24 +159,53 @@ class Action(QObject):
     def write(self, patch):
         patch.setValue('type', self.type)
 
+    def trigger(self, midi):
+        pass
+
+    def getPatch(self):
+        return self.parent().getPatch()
+
 
 class SendMessageAction(Action):
     def __init__(self, parent=None):
         Action.__init__(self, util.ACTION_SEND_MESSAGE, parent)
         self.midiMessage = MidiMessage(self)
-        self.midiMessage.changed.connect(self.changed.emit)
+        self.midiMessage.changed.connect(self.onMidiChanged)
+        self.forward = False
+        self.device = None
 
     def read(self, patch):
         super().read(patch)
+        self.forward = patch.value('forward', type=bool)
         patch.beginGroup('MidiMessage')
         self.midiMessage.read(patch)
         patch.endGroup()
 
     def write(self, patch):
         super().write(patch)
+        patch.setValue('forward', self.forward)
         patch.beginGroup('MidiMessage')
         self.midiMessage.write(patch)
         patch.endGroup()
+
+    def trigger(self, midi):
+        if not self.device:
+            return
+        was = self.getPatch().setBlock(True)
+        if self.forward:
+            self.device.sendMessage(midi)
+        else:
+            self.device.sendMessage(self.midiMessage.midi)
+        self.getPatch().setBlock(was)
+
+    def setForward(self, x):
+        self.forward = bool(x)
+        self.changed.emit()
+
+    def onMidiChanged(self):
+        self.changed.emit()
+        self.device = util.openPort(self.midiMessage.portName)
+
 
 class OpenFileAction(Action):
     def __init__(self, parent=None):
@@ -149,13 +217,13 @@ class OpenFileAction(Action):
         self.text = patch.value('text', type=str)
 
     def write(self, patch):
-        print("OpenFileAction.write", self.type)
         super().write(patch)
         patch.setValue('text', self.text)
 
     def setText(self, x):
         self.text = x
         self.changed.emit()
+
 
 class RunProgramAction(Action):
     def __init__(self, parent=None):
@@ -167,13 +235,16 @@ class RunProgramAction(Action):
         self.text = patch.value('text', type=str)
 
     def write(self, patch):
-        print("RunProgramAction.write", self.type)
         super().write(patch)
         patch.setValue('text', self.text)
 
     def setText(self, x):
         self.text = x
         self.changed.emit()
+
+    def trigger(self, midi):
+        if self.text:
+            os.system(self.text)
 
 
 class Binding(QObject):
@@ -190,6 +261,10 @@ class Binding(QObject):
         self.actions = []
         self.title = ''
         self.triggerCount = 0
+        self.enabled = True
+
+    def getPatch(self):
+        return self.parent()
 
     def clear(self):
         for c in self.criteria:
@@ -202,6 +277,7 @@ class Binding(QObject):
     def read(self, patch):
         self.clear()
         self.title = patch.value('title', type=str)
+        self.enabled = patch.value('enabled', type=bool)
         patch.beginGroup('criteria')
         for i in patch.childGroups():
             patch.beginGroup(i)
@@ -224,6 +300,7 @@ class Binding(QObject):
 
     def write(self, patch): 
         patch.setValue('title', self.title)
+        patch.setValue('enabled', self.enabled)
         patch.remove('criteria')
         patch.beginGroup('criteria')
         for i, criteria in enumerate(self.criteria):
@@ -243,6 +320,9 @@ class Binding(QObject):
 
     def setTitle(self, x):
         self.title = x
+
+    def setEnabled(self, x):
+        self.enabled = bool(x)
 
     def addCriteria(self):
         criteria = Criteria(self)
@@ -272,14 +352,15 @@ class Binding(QObject):
             if c.match(portName, midi):
                 found = True
                 break
-        if found:
-            self.onMatched()
+        if not found:
+            return
+        self.onMatched(midi)
 
-    def onMatched(self):
-        self.triggered.emit()
+    def onMatched(self, midi):
         self.triggerCount += 1
+        self.triggered.emit()
         for action in self.actions:
-            action.trigger()
+            action.trigger(midi)
 
 
 class Patch(QObject):
@@ -292,6 +373,7 @@ class Patch(QObject):
         self.simulator = Simulator(self)
         self.simulator.changed.connect(self.setDirty)
         self.dirty = False
+        self.block = False
 
     def read(self, filePath):
         patch = QSettings(filePath, QSettings.IniFormat)
@@ -347,4 +429,10 @@ class Patch(QObject):
 
     def onMidiMessage(self, portName, midi):
         for b in self.bindings:
-            b.onMidiMessage(portName, midi)
+            if b.enabled:
+                b.onMidiMessage(portName, midi)
+
+    def setBlock(self, x):
+        y = self.block
+        self.block = bool(x)
+        return y

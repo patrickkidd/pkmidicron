@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Sun Oct 19 15:33:52 2014
+# Created: Wed Oct 22 19:18:00 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -21,7 +21,7 @@ class Ui_MainWindow(object):
         self.outerSplitter = QtWidgets.QSplitter(self.centralwidget)
         self.outerSplitter.setOrientation(QtCore.Qt.Horizontal)
         self.outerSplitter.setObjectName("outerSplitter")
-        self.bindingsList = QtWidgets.QListWidget(self.outerSplitter)
+        self.bindingsList = BindingListWidget(self.outerSplitter)
         self.bindingsList.setMinimumSize(QtCore.QSize(200, 0))
         self.bindingsList.setObjectName("bindingsList")
         self.innerSplitter = QtWidgets.QSplitter(self.outerSplitter)
@@ -144,5 +144,6 @@ class Ui_MainWindow(object):
         self.actionActivity_Log.setText(_translate("MainWindow", "Activity Log"))
         self.actionBindings.setText(_translate("MainWindow", "Bindings"))
 
+from .bindinglistwidget import BindingListWidget
 from .bindingproperties import BindingProperties
 from .simulator import Simulator

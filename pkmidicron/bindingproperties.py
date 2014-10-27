@@ -8,7 +8,6 @@ class CriteriaBox(util.CollapsableBox):
         util.CollapsableBox.__init__(self, tr('Match Criteria'), parent)
 
         self.midiEdit = midiedit.MidiEdit(self.content, portBox=True, any=True)
-        self.midiEdit.changed[str, rtmidi.MidiMessage].connect(self.setValue)
 
         Layout = QHBoxLayout()
         Layout.addWidget(self.midiEdit)
@@ -18,14 +17,11 @@ class CriteriaBox(util.CollapsableBox):
     def init(self, binding):
         self.binding = binding
         self.criteria = binding.criteria[0]
-        self.midiEdit.init(self.criteria.portName, self.criteria.midi)
+        self.midiEdit.init(self.criteria)
 
     def clear(self):
         self.binding = None
         self.criteria = None
-
-    def setValue(self, portName, midi):
-        self.criteria.setMidi(portName, midi)
 
 
 class ActionWidget(QFrame):
@@ -69,15 +65,20 @@ class SendMessageAction(ActionWidget):
         ActionWidget.__init__(self, action, tr('Send Message'), parent)
 
         self.midiEdit = midiedit.MidiEdit(self, portBox=True)
-        self.midiEdit.changed.connect(self.setStuff)
+
+        self.forwardBox = QCheckBox('Forward', self)
+        self.forwardBox.setChecked(action.forward)
+        self.forwardBox.stateChanged.connect(self.setForward)
+
+        self.layout().addWidget(self.forwardBox)
         self.layout().addWidget(self.midiEdit)
 
     def init(self, action):
         super().init(action)
-        self.midiEdit.init(action.midiMessage.portName, action.midiMessage.midi)
+        self.midiEdit.init(action.midiMessage)
 
-    def setStuff(self, portName, midi):
-        self.action.midiMessage.setMidi(portName, midi)
+    def setForward(self, x):
+        self.action.setForward(x == Qt.Checked)
 
 
 class RunProgramAction(ActionWidget):

@@ -34,7 +34,7 @@ def main():
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
     def setStyleSheet():
-        print('setStyleSheet')
+#        print('setStyleSheet')
 #        text = open(styleSheet).read()
         app.setStyleSheet(STYLE_SHEET)
 #    styleSheet = os.path.join("pkmidicron", "app.css")
