@@ -2,4 +2,5 @@ RESOURCES += \
     resources/resources.qrc
 
 FORMS += \
-    pkmidicron/mainwindow.ui
+    pkmidicron/mainwindow.ui \
+    pkmidicron/preferencesdialog.ui

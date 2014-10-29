@@ -12,5 +12,9 @@
         <file>icons/retina/pencil.png</file>
         <file>icons/retina/plus.png</file>
         <file>icons/retina/settings 3.png</file>
+        <file>no-bindings-yet.png</file>
+        <file>icons/retina/settings 12.png</file>
+        <file>box-bg-1.jpg</file>
+        <file>box-bg-2.jpg</file>
     </qresource>
 </RCC>

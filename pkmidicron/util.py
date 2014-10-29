@@ -1,6 +1,6 @@
 import rtmidi
 from . import pyqt_shim as qt
-from .pyqt_shim import QObject, QThread, pyqtSignal
+from .pyqt_shim import *
 
 ANY_TEXT = '** ANY **'
 ALL_TEXT = '** ALL **'
@@ -15,6 +15,43 @@ MSG_ALL_NOTES_OFF = 127
 ACTION_SEND_MESSAGE = 0
 ACTION_RUN_PROGRAM = 1
 ACTION_OPEN_FILE = 2
+
+mainwindow = None
+
+
+class Settings(QSettings):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self._autoSave = False
+
+    def autoSave(self):
+        return self._autoSave
+
+    def setAutoSave(self, x):
+        self._autoSave = bool(x)
+        return self._autoSave
+
+    autoSave = pyqtProperty(bool, autoSave, setAutoSave)
+
+    def setValue(self, *args, **kwargs):
+        super().setValue(*args, **kwargs)
+        if self.autoSave:
+            self.sync()
+
+class ScrollArea(QScrollArea):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def eventFilter(self, o, e):
+        if o and o == self.widget() and e.type() == QEvent.Resize:
+            if self.horizontalScrollBarPolicy() == Qt.ScrollBarAlwaysOff:
+                w = self.widget().minimumSizeHint().width() + self.verticalScrollBar().width()
+                self.setMinimumWidth(w + 2)
+            if self.verticalScrollBarPolicy() == Qt.ScrollBarAlwaysOff:
+                w = self.widget().minimumSizeHint().height() + self.horizontalScrollBar().height()
+                self.setMinimumHeight(w + 2)
+        return super().eventFilter(o, e)
+
 
 
 def openPort(name):
@@ -62,7 +99,7 @@ def midiDataSummary(midi):
         return '%s' % midi.getProgramChangeNumber()
     elif midi.isChannelPressure():
         return '%s' % midi.getChannelPressureValue()
-    
+
 
 
 class HR(qt.QWidget):
@@ -82,11 +119,13 @@ class CollapsableBox(qt.QFrame):
         qt.QFrame.__init__(self, parent)
 
         self.isCollapsed = False
+        self.image = QImage(":/box-bg-2.jpg")
 
         self.header = qt.QWidget(self)
         self.header.setFixedHeight(40)
         self.headerButton = qt.QPushButton('-', self)
         self.headerButton.setFixedWidth(20)
+        self.headerButton.hide()
         self.headerLabel = qt.QLabel(title, self)
 
         HeaderLayout = qt.QHBoxLayout()
@@ -104,6 +143,16 @@ class CollapsableBox(qt.QFrame):
         self.setLayout(Layout)
 
         self.headerButton.clicked.connect(self.toggle)
+
+    def paintEvent(self, e):
+        e.accept()
+        p = QPainter(self)
+        p.setBrush(QBrush(self.image))
+        p.setPen(QColor('#b6b6b6'))
+        rect = self.rect()
+        rect.setWidth(rect.width()-1)
+        rect.setHeight(rect.height()-1)
+        p.drawRoundedRect(rect, 5, 5)
 
     def mouseDoubleClickEvent(self, e):
         self.toggle()

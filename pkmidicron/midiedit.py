@@ -4,6 +4,13 @@ from . import util, patch
 
 class MidiEdit(QWidget):
 
+
+    def portName(self):
+        return self.portBox.currentText()
+    def setPortName(self, x):
+        self.portBox.setCurrentText(x)
+    portName = pyqtProperty(str, portName, setPortName)
+
     def __init__(self, parent=None, any=False, all=False, portBox=False):
         QWidget.__init__(self, parent)
 
@@ -280,3 +287,7 @@ class MidiEdit(QWidget):
         for w in self.typeMap[iType]:
             w.show()
         self.updateValue()
+
+    def setPortIndex(self, iPort):
+        self.portBox.setCurrentIndex(iPort)
+

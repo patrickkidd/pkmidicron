@@ -9,7 +9,7 @@ class BindingListWidget(QListWidget):
     def __init__(self, parent=None):
         QListWidget.__init__(self, parent)
 
-    def keyReleaseEvent(self, e):
+    def _keyReleaseEvent(self, e):
         if e.key() == Qt.Key_Delete or e.key() == Qt.Key_Backspace:
             if self.currentRow() != -1:
                 item = self.takeItem(self.currentRow())

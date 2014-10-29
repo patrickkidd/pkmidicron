@@ -15,7 +15,7 @@ QListView::item {
 QListView::item:selected {
     background: #3875D7;
 }
-CollapsableBox, Action {
+_CollapsableBox, _Action {
     border: 1px solid grey;
     border-radius: 5px;
     background: lightGrey;
@@ -24,12 +24,16 @@ CollapsableBox, Action {
 ActionWidget[selected="true"] {
     background: grey;
 }
+Simulator {
+    border-radius: 5px;
+}
 """
 
 
 def main():
     import rtmidi
-    settings = QSettings('vedanamedia', 'PKMidiCron')
+    prefs = util.Settings('vedanamedia', 'PKMidiCron')
+    prefs.setAutoSave(True)
     app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
@@ -43,7 +47,7 @@ def main():
     setStyleSheet()
 
     try:
-        w = MainWindow(settings)
+        w = MainWindow(prefs)
         w.show()
         app.exec()
     except:

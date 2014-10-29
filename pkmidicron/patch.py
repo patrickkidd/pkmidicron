@@ -1,7 +1,8 @@
 import os
 import rtmidi
 from . import util
-from .pyqt_shim import QSettings, QObject, pyqtSignal
+from .pyqt_shim import QSettings, QObject, pyqtSignal, QFileInfo
+
 
 class MidiMessage(QObject):
 
@@ -374,9 +375,11 @@ class Patch(QObject):
         self.simulator.changed.connect(self.setDirty)
         self.dirty = False
         self.block = False
+        self.fileName = 'Untitled.pmc'
+        self.filePath = 'Untitled.pmc'
 
     def read(self, filePath):
-        patch = QSettings(filePath, QSettings.IniFormat)
+        patch = util.Settings(filePath, QSettings.IniFormat)
         patch.beginGroup('bindings')
         for i in patch.childGroups():
             patch.beginGroup(i)
@@ -389,9 +392,11 @@ class Patch(QObject):
         patch.beginGroup('simulator')
         self.simulator.read(patch)
         patch.endGroup()
+        self.filePath = QFileInfo(filePath).filePath()
+        self.fileName = QFileInfo(filePath).fileName()
 
     def write(self, filePath):
-        patch = QSettings(filePath, QSettings.IniFormat)
+        patch = util.Settings(filePath, QSettings.IniFormat)
         patch.remove('bindings')
         patch.beginGroup('bindings')
         for i, binding in enumerate(self.bindings):
@@ -404,6 +409,8 @@ class Patch(QObject):
         self.simulator.write(patch)
         patch.endGroup()
         patch.sync()
+        self.filePath = QFileInfo(filePath).filePath()
+        self.fileName = QFileInfo(filePath).fileName()
 
     def setDirty(self, x=True):
         if type(x) != bool:

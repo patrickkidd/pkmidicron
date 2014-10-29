@@ -181,33 +181,54 @@ class ActionBox(util.CollapsableBox):
             widget.setProperty('selected', True)
 
 
+
+
 class BindingProperties(QWidget):
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        super().__init__(parent)
 
+        self.binding = None
         self.criteriaBox = CriteriaBox(self)
         self.hr1 = util.HR(self)
         self.actionBox = ActionBox(self)
 
-        Layout = QVBoxLayout(self)
+        Layout = QVBoxLayout()
         Layout.addWidget(self.criteriaBox)
         Layout.addWidget(self.hr1)
         Layout.addWidget(self.actionBox)
         Layout.addStretch(10)
         self.setLayout(Layout)
 
+        self.image = QImage(":/box-bg-1.jpg")
+        self.emptyImage = QImage(":/no-bindings-yet.png")
+
         # init
 
         self.clear()
+
+    def paintEvent(self, e):
+        e.accept()
+        p = QPainter(self)
+        p.setBrush(QBrush(self.image))
+        p.setPen(Qt.transparent)
+        p.drawRect(self.rect())
+        if not self.binding:
+            rect = QRect(self.width() / 2 - self.emptyImage.width() / 2,
+                         40,
+#                         self.height() / 2 - self.emptyImage.height() / 2,
+                         self.emptyImage.width(), self.emptyImage.height())
+            p.drawImage(rect, self.emptyImage, self.emptyImage.rect())
         
     def init(self, binding):
         self.criteriaBox.init(binding)
         self.actionBox.init(binding)
         self.criteriaBox.show()
         self.actionBox.show()
+        self.binding = binding
 
     def clear(self):
         self.criteriaBox.hide()
         self.criteriaBox.clear()
         self.actionBox.hide()
         self.actionBox.clear()
+        self.binding = None

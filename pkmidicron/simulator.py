@@ -1,6 +1,7 @@
 import rtmidi
 from .pyqt_shim import *
-from .util import *
+#from .util import *
+from . import util
 from .midiedit import MidiEdit
 
 CRAZY_INTERVAL = 10
@@ -13,10 +14,11 @@ class Simulator(QWidget):
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self.setFixedHeight(70)
 
         self._timer = 0
         self.randomout = rtmidi.RandomOut()
+        self.simulator = None
+        self.image = QImage(":/box-bg-1.jpg")
 
         self.crazyBox = QCheckBox("Go Crazy", self)
         self.crazyBox.stateChanged[int].connect(self.goCrazy)
@@ -27,42 +29,44 @@ class Simulator(QWidget):
 
         self.devices = {}
         self.device = rtmidi.RtMidiOut()
-        self.portBox = QComboBox(self)
         for i in range(self.device.getPortCount()):
             portName = self.device.getPortName(i)
-            self.portBox.addItem(portName)
             dev = rtmidi.RtMidiOut()
             dev.openPort(i)
             self.devices[portName] = dev
-        self.portBox.addItem(ALL_TEXT)
-        self.portBox.setMinimumWidth(100)
 
-        self.midiEdit = MidiEdit(self)
+        self.midiEdit = MidiEdit(self, portBox=True, all=True)
 
         self.sendButton = QPushButton("&Send", self)
         self.sendButton.clicked.connect(self.send)
 
-        UpperLayout = QHBoxLayout()
-        UpperLayout.addWidget(self.portBox)
-        UpperLayout.addWidget(self.midiEdit)
-        UpperLayout.addStretch(1)
         LowerLayout = QHBoxLayout()
         LowerLayout.addWidget(self.crazyBox)
         LowerLayout.addWidget(self.fakeBox)
         LowerLayout.addStretch(1)
         LowerLayout.addWidget(self.sendButton)
         Layout = QVBoxLayout()
-        Layout.setContentsMargins(0, 0, 0, 0)
-        Layout.setSpacing(0)
         Layout.addStretch(1)
-        Layout.addLayout(UpperLayout)
+        Layout.addWidget(self.midiEdit)
         Layout.addLayout(LowerLayout)
         Layout.addStretch(1)
         self.setLayout(Layout)
 
+    def paintEvent(self, e):
+        e.accept()
+        p = QPainter(self)
+        p.setBrush(QBrush(self.image))
+        p.setPen(QColor('#b6b6b6'))
+        rect = self.rect()
+        rect.setWidth(rect.width()-1)
+        rect.setHeight(rect.height()-1)
+        p.drawRoundedRect(rect, 5, 5)
+
     def init(self, simulator):
         self.simulator = simulator
         self.midiEdit.init(simulator)
+        if self.midiEdit.portName == util.NONE_TEXT:
+            self.midiEdit.setPortIndex(0)
 
     def clear(self):
         self.midiEdit.clear()
@@ -70,17 +74,19 @@ class Simulator(QWidget):
         
     def send(self, msg=None):
         def _send(portName, m):
+            if not portName:
+                return
             if self.fakeBox.isChecked():
                 self.received.emit(portName, m)
             else:
                 self.devices[portName].sendMessage(m)
         if msg is None or type(msg) == bool:
             msg = self.simulator.midi
-        if self.portBox.currentText() == ALL_TEXT:
+        if self.simulator.portName == util.ALL_TEXT:
             for portName, v in self.devices.items():
                 _send(portName, msg)
         else:
-            _send(self.portBox.currentText(), msg)
+            _send(self.simulator.portName, msg)
 
     def goCrazy(self, on):
         if self._timer:
@@ -92,4 +98,3 @@ class Simulator(QWidget):
     def timerEvent(self, e):
         msg = self.randomout.get()
         self.send(msg)
-            

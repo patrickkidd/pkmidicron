@@ -1,72 +1,72 @@
 import rtmidi
 from .pyqt_shim import *
-from . import util, mainwindow_form, bindinglistitem, patch
+from . import util, mainwindow_form, bindinglistitem, patch, preferencesdialog_form, preferencesdialog
 
 
 FILE_TYPES = "PKMidiCron files (*.pmc)"
-CONFIRM_SAVE = False
-
-
+CONFIRM_SAVE = True
 
 
 class MainWindow(QMainWindow):
     def __init__(self, prefs, parent=None):
         QMainWindow.__init__(self, parent)
+        util.mainwindow = self
         self.ui = mainwindow_form.Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setMinimumWidth(875)
-        self.resize(600, 200)
+
+        self.ui.innerSplitter.setStretchFactor(0, 0)
+        self.ui.innerSplitter.setStretchFactor(1, 1)
+        self.ui.innerSplitter.setStretchFactor(2, 1)
 
         self.collector = util.CollectorBin(self)
         self.collector.message.connect(self.onMidiMessage)
         self.collector.start()
 
-        self.ui.simulatorTabs.setTabBar(util.EmptyTabBar())
-
         self.toolbar = self.addToolBar(tr("File"))
         self.toolbar.setMovable(False)
         self.toolbar.setIconSize(QSize(40, 40))
-#        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        self.newAction = self.toolbar.addAction(tr("New"))
-        self.newAction.setIcon(QIcon(':/icons/retina/doc 5.png'))
-        self.newAction.triggered.connect(self.new)
-        self.openAction = self.toolbar.addAction(tr("Open"))
-        self.openAction.setIcon(QIcon(':/icons/retina/folder.png'))
-        self.openAction.triggered.connect(self.open)
-        self.saveAction = self.toolbar.addAction(tr('Save'))
-        self.saveAction.setIcon(QIcon(':/icons/retina/floppy disk.png'))
-        self.saveAction.triggered.connect(self.save)
-        self.saveAction.setEnabled(False)
+        self.toolbar.addAction(self.ui.actionNew)
+        self.ui.actionNew.setIcon(QIcon(':/icons/retina/doc 5.png'))
+        self.toolbar.addAction(self.ui.actionOpen)
+        self.ui.actionOpen.setIcon(QIcon(':/icons/retina/folder.png'))
+        self.toolbar.addAction(self.ui.actionSave)
+        self.ui.actionSave.setIcon(QIcon(':/icons/retina/floppy disk.png'))
+        self.ui.actionSave.setEnabled(False)
         spacer = QWidget(self.toolbar)
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.toolbar.addWidget(spacer)
-        self.addAction = self.toolbar.addAction(tr('&Add'))
-        self.addAction.setIcon(QIcon(':/icons/retina/plus.png'))
-        self.addAction.triggered.connect(self.addBinding)
-        self.deleteAction = self.toolbar.addAction(tr('Delete'))
-        self.deleteAction.setIcon(QIcon(':/icons/retina/multiply.png'))
-        self.deleteAction.triggered.connect(self.removeSelectedBinding)
+        self.toolbar.addAction(self.ui.actionAddBinding)
+        self.ui.actionAddBinding.setIcon(QIcon(':/icons/retina/plus.png'))
+        self.toolbar.addAction(self.ui.actionDeleteBinding)
+        self.ui.actionDeleteBinding.setIcon(QIcon(':/icons/retina/multiply.png'))
         spacer = QWidget(self.toolbar)
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.toolbar.addWidget(spacer)
         spacer = QWidget(self.toolbar)
         spacer.setFixedWidth(77)
         self.toolbar.addWidget(spacer)
-        self.removeAction = self.toolbar.addAction(tr('Clear'))
-        self.removeAction.setIcon(QIcon(':/icons/retina/dustbin.png'))
-        self.removeAction.triggered.connect(self.clearActivityLog)
+        self.toolbar.addAction(self.ui.actionClearLog)
+        self.ui.actionClearLog.setIcon(QIcon(':/icons/retina/dustbin.png'))
         
         # Signals
         
         self.activityCount = 0
+        self.ui.actionPreferences.triggered.connect(self.showPreferences)
         self.ui.simulator.received.connect(self.onMidiMessage)
         self.ui.actionAbout.triggered.connect(self.showAbout)
         self.ui.actionNew.triggered.connect(self.new)
         self.ui.actionOpen.triggered.connect(self.open)
         self.ui.actionSave.triggered.connect(self.save)
         self.ui.actionSaveAs.triggered.connect(self.saveAs)
+        self.ui.actionAddBinding.triggered.connect(self.addBinding)
+        self.ui.actionDeleteBinding.triggered.connect(self.removeSelectedBinding)
+        self.ui.actionClearLog.triggered.connect(self.clearActivityLog)
         self.ui.bindingsList.selectionModel().selectionChanged.connect(self.onBindingSelectionChanged)
         self.ui.bindingsList.deleted.connect(self.onBindingItemRemoved)
+        self.ui.actionExit.triggered.connect(self.close)
+        self.ui.actionToggleSimulator.triggered.connect(self.toggleSimulator)
+        self.ui.actionToggleLog.triggered.connect(self.toggleLog)
+        self.ui.actionToggleBindingProperties.triggered.connect(self.toggleBindingProperties)
 
         # Init
 
@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
     def confirmSave(self):
         if not CONFIRM_SAVE:
             return True
-        if self.patch.dirty:
+        if self.patch and self.patch.dirty:
             ret = QMessageBox.question(self, "Save changes?",
                                        "Do you want to save your changes?",
                                        QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
@@ -98,6 +98,7 @@ class MainWindow(QMainWindow):
         e.accept()
         self.writePrefs()
         self.collector.stop()
+        util.mainwindow = None
 
     def onDirtyChanged(self, on):
         if on:
@@ -110,14 +111,14 @@ class MainWindow(QMainWindow):
             if title.endswith(' *'):
                 title = title[:-2]
                 self.setWindowTitle(title)
-        self.saveAction.setEnabled(on)
+        self.ui.actionSave.setEnabled(on)
 
     def clear(self):
-        self._setPatch(patch.Patch())
+        self._setPatch(patch.Patch(), force=True)
 
-    def _setPatch(self, patch):
+    def _setPatch(self, patch, force=False):
         if self.patch:
-            if not self.confirmSave():
+            if not force and not self.confirmSave():
                 return
             self.patch.setParent(None)
             self.ui.bindingsList.clear()
@@ -136,8 +137,7 @@ class MainWindow(QMainWindow):
         self.clear()
         self.prefs.setValue('lastFilePath', '')
         self.setWindowFilePath('')
-        self.setWindowTitle('Untitled.pmc')
-        self.patch.setDirty(True)
+        self.setWindowTitle(self.patch.fileName)
 
     def save(self, filePath=None):
         if not filePath:
@@ -151,18 +151,31 @@ class MainWindow(QMainWindow):
         self.prefs.setValue('lastFilePath', filePath)
 
     def saveAs(self):
+        if self.patch.filePath:
+            filePath = self.patch.filePath
+        elif self.patch.fileName:
+            filePath = self.patch.fileName
+        else:
+            filePath = self.prefs.value('lastFileSavePath', type=str)
         filePath, types = QFileDialog.getSaveFileName(self, "Save File",
-                                                      "",
+                                                      filePath,
                                                       FILE_TYPES)
         if not filePath:
             return
+        self.prefs.setValue('lastFileSavePath', filePath)
         self.save(filePath)
 
     def open(self, filePath=None):
+        usedDialog = False
         if not filePath:
+            filePath = self.prefs.value('lastFileOpenPath', type=str)
+            if filePath and QFileInfo(filePath).isFile():
+                filePath = QFileInfo(filePath).absolutePath()
             filePath, types = QFileDialog.getOpenFileName(self, "Open File",
-                                                          "",
+                                                          filePath,
                                                           FILE_TYPES)
+            if filePath:
+                usedDialog = True
         if not filePath:
             return
         p = patch.Patch(self)
@@ -171,32 +184,123 @@ class MainWindow(QMainWindow):
         self.setWindowFilePath(filePath)
         self.setWindowTitle(QFileInfo(filePath).fileName())
         self.prefs.setValue('lastFilePath', filePath)
+        if usedDialog:
+            self.prefs.setValue('lastFileOpenPath', filePath)
 
     # General app stuff
 
     def readPrefs(self):
         self.resize(self.prefs.value('size', type=QSize))
+        #
         state = self.prefs.value('outerSplitter')
         if state:
             self.ui.outerSplitter.setSizes(state)
-        state = self.prefs.value('innerSplitter')
-        if state:
-            self.ui.innerSplitter.setSizes(state)
+        x = self.prefs.value('innerSplitterShown', type=bool, defaultValue=False)
+        self.ui.innerSplitter.setVisible(x)
+        innerState = self.prefs.value('innerSplitter')
+        if innerState:
+            self.ui.innerSplitter.setSizes(innerState)
+        #
+        x = self.prefs.value('simulatorShown', type=bool, defaultValue=True)
+        self.ui.simulator.setVisible(x)
+        x = self.prefs.value('activityLogShown', type=bool, defaultValue=True)
+        self.ui.activityLog.setVisible(x)
+        x = self.prefs.value('bindingPropertiesShown', type=bool, defaultValue=True)
+        self.ui.bindingPropertiesScroller.setVisible(x)
+        QTimer.singleShot(0, self.checkSimulatorHeight)
+        #
+        x = self.prefs.value('toolButtonStyle', type=str)
+        if x == 'iconOnly':
+            self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        elif x == 'iconPlusName':
+            self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        else:
+            self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        #
         filePath = self.prefs.value('lastFilePath')
-        if filePath:
+        if filePath and QFileInfo(filePath).isFile():
             self.open(filePath)
         else:
-            self._setPatch(patch.Patch())
+            self.new()
 
     def writePrefs(self):
+        was = self.prefs.setAutoSave(False)
         self.prefs.setValue('size', self.size())
         self.prefs.setValue('outerSplitter', self.ui.outerSplitter.sizes())
         self.prefs.setValue('innerSplitter', self.ui.innerSplitter.sizes())
+        x = self.toolbar.toolButtonStyle()
+        if x == Qt.ToolButtonIconOnly:
+            y = 'iconOnly'
+        elif x == Qt.ToolButtonTextUnderIcon:
+            y = 'iconPlusName'
+        self.prefs.setValue('toolButtonStyle', y)
+        self.prefs.setAutoSave(was)
+        self.prefs.sync()
 
     def showAbout(self):
         dialog = AboutDialog(self)
-        dialog.setModal(True)
-        dialog.show()
+        dialog.exec()
+
+    def showPreferences(self):
+        preferencesdialog.PreferencesDialog(self).exec()
+
+    def toggleSimulator(self):
+        x = not self.ui.simulator.isVisible()
+        self.ui.simulator.setVisible(x)
+        if x:
+            sizes = self.ui.innerSplitter.sizes()
+            if sizes[0] == 0:
+                h = self.ui.simulator.sizeHint().height()
+                self.ui.innerSplitter.setSizes([h, sizes[1], sizes[2]])
+        self.prefs.setValue('simulatorShown', x)
+        self.checkInnerSplitter(x)
+
+    def toggleLog(self):
+        x = not self.ui.activityLog.isVisible()
+        self.ui.activityLog.setVisible(x)
+        if x:
+            sizes = self.ui.innerSplitter.sizes()
+            if sizes[1] == 0:
+                h = self.ui.activityLog.sizeHint().height()
+                self.ui.innerSplitter.setSizes([sizes[0], h, sizes[2]])
+        self.prefs.setValue('activityLogShown', x)
+        self.checkInnerSplitter(x)
+
+    def toggleBindingProperties(self):
+        x = not self.ui.bindingPropertiesScroller.isVisible()
+        self.ui.bindingPropertiesScroller.setVisible(x)
+        if x:
+            sizes = self.ui.innerSplitter.sizes()
+            if sizes[2] == 0:
+                h = self.ui.bindingPropertiesScroller.sizeHint().height()
+                self.ui.innerSplitter.setSizes([sizes[0], sizes[1], h])
+        self.prefs.setValue('bindingPropertiesShown', x)
+        self.checkInnerSplitter(x)
+
+    def checkSimulatorHeight(self):
+        x = self.ui.simulator.isVisible()
+        y = self.ui.activityLog.isVisible()
+        z = self.ui.bindingPropertiesScroller.isVisible()
+        if x and (y or z):
+            sizes = self.ui.innerSplitter.sizes()
+            if sizes[0] > self.ui.simulator.sizeHint().height():
+                sizes[0] = self.ui.simulator.sizeHint().height()
+                self.ui.innerSplitter.setSizes(sizes)        
+
+    def checkInnerSplitter(self, on=False):
+        x = self.ui.simulator.isVisible()
+        y = self.ui.activityLog.isVisible()
+        z = self.ui.bindingPropertiesScroller.isVisible()
+        if on or x or y or z:
+            self.ui.innerSplitter.show()
+            if self.ui.innerSplitter.width() == 0:
+                w1 = self.ui.bindingsList.sizeHint().width()
+                self.ui.outerSplitter.setSizes([w1, 400])
+            self.prefs.setValue('innerSplitterShown', True)
+        else:
+            self.ui.innerSplitter.hide()
+            self.prefs.setValue('innerSplitterShown', False)
+        QTimer.singleShot(0, self.checkSimulatorHeight)
 
     # Functionality
 
@@ -207,7 +311,10 @@ class MainWindow(QMainWindow):
         return binding
         
     def removeSelectedBinding(self):
-        iItem = self.ui.bindingsList.currentRow()
+        items = self.ui.bindingsList.selectedItems()
+        if not items:
+            return
+        iItem = self.ui.bindingsList.row(items[0])
         item = self.ui.bindingsList.takeItem(iItem)
         self.patch.removeBinding(item.binding)
 
@@ -216,16 +323,17 @@ class MainWindow(QMainWindow):
 
     def onBindingSelectionChanged(self, x, y):
         if x.indexes():
-            self.deleteAction.setEnabled(True)
-            item = self.ui.bindingsList.currentItem()
+            self.ui.actionDeleteBinding.setEnabled(True)
+            item = self.ui.bindingsList.item(x.indexes()[0].row())
             self.ui.bindingProperties.init(item.binding)
         elif y.indexes():
-            self.deleteAction.setEnabled(False)
+            self.ui.actionDeleteBinding.setEnabled(False)
             self.ui.bindingProperties.clear()
 
     def clearActivityLog(self):
         self.ui.activityLog.clearContents()
         self.ui.activityLog.setRowCount(0)
+        self.ui.actionClearLog.setEnabled(False)
 
     def onMidiMessage(self, portName, midi):
         if self.patch.block:
@@ -243,6 +351,7 @@ class MainWindow(QMainWindow):
         bottom = vScrollBar.value() == vScrollBar.maximum()
         rows = self.ui.activityLog.rowCount()
         self.ui.activityLog.setRowCount(rows+1)
+        self.ui.actionClearLog.setEnabled(True)
         for col, item in enumerate(items):
             self.ui.activityLog.setItem(rows, col, items[col])
         if bottom:
