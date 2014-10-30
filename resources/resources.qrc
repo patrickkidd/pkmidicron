@@ -16,5 +16,7 @@
         <file>icons/retina/settings 12.png</file>
         <file>box-bg-1.jpg</file>
         <file>box-bg-2.jpg</file>
+        <file>Actions.png</file>
+        <file>Criteria.png</file>
     </qresource>
 </RCC>

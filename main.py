@@ -15,6 +15,9 @@ QListView::item {
 QListView::item:selected {
     background: #3875D7;
 }
+QToolButton {
+    background: transparent;
+}
 """
 
 

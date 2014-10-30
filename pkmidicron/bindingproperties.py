@@ -5,7 +5,7 @@ import rtmidi
 
 class CriteriaBox(util.CollapsableBox):
     def __init__(self, parent=None):
-        util.CollapsableBox.__init__(self, tr('Match Criteria'), parent)
+        util.CollapsableBox.__init__(self, QPixmap(':/Criteria.png'), parent)
 
         self.midiEdit = midiedit.MidiEdit(self.content, portBox=True, any=True)
 
@@ -46,6 +46,13 @@ class ActionWidget(QFrame):
         Layout.addLayout(UpperLayout)
         Layout.addSpacing(1)
         self.setLayout(Layout)
+
+    def paintEvent(self, e):
+        e.accept()
+        p = QPainter(self)
+        p.setPen(QColor('#b6b6b6'))
+        p.setBrush(Qt.transparent)
+        p.drawRect(self.rect().adjusted(0, 0, -1, -1))
 
     def mouseReleaseEvent(self, e):
         self.clicked.emit(self)
@@ -116,7 +123,7 @@ class OpenFileAction(ActionWidget):
 
 class ActionBox(util.CollapsableBox):
     def __init__(self, parent=None):
-        util.CollapsableBox.__init__(self, tr('Action'), parent)
+        util.CollapsableBox.__init__(self, QPixmap(':/Actions.png'), parent)
 
         self.widgets = []
 

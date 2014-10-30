@@ -103,19 +103,18 @@ class Criteria(MidiMessage):
         m2 = rtmidi.MidiMessage(self.midi)
 
         if m2.isNoteOn() or m2.isNoteOff():
-            if self.wildcards['noteNum']:
-                m2.setNoteNumber(m1.getNoteNumber())
-            if m2.isNoteOn() and self.wildcards['noteVel']:
-                m2.setVelocity(m1.getVelocity() / 127.0)
             if self.wildcards['channel']:
-                if m2.isNoteOn():
+                if m2.getVelocity() > 0: # careful!
                     m2 = rtmidi.MidiMessage.noteOn(m1.getChannel(),
                                                    m2.getNoteNumber(),
                                                    m2.getVelocity())
-                elif m2.isNoteOff():
+                else:
                     m2 = rtmidi.MidiMessage.noteOff(m1.getChannel(),
                                                     m2.getNoteNumber())
-                    
+            if self.wildcards['noteNum']:
+                m2.setNoteNumber(m1.getNoteNumber())
+            if self.wildcards['noteVel'] and m1.getVelocity() > 0: # careful!
+                m2.setVelocity(m1.getVelocity() / 127.0)
         elif m2.isController():
             if self.wildcards['ccNum']:
                 m2 = rtmidi.MidiMessage.controllerEvent(m2.getChannel(),
@@ -142,7 +141,6 @@ class Criteria(MidiMessage):
                 m2 = rtmidi.MidiMessage.aftertouchChange(m1.getChannel(),
                                                          m2.getNoteNumber(),
                                                          m2.getAfterTouchValue())
-
         return m1 == m2
 
 
@@ -191,7 +189,9 @@ class SendMessageAction(Action):
 
     def trigger(self, midi):
         if not self.device:
-            return
+            self.device = util.openPort(self.midiMessage.portName)
+            if not self.device:
+                return
         was = self.getPatch().setBlock(True)
         if self.forward:
             self.device.sendMessage(midi)
@@ -321,6 +321,7 @@ class Binding(QObject):
 
     def setTitle(self, x):
         self.title = x
+        self.changed.emit()
 
     def setEnabled(self, x):
         self.enabled = bool(x)

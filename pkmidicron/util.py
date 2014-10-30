@@ -92,7 +92,8 @@ def midiDataSummary(midi):
                                 rtmidi.MidiMessage.getMidiNoteName(midi.getNoteNumber(), True, True, 3),
                                 midi.getVelocity())
     elif midi.isNoteOff():
-        return '%s' % midi.getNoteNumber()
+        return '%s (%s)' % (midi.getNoteNumber(),
+                                rtmidi.MidiMessage.getMidiNoteName(midi.getNoteNumber(), True, True, 3))
     elif midi.isController():
         return '#%s, %s' % (midi.getControllerNumber(), midi.getControllerValue())
     elif midi.isAftertouch():
@@ -132,7 +133,11 @@ class CollapsableBox(qt.QFrame):
         self.headerButton = qt.QPushButton('-', self)
         self.headerButton.setFixedWidth(20)
         self.headerButton.hide()
-        self.headerLabel = qt.QLabel(title, self)
+        if type(title) == QPixmap:
+            self.headerLabel = qt.QLabel('', self)
+            self.headerLabel.setPixmap(title)
+        else:
+            self.headerLabel = qt.QLabel(title, self)
 
         HeaderLayout = qt.QHBoxLayout()
         HeaderLayout.addWidget(self.headerButton)

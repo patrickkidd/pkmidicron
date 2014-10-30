@@ -4,7 +4,6 @@ from . import util, patch
 
 class MidiEdit(QWidget):
 
-
     def portName(self):
         return self.portBox.currentText()
     def setPortName(self, x):
