@@ -3,12 +3,7 @@ import sys
 from cx_Freeze import setup, Executable
 
 
-if hasattr(os, 'uname'):
-    OSNAME = os.uname()[0]
-else:
-    OSNAME = 'Windows'
 
-base = None
 options = {
     # Dependencies are automatically detected, but it might need fine tuning.
     "build_exe": {
@@ -24,13 +19,19 @@ options = {
     }
 }
 
-if OSNAME == 'Windows':
-    build_exe_options['include_files'] = [
-        os.path.relpath('C:\Python34\Lib\site-packages\PyQt5\LibEGL.dll')
-    ]
+if hasattr(os, 'uname'):
+    base = None
+    targetName = 'PKMidiCron'
+else:
+    sysPackages = [i for i in sys.path if 'site-packages' in i][0]
+    options['build_exe']['include_files'].append(*[
+        os.path.relpath(os.path.join(sysPackages, 'PyQt5\LibEGL.dll'))
+    ])
+    base = None
     # Comment out for a console app
     #if sys.platform == "win32":
     #    base = "Win32GUI"
+    targetName = 'PKMidiCron.exe'
 
 
 def get_data_files():
@@ -43,7 +44,7 @@ setup(  name = "PKMidiCron",
         executables = [
             Executable(
                 "main.py",
-                targetName="PKMidiCron",
+                targetName=targetName,
                 base=base
             )
         ],
