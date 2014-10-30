@@ -19,6 +19,12 @@ ACTION_OPEN_FILE = 2
 mainwindow = None
 
 
+def int_list(x):
+    if type(x) == list:
+        return [int(i) for i in x]
+    else:
+        return x
+
 class Settings(QSettings):
     def __init__(self, *args):
         super().__init__(*args)

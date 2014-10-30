@@ -196,12 +196,12 @@ class MainWindow(QMainWindow):
     def readPrefs(self):
         self.resize(self.prefs.value('size', type=QSize))
         #
-        state = self.prefs.value('outerSplitter')
+        state = util.int_list(self.prefs.value('outerSplitter'))
         if state:
             self.ui.outerSplitter.setSizes(state)
         x = self.prefs.value('innerSplitterShown', type=bool, defaultValue=False)
         self.ui.innerSplitter.setVisible(x)
-        innerState = self.prefs.value('innerSplitter')
+        innerState = util.int_list(self.prefs.value('innerSplitter'))
         if innerState:
             self.ui.innerSplitter.setSizes(innerState)
         #
