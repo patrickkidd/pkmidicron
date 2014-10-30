@@ -11,6 +11,8 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+# cx_Freeze workaround
+import PyQt5.QtPrintSupport
 
 def tr(s):
     return QCoreApplication.translate('A', s)

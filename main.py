@@ -15,18 +15,6 @@ QListView::item {
 QListView::item:selected {
     background: #3875D7;
 }
-_CollapsableBox, _Action {
-    border: 1px solid grey;
-    border-radius: 5px;
-    background: lightGrey;
-}
-
-ActionWidget[selected="true"] {
-    background: grey;
-}
-Simulator {
-    border-radius: 5px;
-}
 """
 
 

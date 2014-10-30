@@ -1,8 +1,6 @@
 from .pyqt_shim import *
 from . import util
-from rtmidi import *
 import time
-#from PyQt5 import QtCore, QtGui
 
 
 class Proxy(QObject):
@@ -69,7 +67,7 @@ class ClickToEdit(QLineEdit):
         self.textAnimation.start()
 
 
-class Widget(util.Led):
+class Widget(QWidget):
     def __init__(self, item):
         super().__init__()
         self.item = item
@@ -90,7 +88,6 @@ class BindingListItem(QListWidgetItem):
         self.changed = self.proxy.changed
 
         self.widget = Widget(self)
-        self.widget.setColor(Qt.red)
         parent.setItemWidget(self, self.widget)
 
         self.enabledBox = QCheckBox(self.widget)

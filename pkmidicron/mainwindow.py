@@ -156,7 +156,9 @@ class MainWindow(QMainWindow):
         elif self.patch.fileName:
             filePath = self.patch.fileName
         else:
-            filePath = self.prefs.value('lastFileSavePath', type=str)
+            desktopPath = QStandardPaths.writableLocation(QStandardPaths.DesktopLocation)
+            filePath = self.prefs.value('lastFileSavePath', type=str,
+                                        defaultValue=desktopPath)
         filePath, types = QFileDialog.getSaveFileName(self, "Save File",
                                                       filePath,
                                                       FILE_TYPES)
@@ -168,7 +170,9 @@ class MainWindow(QMainWindow):
     def open(self, filePath=None):
         usedDialog = False
         if not filePath:
-            filePath = self.prefs.value('lastFileOpenPath', type=str)
+            desktopPath = QStandardPaths.writableLocation(QStandardPaths.DesktopLocation)
+            filePath = self.prefs.value('lastFileOpenPath', type=str,
+                                        defaultValue=desktopPath)
             if filePath and QFileInfo(filePath).isFile():
                 filePath = QFileInfo(filePath).absolutePath()
             filePath, types = QFileDialog.getOpenFileName(self, "Open File",
