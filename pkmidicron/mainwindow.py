@@ -242,8 +242,10 @@ class MainWindow(QMainWindow):
         self.prefs.sync()
 
     def showAbout(self):
-        dialog = AboutDialog(self)
-        dialog.exec()
+        version = 1.1
+        QMessageBox.about(self, tr("About PKMidiCron"),
+                          tr("""PKMidiCron %s\nvedanamedia.com""" % version))
+
 
     def showPreferences(self):
         preferencesdialog.PreferencesDialog(self).exec()
@@ -360,28 +362,4 @@ class MainWindow(QMainWindow):
             self.ui.activityLog.setItem(rows, col, items[col])
         if bottom:
             QTimer.singleShot(0, self.ui.activityLog.scrollToBottom)
-#        self.ui.activityLog.append('#%i %s: %s' % (self.activityCount, portName, midi))
         self.patch.onMidiMessage(portName, midi)
-
-            
-
-
-ABOUT_TEXT = """
-PKMidiCron %s
-<a href="http://vedanamedia.com">vedanamedia.com</a>
-"""
-
-class AboutDialog(QDialog):
-    def __init__(self, parent=None):
-        QDialog.__init__(self, parent)
-
-        version = 1.0
-        
-        self.label = QTextBrowser(self)
-        self.label.setHtml(ABOUT_TEXT % version)
-#        self.label.setOpenLinks(True)
-        self.label.setReadOnly(True)
-        Layout = QVBoxLayout()
-        Layout.addWidget(self.label)
-        self.setLayout(Layout)
-

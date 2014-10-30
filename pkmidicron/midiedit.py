@@ -112,6 +112,9 @@ class MidiEdit(QWidget):
         for b in boxes:
             b.setMinimumWidth(100)
 
+        for w in [self.portBox, self.typeBox, self.channelBox]:
+            w.installEventFilter(self)
+
         Layout = QHBoxLayout()
         Layout.setContentsMargins(0, 0, 0, 0)
         if portBox:
@@ -146,6 +149,12 @@ class MidiEdit(QWidget):
             }
         }
         self.clear()
+
+    def eventFilter(self, o, e):
+        if e.type() == QEvent.Wheel:
+            e.ignore()
+            return True
+        return super().eventFilter(o, e)
 
     def init(self, midimessage):
         self.midimessage = midimessage

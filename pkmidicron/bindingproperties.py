@@ -35,8 +35,25 @@ class ActionWidget(QFrame):
         self.action = action
 
         self.titleLabel = QLabel(title, self)
-        self.removeButton = QPushButton('-', self)
+        self.removeButton = util.Button(self)
         self.removeButton.clicked.connect(self._removeMe)
+        self.removeButton.setFixedSize(30, 30)
+        self.removeButton.setIcon(QIcon(QPixmap(":/icons/retina/multiply.png")))
+        self.removeButton.setStyleSheet("""
+Button {
+    background: transparent;
+}
+Button:hover {
+        background: rgba(255, 50, 50, .5);
+    border-radius: 3px;
+}
+Button:pressed {
+    margin: 1px;
+    border: 1px solid lightGrey;
+    border-radius: 5px;
+    background: rgba(255, 50, 50, .7);
+}
+        """)
 
         UpperLayout = QHBoxLayout()
         UpperLayout.addWidget(self.titleLabel)
@@ -133,11 +150,19 @@ class ActionBox(util.CollapsableBox):
         self.addBox.addItem('Open File')
         self.addBox.activated.connect(self.addAction)
 
+        self.addBox.installEventFilter(self)
+
         self.actionsLayout = QVBoxLayout()
         Layout = QVBoxLayout()
         Layout.addWidget(self.addBox)
         Layout.addLayout(self.actionsLayout)
         self.content.setLayout(Layout)
+
+    def eventFilter(self, o, e):
+        if e.type() == QEvent.Wheel:
+            e.ignore()
+            return True
+        return super().eventFilter(o, e)
 
     def init(self, binding):
         self.clear()

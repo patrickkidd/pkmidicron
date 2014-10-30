@@ -1,2 +1,12 @@
+- virtual ports
+- no trigger count on just added bindings
+- binding labels should fill width
 - command execution
-- packaging
+- any midi msg type wildcard
+
+APPS
+============
+https://itunes.apple.com/us/app/wunderlist-to-do-list-tasks/id410628904?mt=12
+https://itunes.apple.com/us/app/evernote/id406056744?mt=12
+https://itunes.apple.com/us/app/loop-editor/id901443398?mt=12
+https://itunes.apple.com/us/app/midi-connections/id697996969?mt=12

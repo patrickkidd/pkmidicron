@@ -19,6 +19,17 @@ ACTION_OPEN_FILE = 2
 mainwindow = None
 
 
+class Button(QPushButton):
+    def __init__(self, path, parent=None):
+        QPushButton.__init__(self, parent)
+        self.setIcon(QIcon(QPixmap(path)))
+
+#    def paintEvent(self, e):
+#        if 
+#        p = QPainter(
+
+
+
 def int_list(x):
     if type(x) == list:
         return [int(i) for i in x]
@@ -95,7 +106,11 @@ def midiDataSummary(midi):
         return '%s (%s)' % (midi.getNoteNumber(),
                                 rtmidi.MidiMessage.getMidiNoteName(midi.getNoteNumber(), True, True, 3))
     elif midi.isController():
-        return '#%s, %s' % (midi.getControllerNumber(), midi.getControllerValue())
+        s = midi.getControllerName(midi.getControllerNumber())
+        if s:
+            return '#%s (%s), %s' % (midi.getControllerNumber(), s, midi.getControllerValue())
+        else:
+            return '#%s, %s' % (midi.getControllerNumber(), midi.getControllerValue())
     elif midi.isAftertouch():
         return '%s (%s), %s' % (midi.getNoteNumber(),
                            rtmidi.MidiMessage.getMidiNoteName(midi.getNoteNumber(), True, True, 3),

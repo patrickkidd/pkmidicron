@@ -22,10 +22,10 @@ class Simulator(QWidget):
 
         self.crazyBox = QCheckBox("Go Crazy", self)
         self.crazyBox.stateChanged[int].connect(self.goCrazy)
+        self.crazyBox.setToolTip("Spastically spew tons and tons of random messages.")
 
-        self.fakeBox = QCheckBox("Fake", self)
-        self.fakeBox.setFixedWidth(70)
-        self.fakeBox.setToolTip("Don't send through hardware, just route internally.")
+        self.fakeBox = QCheckBox("Route Internally", self)
+        self.fakeBox.setToolTip("Don't send through hardware, just route within the app.")
 
         self.devices = {}
         self.device = rtmidi.RtMidiOut()

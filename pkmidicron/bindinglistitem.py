@@ -79,7 +79,7 @@ class Widget(QWidget):
 class BindingListItem(QListWidgetItem):
     def __init__(self, parent, binding):
         QListWidgetItem.__init__(self, parent)
-        self.setSizeHint(QSize(100, 40))
+        self.setSizeHint(QSize(100, 45))
 
         self.binding = binding
         self.binding.triggered.connect(self.onTriggered)
@@ -98,7 +98,7 @@ class BindingListItem(QListWidgetItem):
         self.nameEdit.move(30, 0)
         self.nameEdit.setReadOnly(True)
         self.nameEdit.setText(binding.title)
-        self.nameEdit.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        self.nameEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.nameEdit.clicked.connect(self.onNameClicked)
         self.nameEdit.textChanged.connect(self.onNameChanged)
 
@@ -114,7 +114,6 @@ class BindingListItem(QListWidgetItem):
         Layout = QHBoxLayout()
         Layout.addWidget(self.enabledBox)
         Layout.addWidget(self.nameEdit)
-        Layout.addStretch(1)
         self.widget.setLayout(Layout)
 
         self.resizeEvent(None)
