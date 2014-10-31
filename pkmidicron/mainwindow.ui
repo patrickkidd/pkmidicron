@@ -23,7 +23,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="BindingListWidget" name="bindingsList">
+      <widget class="ListWidget" name="bindingsList">
        <property name="minimumSize">
         <size>
          <width>200</width>
@@ -315,9 +315,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>BindingListWidget</class>
+   <class>ListWidget</class>
    <extends>QListWidget</extends>
-   <header>.bindinglistwidget.h</header>
+   <header>.util.h</header>
   </customwidget>
   <customwidget>
    <class>ScrollArea</class>

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Wed Oct 29 15:20:32 2014
+# Created: Thu Oct 30 21:32:16 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -21,7 +21,7 @@ class Ui_MainWindow(object):
         self.outerSplitter = QtWidgets.QSplitter(self.centralwidget)
         self.outerSplitter.setOrientation(QtCore.Qt.Horizontal)
         self.outerSplitter.setObjectName("outerSplitter")
-        self.bindingsList = BindingListWidget(self.outerSplitter)
+        self.bindingsList = ListWidget(self.outerSplitter)
         self.bindingsList.setMinimumSize(QtCore.QSize(200, 0))
         self.bindingsList.setObjectName("bindingsList")
         self.innerSplitter = QtWidgets.QSplitter(self.outerSplitter)
@@ -193,6 +193,5 @@ class Ui_MainWindow(object):
         self.actionGo_Home.setShortcut(_translate("MainWindow", "Ctrl+J, Ctrl+G"))
 
 from .bindingproperties import BindingProperties
-from .bindinglistwidget import BindingListWidget
 from .simulator import Simulator
-from .util import ScrollArea
+from .util import ListWidget, ScrollArea

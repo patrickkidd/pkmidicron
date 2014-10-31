@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os, sys
-from pkmidicron import MainWindow, util
+from pkmidicron import MainWindow, util, ports
 from pkmidicron.pyqt_shim import Qt, QSettings, QApplication, QIcon, QWidget, QLibraryInfo, QFileSystemWatcher
 
 STYLE_SHEET = """
@@ -36,6 +36,7 @@ def main():
 #    watcher = QFileSystemWatcher([styleSheet])
 #    watcher.fileChanged.connect(setStyleSheet)
     setStyleSheet()
+    ports.ports(app, prefs)
 
     try:
         w = MainWindow(prefs)
@@ -49,4 +50,5 @@ def main():
         print(exc[0].__name__ + ':', exc[1])
         print()
     rtmidi.CollectorBin.cleanup()
+    ports.cleanup()
 main()

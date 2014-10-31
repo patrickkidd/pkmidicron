@@ -62,7 +62,6 @@ class MainWindow(QMainWindow):
         self.ui.actionDeleteBinding.triggered.connect(self.removeSelectedBinding)
         self.ui.actionClearLog.triggered.connect(self.clearActivityLog)
         self.ui.bindingsList.selectionModel().selectionChanged.connect(self.onBindingSelectionChanged)
-        self.ui.bindingsList.deleted.connect(self.onBindingItemRemoved)
         self.ui.actionExit.triggered.connect(self.close)
         self.ui.actionToggleSimulator.triggered.connect(self.toggleSimulator)
         self.ui.actionToggleLog.triggered.connect(self.toggleLog)
@@ -322,9 +321,6 @@ class MainWindow(QMainWindow):
             return
         iItem = self.ui.bindingsList.row(items[0])
         item = self.ui.bindingsList.takeItem(iItem)
-        self.patch.removeBinding(item.binding)
-
-    def onBindingItemRemoved(self, item):
         self.patch.removeBinding(item.binding)
 
     def onBindingSelectionChanged(self, x, y):

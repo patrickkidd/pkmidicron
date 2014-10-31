@@ -7,65 +7,6 @@ class Proxy(QObject):
     changed = pyqtSignal()
 
 
-class ClickToEdit(QLineEdit):
-
-    clicked = pyqtSignal()
-
-    def __init__(self, parent=None):
-        QLineEdit.__init__(self, parent)
-        self.clickTimer = QTimer(parent)
-        self.clickTimer.timeout.connect(self.clickTimerTimeout)
-        self.lastRelease = 0
-
-        self.textAnimation = QPropertyAnimation(self, "textColor", self)
-        self.textAnimation.setDuration(500)
-        self.textAnimation.setStartValue(QColor("red"))
-        self.textAnimation.setEndValue(self.palette().color(QPalette.Text))
-        self.textAnimation.setEasingCurve(QEasingCurve.InOutQuad)
-
-    def clickTimerTimeout(self):
-        self.clicked.emit()
-        self.clickTimer.stop()
-
-    def mouseReleaseEvent(self, e):
-        x = time.time()
-        if x - self.lastRelease > .1: # single double click
-            self.clickTimer.stop()
-            self.clickTimer.start(110)
-            e.accept()
-        self.lastRelease = x
-
-    def mouseDoubleClickEvent(self, e):
-        self.clickTimer.stop()
-        if self.isReadOnly():
-            self.setReadOnly(False)
-            self.setFocus(Qt.MouseFocusReason)
-            self.selectAll()
-
-    def focusOutEvent(self, e):
-        self.setReadOnly(True)
-        self.deselect()
-
-    def keyReleaseEvent(self, e):
-        if e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
-            self.setReadOnly(True)
-
-    @pyqtProperty(QColor)
-    def textColor(self):
-        return self.palette().text().color()
-
-    @textColor.setter
-    def textColor(self, x):
-        if x.__class__ == QBrush:
-            x = x.color()
-        p = self.palette()
-        p.setColor(QPalette.Text, x)
-        self.setPalette(p)
-        
-    def flash(self):
-        self.textAnimation.stop()
-        self.textAnimation.start()
-
 
 class Widget(QWidget):
     def __init__(self, item):
@@ -94,7 +35,7 @@ class BindingListItem(QListWidgetItem):
         self.enabledBox.setChecked(binding.enabled)
         self.enabledBox.stateChanged.connect(self.setEnabled)
 
-        self.nameEdit = ClickToEdit(self.widget)
+        self.nameEdit = util.ClickToEdit(self.widget)
         self.nameEdit.move(30, 0)
         self.nameEdit.setReadOnly(True)
         self.nameEdit.setText(binding.title)
@@ -131,6 +72,7 @@ class BindingListItem(QListWidgetItem):
 
     def onNameClicked(self):
         self.setSelected(True)
+        self.listWidget().setCurrentItem(self)
     
     def onNameChanged(self, x):
         self.binding.setTitle(x)
