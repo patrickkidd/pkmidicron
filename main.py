@@ -24,11 +24,12 @@ QToolButton {
 """
 
 
+
 def main():
     import rtmidi
     prefs = util.Settings('vedanamedia', 'PKMidiCron')
     prefs.setAutoSave(True)
-    app = QApplication(sys.argv)
+    app = util.Application(sys.argv)
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
     def setStyleSheet():

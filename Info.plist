@@ -10,7 +10,38 @@
 	<true/>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.vedanamedia.PKMidiCron</string>
 	<key>CFBundleIconFile</key>
 	<string>icon.icns</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>LSTypeIsPackage</key>
+			<false/>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>application/x-pmc</string>
+			</array>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>pmc</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>PKMidiCron Patch</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>PMC</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>NSDocumentClass</key>
+			<string>MyDocument</string>
+		</dict>
+	</array>
 </dict>
 </plist>

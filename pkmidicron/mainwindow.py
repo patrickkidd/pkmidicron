@@ -3,7 +3,6 @@ from .pyqt_shim import *
 from . import util, mainwindow_form, bindinglistitem, patch, preferencesdialog_form, preferencesdialog, ports
 
 
-FILE_TYPES = "PKMidiCron files (*.pmc)"
 CONFIRM_SAVE = True
 
 
@@ -165,7 +164,7 @@ class MainWindow(QMainWindow):
                                         defaultValue=desktopPath)
         filePath, types = QFileDialog.getSaveFileName(self, "Save File",
                                                       filePath,
-                                                      FILE_TYPES)
+                                                      util.FILE_TYPES)
         if not filePath:
             return
         self.prefs.setValue('lastFileSavePath', filePath)
@@ -181,7 +180,7 @@ class MainWindow(QMainWindow):
                 filePath = QFileInfo(filePath).absolutePath()
             filePath, types = QFileDialog.getOpenFileName(self, "Open File",
                                                           filePath,
-                                                          FILE_TYPES)
+                                                          util.FILE_TYPES)
             if filePath:
                 usedDialog = True
         if not filePath:
