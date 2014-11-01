@@ -41,7 +41,10 @@ class PortListWidget(QWidget):
         if self.item.isVirtual:
             p = QPainter(self)
             p.setPen(Qt.transparent)
-            p.setBrush(QColor(255, 200, 200, 40))
+            gradient = QLinearGradient(QPointF(0, 0), QPointF(self.rect().width(), 0))
+            gradient.setColorAt(0., Qt.transparent)
+            gradient.setColorAt(1., QColor(255, 200, 200, 40))
+            p.setBrush(gradient)
             p.drawRect(self.rect())
 
 

@@ -9,7 +9,6 @@ CONFIRM_SAVE = True
 class MainWindow(QMainWindow):
     def __init__(self, prefs, parent=None):
         QMainWindow.__init__(self, parent)
-        util.mainwindow = self
         self.ui = mainwindow_form.Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -101,7 +100,6 @@ class MainWindow(QMainWindow):
         e.accept()
         self.writePrefs()
         self.collector.stop()
-        util.mainwindow = None
 
     def onDirtyChanged(self, on):
         if on:

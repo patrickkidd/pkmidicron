@@ -20,8 +20,6 @@ ACTION_OPEN_FILE = 2
 EXTENSIONS = ['pmc']
 FILE_TYPES = "PKMidiCron files (%s)" % ','.join(['*.'+i for i in EXTENSIONS])
 
-mainwindow = None
-
 
 class Application(QApplication):
     def __init__(self, *args, **kwargs):
@@ -31,8 +29,7 @@ class Application(QApplication):
         if e.type() == QEvent.FileOpen:
             if QFileInfo(e.file()).suffix() in EXTENSIONS:
                 filePath = e.file()
-                print('FileOpen', filePath)
-                mainwindow.open(filePath)
+                self.topLevelWidgets()[0].open(filePath)
                 return True
         return super().event(e)
 

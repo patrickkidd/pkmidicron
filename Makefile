@@ -11,3 +11,5 @@ pkmidicron/resources.py: resources/resources.qrc resources/*
 
 clean:
 	rm -rf pkmidicron/*_form.py resources/resources.py
+	rm -rf `find . -name __pycache__`
+

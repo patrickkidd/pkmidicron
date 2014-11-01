@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Fri Oct 31 15:19:17 2014
+# Created: Fri Oct 31 17:28:29 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -195,4 +195,4 @@ class Ui_MainWindow(object):
 
 from .simulator import Simulator
 from .bindingproperties import BindingProperties
-from .util import ScrollArea, ListWidget
+from .util import ListWidget, ScrollArea
