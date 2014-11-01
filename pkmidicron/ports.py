@@ -22,10 +22,14 @@ class PortList(QObject):
                     self.addVirtualPort(name)
                 prefs.endGroup()
             prefs.endGroup()
+        self.update()
         # periodically check for new names
         self.startTimer(500)
 
-    def timerEvent(self, e=None):
+    def timerEvent(self, e):
+        self.update()
+
+    def update(self):
         newNames = self.allPorts()
         added = set(newNames) - set(self.names)
         removed = set(self.names) - set(newNames)
@@ -44,7 +48,7 @@ class PortList(QObject):
         dev = rtmidi.RtMidiOut()
         dev.openVirtualPort(name)
         self.virtualPorts[name] = dev
-        QTimer.singleShot(0, self.timerEvent)
+        QTimer.singleShot(0, self.update)
         self.prefs.beginGroup('InputPorts/' + name)
         self.prefs.setValue('isVirtual', True)
         self.prefs.endGroup()
@@ -55,7 +59,7 @@ class PortList(QObject):
         dev = self.virtualPorts[name]
         dev.closePort()
         del self.virtualPorts[name]
-        QTimer.singleShot(0, self.timerEvent)
+        QTimer.singleShot(0, self.update)
         self.prefs.remove('InputPorts/' + name)
 
     def renameVirtualPort(self, oldName, newName):

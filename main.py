@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 import os, sys
+#import rtmidi
+#rtmidi.DEBUG = True
 from pkmidicron import MainWindow, util, ports
 from pkmidicron.pyqt_shim import Qt, QSettings, QApplication, QIcon, QWidget, QLibraryInfo, QFileSystemWatcher
+
 
 STYLE_SHEET = """
 QLineEdit:read-only {
@@ -49,6 +52,6 @@ def main():
         traceback.print_tb(exc[2])
         print(exc[0].__name__ + ':', exc[1])
         print()
-    rtmidi.CollectorBin.cleanup()
     ports.cleanup()
+    rtmidi.CollectorBin.cleanup()
 main()

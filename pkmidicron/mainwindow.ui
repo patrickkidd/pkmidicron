@@ -108,6 +108,9 @@
           <verstretch>1</verstretch>
          </sizepolicy>
         </property>
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOn</enum>
+        </property>
         <property name="horizontalScrollBarPolicy">
          <enum>Qt::ScrollBarAlwaysOff</enum>
         </property>
@@ -119,7 +122,7 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>332</width>
+           <width>317</width>
            <height>295</height>
           </rect>
          </property>
@@ -309,15 +312,15 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>ListWidget</class>
+   <extends>QListWidget</extends>
+   <header>.util.h</header>
+  </customwidget>
+  <customwidget>
    <class>Simulator</class>
    <extends>QWidget</extends>
    <header>.simulator.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ListWidget</class>
-   <extends>QListWidget</extends>
-   <header>.util.h</header>
   </customwidget>
   <customwidget>
    <class>ScrollArea</class>

@@ -20,6 +20,34 @@ ACTION_OPEN_FILE = 2
 mainwindow = None
 
 
+class CollectorBin(QObject, rtmidi.CollectorBin):
+
+    message = pyqtSignal(str, rtmidi.MidiMessage)
+
+    def __init__(self, **kwargs):
+        kwargs['callback'] = self.callback
+        kwargs['autolist'] = False
+        super().__init__(**kwargs)
+        from .ports import ports
+        ports().portAdded.connect(self._add)
+        ports().portRemoved.connect(self._remove)
+
+    def callback(self, collector, msg):
+        self.message.emit(collector.portName, msg)
+
+    def setPortEnabled(self, name, x):
+        if x:
+            self._add(name)
+        else:
+            self._remove(name)
+
+    def _add(self, name):
+        self.addCollector(name)
+
+    def _remove(self, name):
+        self.removeCollector(name)
+
+
 class Button(QPushButton):
     def __init__(self, path, parent=None):
         QPushButton.__init__(self, parent)
@@ -153,6 +181,8 @@ class ClickToEdit(QLineEdit):
         self.clickTimer = QTimer(parent)
         self.clickTimer.timeout.connect(self.clickTimerTimeout)
         self.lastRelease = 0
+        self.disableClick = False
+        self.setFocusPolicy(Qt.NoFocus)
 
         self.textAnimation = QPropertyAnimation(self, "textColor", self)
         self.textAnimation.setDuration(500)
@@ -174,6 +204,8 @@ class ClickToEdit(QLineEdit):
 
     def mouseDoubleClickEvent(self, e):
         self.clickTimer.stop()
+        if self.disableClick:
+            return
         if self.isReadOnly():
             self.setReadOnly(False)
             self.setFocus(Qt.MouseFocusReason)
@@ -186,6 +218,9 @@ class ClickToEdit(QLineEdit):
     def keyReleaseEvent(self, e):
         if e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
             self.setReadOnly(True)
+
+    def setDisableClick(self, x):
+        self.disableClick = x
 
     @pyqtProperty(QColor)
     def textColor(self):
@@ -334,41 +369,3 @@ class Led(qt.QFrame):
         self.on(100)
 
 
-class CollectorBin(QObject, rtmidi.CollectorBin):
-
-    message = pyqtSignal(str, rtmidi.MidiMessage)
-
-    def __init__(self, parent=None):
-        QObject.__init__(self, parent)
-        rtmidi.CollectorBin.__init__(self, self._callback)
-
-    def _callback(self, collector, msg):
-        self.message.emit(collector.portName, msg)
-
-
-class Collector(QThread):
-
-    midi = pyqtSignal(rtmidi.MidiMessage)
-
-    def __init__(self, parent):
-        QThread.__init__(self, parent)
-        self.mutex = QMutex()
-        self.device = None
-        self.quit = False
-
-    def setDevice(self, device):
-        self.mutex.lock()
-        shouldStart = self.device is None
-        self.device = device
-        self.device.ignoreTypes(True, False, True)
-        self.mutex.unlock()
-        if shouldStart:
-            self.start()
-    
-    def run(self):
-        while not self.quit:
-            if self.mutex.tryLock(250):
-                msg = self.device.getMessage(250)
-                self.mutex.unlock()
-                if not msg is None:
-                    self.midi.emit(msg)

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/preferencesdialog.ui'
 #
-# Created: Thu Oct 30 21:50:21 2014
+# Created: Fri Oct 31 15:11:41 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -14,6 +14,7 @@ class Ui_PreferencesDialog(object):
         PreferencesDialog.setObjectName("PreferencesDialog")
         PreferencesDialog.setWindowModality(QtCore.Qt.WindowModal)
         PreferencesDialog.resize(409, 378)
+        PreferencesDialog.setMinimumSize(QtCore.QSize(250, 0))
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(PreferencesDialog)
         self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
@@ -43,6 +44,7 @@ class Ui_PreferencesDialog(object):
         self.verticalLayout_3.setContentsMargins(-1, -1, -1, 0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.portList = ListWidget(self.groupBox_2)
+        self.portList.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.portList.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.portList.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.portList.setObjectName("portList")

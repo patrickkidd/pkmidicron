@@ -1,6 +1,6 @@
 import rtmidi
 from .pyqt_shim import *
-from . import util, mainwindow_form, bindinglistitem, patch, preferencesdialog_form, preferencesdialog
+from . import util, mainwindow_form, bindinglistitem, patch, preferencesdialog_form, preferencesdialog, ports
 
 
 FILE_TYPES = "PKMidiCron files (*.pmc)"
@@ -18,7 +18,9 @@ class MainWindow(QMainWindow):
         self.ui.innerSplitter.setStretchFactor(1, 1)
         self.ui.innerSplitter.setStretchFactor(2, 1)
 
-        self.collector = util.CollectorBin(self)
+        self.prefsDialog = None
+
+        self.collector = util.CollectorBin(parent=self, autolist=False)
         self.collector.message.connect(self.onMidiMessage)
         self.collector.start()
 
@@ -66,6 +68,9 @@ class MainWindow(QMainWindow):
         self.ui.actionToggleSimulator.triggered.connect(self.toggleSimulator)
         self.ui.actionToggleLog.triggered.connect(self.toggleLog)
         self.ui.actionToggleBindingProperties.triggered.connect(self.toggleBindingProperties)
+
+        ports.ports().portAdded.connect(self.collector.addCollector)
+        ports.ports().portAdded.connect(self.collector.removeCollector)
 
         # Init
 
@@ -220,6 +225,14 @@ class MainWindow(QMainWindow):
         else:
             self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
         #
+        self.prefs.beginGroup('InputPorts')
+        for portName in self.prefs.childGroups():
+            self.prefs.beginGroup(portName)
+            enabled = self.prefs.value('enabled', type=bool)
+            self.setInputPortEnabled(portName, enabled)
+            self.prefs.endGroup()
+        self.prefs.endGroup()
+        #
         filePath = self.prefs.value('lastFilePath')
         if filePath and QFileInfo(filePath).isFile():
             self.open(filePath)
@@ -247,7 +260,10 @@ class MainWindow(QMainWindow):
 
 
     def showPreferences(self):
-        preferencesdialog.PreferencesDialog(self).exec()
+        if self.prefsDialog is None:
+            self.prefsDialog = preferencesdialog.PreferencesDialog(self)
+            self.prefsDialog.exec()
+            self.prefsDialog = None
 
     def toggleSimulator(self):
         x = not self.ui.simulator.isVisible()
@@ -336,6 +352,9 @@ class MainWindow(QMainWindow):
         self.ui.activityLog.clearContents()
         self.ui.activityLog.setRowCount(0)
         self.ui.actionClearLog.setEnabled(False)
+
+    def setInputPortEnabled(self, name, x):
+        self.collector.setPortEnabled(name, x)
 
     def onMidiMessage(self, portName, midi):
         if self.patch.block:

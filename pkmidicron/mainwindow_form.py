@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Thu Oct 30 21:32:16 2014
+# Created: Fri Oct 31 15:19:17 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -63,11 +63,12 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(1)
         sizePolicy.setHeightForWidth(self.bindingPropertiesScroller.sizePolicy().hasHeightForWidth())
         self.bindingPropertiesScroller.setSizePolicy(sizePolicy)
+        self.bindingPropertiesScroller.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.bindingPropertiesScroller.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.bindingPropertiesScroller.setWidgetResizable(True)
         self.bindingPropertiesScroller.setObjectName("bindingPropertiesScroller")
         self.bindingProperties = BindingProperties()
-        self.bindingProperties.setGeometry(QtCore.QRect(0, 0, 332, 295))
+        self.bindingProperties.setGeometry(QtCore.QRect(0, 0, 317, 295))
         self.bindingProperties.setObjectName("bindingProperties")
         self.bindingPropertiesScroller.setWidget(self.bindingProperties)
         self.verticalLayout.addWidget(self.outerSplitter)
@@ -192,6 +193,6 @@ class Ui_MainWindow(object):
         self.actionGo_Home.setText(_translate("MainWindow", "Go Home"))
         self.actionGo_Home.setShortcut(_translate("MainWindow", "Ctrl+J, Ctrl+G"))
 
-from .bindingproperties import BindingProperties
 from .simulator import Simulator
-from .util import ListWidget, ScrollArea
+from .bindingproperties import BindingProperties
+from .util import ScrollArea, ListWidget
