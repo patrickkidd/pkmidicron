@@ -403,7 +403,8 @@ class TrayIcon(QSystemTrayIcon):
         self.quitAction = self.menu.addAction(tr("Quit"))
         self.quitAction.triggered.connect(QApplication.quit)
 
-        self.activated.connect(self.iconActivated)
+        if QApplication.platformName() == 'windows':
+            self.activated.connect(self.iconActivated)
         self.messageClicked.connect(mainwindow.show)
         self.setContextMenu(self.menu)
         
