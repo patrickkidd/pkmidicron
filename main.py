@@ -47,6 +47,8 @@ def main():
         w = MainWindow(prefs)
         if prefs.value('MainWindowShown', type=bool, defaultValue=True):
             w.show()
+        else:
+            w.trayIcon.showHello()
         app.exec()
     except:
         print()

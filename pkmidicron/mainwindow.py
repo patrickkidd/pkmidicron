@@ -267,9 +267,14 @@ class MainWindow(QMainWindow):
             self.prefsDialog = None
 
     def toggleMainWindow(self):
-        x = not self.isVisible()
-        self.setVisible(x)
-        self.prefs.setValue("MainWindowShown", x)
+        self.setVisible(not self.isVisible())
+        
+    def hideEvent(self, e):
+        self.trayIcon.showHello()
+        self.prefs.setValue("MainWindowShown", False)
+        
+    def showEvent(self, e):
+        self.prefs.setValue("MainWindowShown", True)
 
     def toggleSimulator(self):
         x = not self.ui.simulator.isVisible()
@@ -390,6 +395,7 @@ class TrayIcon(QSystemTrayIcon):
     def __init__(self, mainwindow):
         super().__init__(mainwindow)
         self.setIcon(QIcon(QPixmap(':/icon.png')))
+        self.hasShownHello = False
 
         self.menu = QMenu(mainwindow)
         self.showAction = self.menu.addAction(tr("Main Window"))
@@ -397,6 +403,16 @@ class TrayIcon(QSystemTrayIcon):
         self.quitAction = self.menu.addAction(tr("Quit"))
         self.quitAction.triggered.connect(QApplication.quit)
 
+        self.activated.connect(self.iconActivated)
+        self.messageClicked.connect(mainwindow.show)
         self.setContextMenu(self.menu)
+        
+    def iconActivated(self, reason):
+        if reason == QSystemTrayIcon.Trigger:
+            self.parent().toggleMainWindow()
 
+    def showHello(self):
+        if not self.hasShownHello:
+            self.showMessage("Here I am!", "PKMidiCron will now run in the tray. Click the tray icon again to show the main window.")
+            self.hasShownHello = True
 
