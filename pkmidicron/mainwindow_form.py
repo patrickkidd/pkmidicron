@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Fri Oct 31 17:28:29 2014
+# Created: Sat Nov  1 20:50:37 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -123,6 +123,8 @@ class Ui_MainWindow(object):
         self.actionExit.setObjectName("actionExit")
         self.actionGo_Home = QtWidgets.QAction(MainWindow)
         self.actionGo_Home.setObjectName("actionGo_Home")
+        self.actionToggleMainWindow = QtWidgets.QAction(MainWindow)
+        self.actionToggleMainWindow.setObjectName("actionToggleMainWindow")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
@@ -131,6 +133,8 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionPreferences)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExit)
+        self.menuView.addAction(self.actionToggleMainWindow)
+        self.menuView.addSeparator()
         self.menuView.addAction(self.actionToggleSimulator)
         self.menuView.addAction(self.actionToggleLog)
         self.menuView.addAction(self.actionToggleBindingProperties)
@@ -192,7 +196,9 @@ class Ui_MainWindow(object):
         self.actionExit.setText(_translate("MainWindow", "Exit"))
         self.actionGo_Home.setText(_translate("MainWindow", "Go Home"))
         self.actionGo_Home.setShortcut(_translate("MainWindow", "Ctrl+J, Ctrl+G"))
+        self.actionToggleMainWindow.setText(_translate("MainWindow", "Main Window"))
+        self.actionToggleMainWindow.setShortcut(_translate("MainWindow", "Ctrl+W"))
 
-from .simulator import Simulator
 from .bindingproperties import BindingProperties
+from .simulator import Simulator
 from .util import ListWidget, ScrollArea

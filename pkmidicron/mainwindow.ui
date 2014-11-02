@@ -159,6 +159,8 @@
     <property name="title">
      <string>View</string>
     </property>
+    <addaction name="actionToggleMainWindow"/>
+    <addaction name="separator"/>
     <addaction name="actionToggleSimulator"/>
     <addaction name="actionToggleLog"/>
     <addaction name="actionToggleBindingProperties"/>
@@ -307,6 +309,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+J, Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionToggleMainWindow">
+   <property name="text">
+    <string>Main Window</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
    </property>
   </action>
  </widget>

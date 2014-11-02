@@ -1,8 +1,7 @@
-- virtual ports
 - no trigger count on just added bindings
-- binding labels should fill width
-- command execution
 - any midi msg type wildcard
+- simulator on windows
+- file save on windows
 
 APPS
 ============

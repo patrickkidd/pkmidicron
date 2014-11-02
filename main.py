@@ -31,6 +31,7 @@ def main():
     prefs.setAutoSave(True)
     app = util.Application(sys.argv)
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    app.setQuitOnLastWindowClosed(False)
 
     def setStyleSheet():
 #        print('setStyleSheet')

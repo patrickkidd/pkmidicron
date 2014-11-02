@@ -12,6 +12,9 @@ class MainWindow(QMainWindow):
         self.ui = mainwindow_form.Ui_MainWindow()
         self.ui.setupUi(self)
 
+        self.trayIcon = TrayIcon(self)
+        self.trayIcon.show()
+
         self.ui.innerSplitter.setStretchFactor(0, 0)
         self.ui.innerSplitter.setStretchFactor(1, 1)
         self.ui.innerSplitter.setStretchFactor(2, 1)
@@ -47,7 +50,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addWidget(spacer)
         self.toolbar.addAction(self.ui.actionClearLog)
         self.ui.actionClearLog.setIcon(QIcon(':/icons/retina/dustbin.png'))
-        
+
         # Signals
         
         self.activityCount = 0
@@ -62,10 +65,11 @@ class MainWindow(QMainWindow):
         self.ui.actionDeleteBinding.triggered.connect(self.removeSelectedBinding)
         self.ui.actionClearLog.triggered.connect(self.clearActivityLog)
         self.ui.bindingsList.selectionModel().selectionChanged.connect(self.onBindingSelectionChanged)
-        self.ui.actionExit.triggered.connect(self.close)
+        self.ui.actionExit.triggered.connect(QApplication.quit)
         self.ui.actionToggleSimulator.triggered.connect(self.toggleSimulator)
         self.ui.actionToggleLog.triggered.connect(self.toggleLog)
         self.ui.actionToggleBindingProperties.triggered.connect(self.toggleBindingProperties)
+        self.ui.actionToggleMainWindow.triggered.connect(self.toggleMainWindow)
 
         ports.ports().portAdded.connect(self.collector.addCollector)
         ports.ports().portAdded.connect(self.collector.removeCollector)
@@ -262,6 +266,9 @@ class MainWindow(QMainWindow):
             self.prefsDialog.exec()
             self.prefsDialog = None
 
+    def toggleMainWindow(self):
+        self.setVisible(not self.isVisible())
+
     def toggleSimulator(self):
         x = not self.ui.simulator.isVisible()
         self.ui.simulator.setVisible(x)
@@ -375,3 +382,19 @@ class MainWindow(QMainWindow):
         if bottom:
             QTimer.singleShot(0, self.ui.activityLog.scrollToBottom)
         self.patch.onMidiMessage(portName, midi)
+
+
+class TrayIcon(QSystemTrayIcon):
+    def __init__(self, mainwindow):
+        super().__init__(mainwindow)
+        self.setIcon(QIcon(QPixmap(':/icon.png')))
+
+        self.menu = QMenu(mainwindow)
+        self.showAction = self.menu.addAction(tr("Main Window"))
+        self.showAction.triggered.connect(mainwindow.toggleMainWindow)
+        self.quitAction = self.menu.addAction(tr("Quit"))
+        self.quitAction.triggered.connect(QApplication.quit)
+
+        self.setContextMenu(self.menu)
+
+
