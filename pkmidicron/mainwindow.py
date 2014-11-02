@@ -384,7 +384,11 @@ class MainWindow(QMainWindow):
         rows = self.ui.activityLog.rowCount()
         self.ui.activityLog.setRowCount(rows+1)
         self.ui.actionClearLog.setEnabled(True)
+        f = QFont(self.ui.activityLog.font())
+        if QApplication.platformName() == 'windows':
+            f.setPointSize(8)
         for col, item in enumerate(items):
+            item.setFont(QFont(f))
             self.ui.activityLog.setItem(rows, col, items[col])
         if bottom:
             QTimer.singleShot(0, self.ui.activityLog.scrollToBottom)
