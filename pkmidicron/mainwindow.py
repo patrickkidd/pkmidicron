@@ -267,7 +267,9 @@ class MainWindow(QMainWindow):
             self.prefsDialog = None
 
     def toggleMainWindow(self):
-        self.setVisible(not self.isVisible())
+        x = not self.isVisible()
+        self.setVisible(x)
+        self.prefs.setValue("MainWindowShown", x)
 
     def toggleSimulator(self):
         x = not self.ui.simulator.isVisible()

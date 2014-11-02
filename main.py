@@ -45,7 +45,8 @@ def main():
 
     try:
         w = MainWindow(prefs)
-        w.show()
+        if prefs.value('MainWindowShown', type=bool, defaultValue=True):
+            w.show()
         app.exec()
     except:
         print()
