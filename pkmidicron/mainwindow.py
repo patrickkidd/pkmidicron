@@ -409,7 +409,7 @@ class TrayIcon(QSystemTrayIcon):
         self.setContextMenu(self.menu)
         
     def iconActivated(self, reason):
-        if reason == QSystemTrayIcon.Trigger:
+        if reason == QSystemTrayIcon.DoubleClick:
             self.parent().toggleMainWindow()
 
     def showHello(self):
