@@ -3,7 +3,7 @@ from .pyqt_shim import *
 #from .util import *
 from . import util
 from .midiedit import MidiEdit
-
+from .ports import ports
 CRAZY_INTERVAL = 10
 
 
@@ -27,15 +27,8 @@ class Simulator(QWidget):
         self.fakeBox = QCheckBox("Route Internally", self)
         self.fakeBox.setToolTip("Don't send through hardware, just route within the app.")
 
-        self.devices = {}
-        self.device = rtmidi.RtMidiOut()
-        for i in range(self.device.getPortCount()):
-            portName = self.device.getPortName(i)
-            dev = rtmidi.RtMidiOut()
-            dev.openPort(i)
-            self.devices[portName] = dev
-
-        self.midiEdit = MidiEdit(self, portBox=True, all=True)
+        self.midiEdit = MidiEdit(self, portBox=True, all=True, input=False)
+        self.all = True
 
         self.sendButton = QPushButton("&Send", self)
         self.sendButton.clicked.connect(self.send)
@@ -79,11 +72,11 @@ class Simulator(QWidget):
             if self.fakeBox.isChecked():
                 self.received.emit(portName, m)
             else:
-                self.devices[portName].sendMessage(m)
+                ports().sendMessage(portName, m)
         if msg is None or type(msg) == bool:
             msg = self.simulator.midi
         if self.simulator.portName == util.ALL_TEXT:
-            for portName, v in self.devices.items():
+            for portName in ports().allPorts():
                 _send(portName, msg)
         else:
             _send(self.simulator.portName, msg)
@@ -98,3 +91,18 @@ class Simulator(QWidget):
     def timerEvent(self, e):
         msg = self.randomout.get()
         self.send(msg)
+
+    def addPortName(self, name):
+        if self.any:
+            i = self.portBox.findText(util.ANY_TEXT)
+        if self.all:
+            i = self.portBox.findText(util.ALL_TEXT)
+        if not self.any and not self.all:
+            i = self.portBox.findText(util.NONE_TEXT)
+        self.portBox.insertItem(i, name)
+    
+    def removePortName(self, name):
+        for i in range(self.portBox.count()):
+            if self.portBox.itemText(i) == name:
+                self.portBox.removeItem(i)
+                return

@@ -10,7 +10,7 @@ class PortList(QObject):
 
     def __init__(self, parent, prefs):
         super().__init__(parent)
-        self.names = []
+        self.ports = {}
         self.virtualPorts = {}
         self.prefs = prefs
         self.dev = rtmidi.RtMidiIn()
@@ -29,14 +29,20 @@ class PortList(QObject):
     def timerEvent(self, e):
         self.update()
 
+    def _getPortIndex(self, name):
+        return self.allPorts().index(name)
+
     def update(self):
         newNames = self.allPorts()
-        added = set(newNames) - set(self.names)
-        removed = set(self.names) - set(newNames)
-        self.names = newNames
+        added = set(newNames) - set(self.ports.keys())
+        removed = set(self.ports.keys()) - set(newNames)
         for name in added:
+            self.ports[name] = rtmidi.RtMidiIn()
+            self.ports[name].openPort(self._getPortIndex(name))
             self.portAdded.emit(name)
         for name in removed:
+            self.ports[name].closePort()
+            del self.ports[name]
             self.portRemoved.emit(name)
 
     def allPorts(self):
@@ -68,6 +74,11 @@ class PortList(QObject):
         self.removeVirtualPort(oldName)
         self.addVirtualPort(newName)
 
+    def sendMessage(self, portName, m):
+        if not portName in self.ports:
+            raise ValueError('No midi output port with the name ' + portName)
+        self.ports[portName].sendMessage(m)
+
 
 _portList = None
 def ports(parent=None, prefs=None):
@@ -77,6 +88,8 @@ def ports(parent=None, prefs=None):
             parent = QCoreApplication.instance()
         _portList = PortList(parent, prefs)
     return _portList
+
+inputs = outputs = ports
 
 def cleanup():
     global _portList

@@ -16,6 +16,7 @@ MSG_ALL_NOTES_OFF = 127
 ACTION_SEND_MESSAGE = 0
 ACTION_RUN_PROGRAM = 1
 ACTION_OPEN_FILE = 2
+ACTION_RUN_SCRIPT = 3
 
 EXTENSIONS = ['pmc']
 FILE_TYPES = "PKMidiCron files (%s)" % ','.join(['*.'+i for i in EXTENSIONS])
@@ -27,10 +28,13 @@ class Application(QApplication):
         
     def event(self, e):
         if e.type() == QEvent.FileOpen:
-            if QFileInfo(e.file()).suffix() in EXTENSIONS:
-                filePath = e.file()
-                self.topLevelWidgets()[0].open(filePath)
-                return True
+            filePath = e.file()
+            if QFileInfo(filePath).suffix() in EXTENSIONS:
+                if QFileInfo(filePath).exists():
+                    for w in self.topLevelWidgets():
+                        if isinstance(w, QMainWindow):
+                            w.open(filePath)
+                    return True
         return super().event(e)
 
 

@@ -50,18 +50,20 @@ class PortListWidget(QWidget):
 
 class PortListItem(QListWidgetItem):
     def __init__(self, listWidget, prefsDialog, **kwargs):
-        super().__init__(listWidget)
+        super().__init__() # set list widget later
         self.setSizeHint(QSize(10, 35))
         self.isVirtual = kwargs['isVirtual']
         self.name = kwargs['portName']
         self.prefsDialog = prefsDialog
 
         self.widget = PortListWidget(self, **kwargs)
-        self.listWidget().setItemWidget(self, self.widget)
 
         self.widget.enabledBox.toggled.connect(self.setEnabled)
         self.widget.removeButton.clicked.connect(self.removeMe)
         self.widget.nameEdit.editingFinished.connect(self.onNameChanged)
+
+    def added(self):
+        self.listWidget().setItemWidget(self, self.widget)
 
     def setEnabled(self, x):
         self.prefsDialog.setPortEnabled(self.name, x)
@@ -124,6 +126,9 @@ class PreferencesDialog(QDialog):
         isVirtual = name in ports().virtualPorts
         enabled = self.prefs().value('InputPorts/%s/enabled' % name, type=bool)
         item = PortListItem(self.ui.portList, self, portName=name, isVirtual=isVirtual, enabled=enabled)
+        iPort = ports().allPorts().index(name)
+        self.ui.portList.insertItem(iPort, item)
+        self.item.added()
         item.widget.enabledBox.setChecked(enabled)
 
     def eventFilter(self, o, e):

@@ -1,5 +1,10 @@
+- connect port boxes to port.ports()
 - no trigger count on just added bindings
 - any midi msg type wildcard
+- prevent 0 vel selected for note onccc
+c
+
+- set dirty when action data is changed, namely run program text
 - simulator on windows
 - file save on windows
 

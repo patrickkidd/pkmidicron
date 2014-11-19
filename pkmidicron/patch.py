@@ -248,6 +248,31 @@ class RunProgramAction(Action):
             os.system(self.text)
 
 
+
+class RunScriptAction(Action):
+    def __init__(self, parent=None):
+        Action.__init__(self, util.ACTION_RUN_SCRIPT, parent)
+        self.source = None
+        self.editor = None # bleh
+
+    def read(self, patch):
+        super().read(patch)
+        self.source = patch.value('source', type=str)
+
+    def write(self, patch):
+        super().write(patch)
+        patch.setValue('source', self.source)
+
+    def setSource(self, x):
+        self.source = x
+        self.getPatch().setDirty()
+        self.changed.emit()
+
+    def trigger(self, midi):
+        if self.source:
+            exec(self.source, { 'midi': midi }, {})
+
+
 class Binding(QObject):
 
     changed = pyqtSignal()
@@ -339,14 +364,18 @@ class Binding(QObject):
             action = RunProgramAction(self)
         elif iType == util.ACTION_OPEN_FILE:
             action = OpenFileAction(self)
+        elif iType == util.ACTION_RUN_SCRIPT:
+            action = RunScriptAction(self)
         else:
             raise ValueError('unknown action type')
         action.changed.connect(self.changed.emit)
         self.actions.append(action)
+        self.getPatch().setDirty()
         return action
 
     def removeAction(self, action):
         self.actions.remove(action)
+        self.getPatch().setDirty()
 
     def onMidiMessage(self, portName, midi):
         found = False

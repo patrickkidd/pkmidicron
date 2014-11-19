@@ -1,6 +1,7 @@
 from rtmidi import MidiMessage, RtMidiIn
 from .pyqt_shim import *
 from . import util, patch
+from .ports import inputs, outputs
 
 class MidiEdit(QWidget):
 
@@ -10,20 +11,22 @@ class MidiEdit(QWidget):
         self.portBox.setCurrentText(x)
     portName = pyqtProperty(str, portName, setPortName)
 
-    def __init__(self, parent=None, any=False, all=False, portBox=False):
+    def __init__(self, parent=None, any=False, all=False, portBox=False, input=True):
         QWidget.__init__(self, parent)
 
         self.block = False
         self.any = any
         self.all = all
+        self.input = input
 
         self.midimessage = None
 
         self.portBox = QComboBox()
-        self.device = RtMidiIn()
-        for i in range(self.device.getPortCount()):
-            portName = self.device.getPortName(i)
-            self.portBox.addItem(portName)
+        ports = input and inputs or outputs
+        for name in ports().allPorts():
+            self.portBox.addItem(name)
+        ports().portAdded.connect(self.addPortName)
+        ports().portRemoved.connect(self.removePortName)
         if any:
             self.portBox.addItem(util.ANY_TEXT)
         if all:
@@ -117,8 +120,7 @@ class MidiEdit(QWidget):
 
         Layout = QHBoxLayout()
         Layout.setContentsMargins(0, 0, 0, 0)
-        if portBox:
-            Layout.addWidget(self.portBox)
+        Layout.addWidget(self.portBox)
         Layout.addWidget(self.channelBox)
         Layout.addWidget(self.typeBox)
         Layout.addWidget(self.ccNumBox)
@@ -299,3 +301,17 @@ class MidiEdit(QWidget):
     def setPortIndex(self, iPort):
         self.portBox.setCurrentIndex(iPort)
 
+    def addPortName(self, name):
+        if self.any:
+            i = self.portBox.findText(util.ANY_TEXT)
+        if self.all:
+            i = self.portBox.findText(util.ALL_TEXT)
+        if not self.any and not self.all:
+            i = self.portBox.findText(util.NONE_TEXT)
+        self.portBox.insertItem(i, name)
+    
+    def removePortName(self, name):
+        for i in range(self.portBox.count()):
+            if self.portBox.itemText(i) == name:
+                self.portBox.removeItem(i)
+                return

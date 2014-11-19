@@ -1,5 +1,5 @@
 from .pyqt_shim import *
-from . import util, midiedit
+from . import util, midiedit, scripteditor
 import rtmidi
 
 
@@ -136,6 +136,63 @@ class OpenFileAction(ActionWidget):
     def setCmd(self, x):
         self.action.text = x
 
+
+class RunScriptAction(ActionWidget):
+    def __init__(self, action, parent=None):
+        ActionWidget.__init__(self, action, tr("Run Program"), parent)
+
+        self.editButton = QPushButton(tr('Edit'), self)
+        self.editButton.clicked.connect(self.showEditor)
+
+        self.testButton = QPushButton(tr('Test'), self)
+        self.testButton.clicked.connect(self.testScript)
+
+        self.editButton.setFixedWidth(100)
+        self.testButton.setFixedWidth(100)
+
+        Layout = QHBoxLayout()
+        Layout.addWidget(self.editButton)
+        Layout.addSpacing(10)
+        Layout.addWidget(self.testButton)
+
+        self.saveTimer = QTimer(self)
+        self.saveTimer.timeout.connect(self.save)
+        self.saveTimer.setSingleShot(True)
+
+        if action.editor:
+            self._initEditor(action.editor)
+
+        self.layout().addLayout(Layout)
+
+    def init(self, action):
+        super().init(action)
+
+    def _initEditor(self, editor):
+        editor.closed.connect(self.onEditorClosed)
+        editor.textChanged.connect(self.onTextChanged)
+
+    def showEditor(self):
+        if not self.action.editor:
+            self.action.editor = scripteditor.ScriptEditor()
+            self.action.editor.setText(self.action.source)
+            self._initEditor(self.action.editor)
+        self.action.editor.show()
+
+    def onTextChanged(self):
+        self.saveTimer.start(100) # bounce
+
+    def testScript(self):
+        midi = rtmidi.MidiMessage.noteOn(1, 100, 100)
+        self.action.trigger(midi)
+
+    def save(self):
+        if self.action.editor.dirty:
+            text = self.action.editor.text()
+            self.action.setSource(text)
+            self.action.editor.setDirty(False)
+        
+    def onEditorClosed(self):
+        self.save()
         
 
 class ActionBox(util.CollapsableBox):
@@ -148,6 +205,7 @@ class ActionBox(util.CollapsableBox):
         self.addBox.addItem('Send message')
         self.addBox.addItem('Run Program')
         self.addBox.addItem('Open File')
+        self.addBox.addItem('Run Script')
         self.addBox.activated.connect(self.addAction)
 
         self.addBox.installEventFilter(self)
@@ -191,6 +249,8 @@ class ActionBox(util.CollapsableBox):
             widget = RunProgramAction(action, self)
         elif iType == util.ACTION_OPEN_FILE:
             widget = OpenFileAction(action, self)
+        elif iType == util.ACTION_RUN_SCRIPT:
+            widget = RunScriptAction(action, self)
         self.actionsLayout.addWidget(widget)
 #        widget.clicked.connect(self.setSelectedAction)
         widget.removeMe.connect(self.removeAction)
