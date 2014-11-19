@@ -8,6 +8,7 @@ class ScriptEditor(QsciScintilla):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.dirty = False
         self.setProperty("canHaveFocus", True)
         self.viewport().setProperty("canHaveFocus", True)
         self.errorLine = self.markerDefine(QsciScintilla.Background)
@@ -21,7 +22,8 @@ class ScriptEditor(QsciScintilla):
         self.setIndentationWidth(4)
         self.setIndentationsUseTabs(False)
         self.setLexer(QsciLexerPython(self))
-        self.setMarginWidth(1, 0)
+        self.setMarginWidth(1, 5)
+        self.setMarginsBackgroundColor(QColor('white'))
 
         f = QFont('Andale Mono')
         f.setPointSize(12)

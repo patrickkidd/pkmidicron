@@ -46,9 +46,9 @@ class CollectorBin(QObject, rtmidi.CollectorBin):
         kwargs['callback'] = self.callback
         kwargs['autolist'] = False
         super().__init__(**kwargs)
-        from .ports import ports
-        ports().portAdded.connect(self._add)
-        ports().portRemoved.connect(self._remove)
+        from .ports import inputs
+        inputs().portAdded.connect(self._add)
+        inputs().portRemoved.connect(self._remove)
 
     def callback(self, collector, msg):
         self.message.emit(collector.portName, msg)

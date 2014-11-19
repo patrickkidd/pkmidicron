@@ -8,14 +8,19 @@ class PortList(QObject):
     portAdded = pyqtSignal(str)
     portRemoved = pyqtSignal(str)
 
-    def __init__(self, parent, prefs):
+    def __init__(self, parent, prefs, input):
         super().__init__(parent)
         self.ports = {}
         self.virtualPorts = {}
         self.prefs = prefs
-        self.dev = rtmidi.RtMidiIn()
+        self.isInput = bool(input)
+        self.ctor = self.isInput and rtmidi.RtMidiIn or rtmidi.RtMidiOut
+        self.dev = self.ctor()
         if prefs:
-            prefs.beginGroup('InputPorts')
+            if self.isInput:
+                prefs.beginGroup('InputPorts')
+            else:
+                prefs.beginGroup('OutputPorts')
             for name in prefs.childGroups():
                 prefs.beginGroup(name)
                 if prefs.value('isVirtual', type=bool):
@@ -37,7 +42,7 @@ class PortList(QObject):
         added = set(newNames) - set(self.ports.keys())
         removed = set(self.ports.keys()) - set(newNames)
         for name in added:
-            self.ports[name] = rtmidi.RtMidiIn()
+            self.ports[name] = self.ctor()
             self.ports[name].openPort(self._getPortIndex(name))
             self.portAdded.emit(name)
         for name in removed:
@@ -51,11 +56,14 @@ class PortList(QObject):
     def addVirtualPort(self, name):
         if name in self.virtualPorts:
             return
-        dev = rtmidi.RtMidiOut()
+        dev = self.ctor()
         dev.openVirtualPort(name)
         self.virtualPorts[name] = dev
         QTimer.singleShot(0, self.update)
-        self.prefs.beginGroup('InputPorts/' + name)
+        if self.isInput:
+            self.prefs.beginGroup('InputPorts/' + name)
+        else:
+            self.prefs.beginGroup('OutputPorts/' + name)
         self.prefs.setValue('isVirtual', True)
         self.prefs.endGroup()
 
@@ -66,7 +74,10 @@ class PortList(QObject):
         dev.closePort()
         del self.virtualPorts[name]
         QTimer.singleShot(0, self.update)
-        self.prefs.remove('InputPorts/' + name)
+        if self.isInput:
+            self.prefs.remove('InputPorts/' + name)
+        else:
+            self.prefs.remove('OutputPorts/' + name)
 
     def renameVirtualPort(self, oldName, newName):
         if not oldName in self.virtualPorts:
@@ -74,23 +85,43 @@ class PortList(QObject):
         self.removeVirtualPort(oldName)
         self.addVirtualPort(newName)
 
+
+class InputPorts(PortList):
+    def __init__(self, parent, prefs):
+        super().__init__(parent, prefs, True)
+
+
+class OutputPorts(PortList):
+    def __init__(self, parent, prefs):
+        super().__init__(parent, prefs, False)
+
     def sendMessage(self, portName, m):
         if not portName in self.ports:
             raise ValueError('No midi output port with the name ' + portName)
         self.ports[portName].sendMessage(m)
 
 
-_portList = None
-def ports(parent=None, prefs=None):
-    global _portList
-    if _portList is None:
+_outputs = None
+def outputs(parent=None, prefs=None):
+    global _outputs
+    if _outputs is None:
         if parent is None:
             parent = QCoreApplication.instance()
-        _portList = PortList(parent, prefs)
-    return _portList
+        _outputs = OutputPorts(parent, prefs)
+    return _outputs
 
-inputs = outputs = ports
+_inputs = None
+def inputs(parent=None, prefs=None):
+    global _inputs
+    if _inputs is None:
+        if parent is None:
+            parent = QCoreApplication.instance()
+        _inputs = InputPorts(parent, prefs)
+    return _inputs
+    
+
 
 def cleanup():
-    global _portList
-    _portList = None
+    global _inputs, _outputs
+    _inputs = None
+    _outputs = None

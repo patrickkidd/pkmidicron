@@ -139,7 +139,7 @@ class OpenFileAction(ActionWidget):
 
 class RunScriptAction(ActionWidget):
     def __init__(self, action, parent=None):
-        ActionWidget.__init__(self, action, tr("Run Program"), parent)
+        ActionWidget.__init__(self, action, tr("Run Script"), parent)
 
         self.editButton = QPushButton(tr('Edit'), self)
         self.editButton.clicked.connect(self.showEditor)
@@ -177,6 +177,7 @@ class RunScriptAction(ActionWidget):
             self.action.editor.setText(self.action.source)
             self._initEditor(self.action.editor)
         self.action.editor.show()
+        self.action.editor.raise_()
 
     def onTextChanged(self):
         self.saveTimer.start(100) # bounce

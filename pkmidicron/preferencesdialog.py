@@ -1,6 +1,6 @@
 from .pyqt_shim import *
 from . import util, preferencesdialog_form
-from .ports import ports
+from .ports import inputs
 
 
 class PortListWidget(QWidget):
@@ -95,10 +95,10 @@ class PreferencesDialog(QDialog):
 
         self.installEventFilter(self)
 
-        for name in ports().allPorts():
+        for name in inputs().allPorts():
             self.onPortAdded(name)
-        ports().portAdded.connect(self.onPortAdded)
-        ports().portRemoved.connect(self.onPortRemoved)
+        inputs().portAdded.connect(self.onPortAdded)
+        inputs().portRemoved.connect(self.onPortRemoved)
 
     def prefs(self):
         return self.mainwindow.prefs
@@ -116,17 +116,17 @@ class PreferencesDialog(QDialog):
         i = 1
         while not found:
             name = 'Virtual Port %i' % i
-            if not name in ports().names:
+            if not name in inputs().names:
                 found = True
             i += 1
-        ports().addVirtualPort(name)
+        inputs().addVirtualPort(name)
         self.setPortEnabled(name, True)
 
     def onPortAdded(self, name):
-        isVirtual = name in ports().virtualPorts
+        isVirtual = name in inputs().virtualPorts
         enabled = self.prefs().value('InputPorts/%s/enabled' % name, type=bool)
         item = PortListItem(self.ui.portList, self, portName=name, isVirtual=isVirtual, enabled=enabled)
-        iPort = ports().allPorts().index(name)
+        iPort = inputs().allPorts().index(name)
         self.ui.portList.insertItem(iPort, item)
         self.item.added()
         item.widget.enabledBox.setChecked(enabled)
@@ -142,7 +142,7 @@ class PreferencesDialog(QDialog):
         if not item.isVirtual:
             return
         name = item.name
-        ports().removeVirtualPort(name)
+        inputs().removeVirtualPort(name)
         self.prefs().remove('InputPorts/' + name)
 
     def onPortRemoved(self, name):
@@ -160,7 +160,7 @@ class PreferencesDialog(QDialog):
         self.prefs().beginGroup('InputPorts/%s' % oldName)
         enabled = self.prefs().value('enabled', type=bool)
         self.prefs().endGroup()
-        ports().renameVirtualPort(oldName, newName)
+        inputs().renameVirtualPort(oldName, newName)
         self.prefs().remove('InputPorts/%s' % oldName)
         self.prefs().beginGroup('InputPorts/%s' % newName)
         self.prefs().setValue('enabled', enabled)

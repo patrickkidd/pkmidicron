@@ -41,8 +41,10 @@ def main():
 #    watcher = QFileSystemWatcher([styleSheet])
 #    watcher.fileChanged.connect(setStyleSheet)
     setStyleSheet()
-    ports.ports(app, prefs)
+    ports.inputs(app, prefs)
+    ports.outputs(app, prefs)
 
+    w = None
     try:
         w = MainWindow(prefs)
         if prefs.value('MainWindowShown', type=bool, defaultValue=True):
@@ -58,5 +60,7 @@ def main():
         print(exc[0].__name__ + ':', exc[1])
         print()
     ports.cleanup()
+    if w:
+        w.cleanup()
     rtmidi.CollectorBin.cleanup()
 main()

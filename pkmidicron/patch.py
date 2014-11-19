@@ -1,7 +1,7 @@
 import os
 import rtmidi
 from . import util
-from .pyqt_shim import QSettings, QObject, pyqtSignal, QFileInfo
+from .pyqt_shim import Qt, QSettings, QObject, pyqtSignal, QFileInfo
 
 
 class MidiMessage(QObject):
@@ -255,6 +255,12 @@ class RunScriptAction(Action):
         self.source = None
         self.editor = None # bleh
 
+    def __del__(self):
+        print('__del__')
+        if self.editor:
+            self.editor.close()
+            self.editor = None
+
     def read(self, patch):
         super().read(patch)
         self.source = patch.value('source', type=str)
@@ -288,6 +294,9 @@ class Binding(QObject):
         self.title = ''
         self.triggerCount = 0
         self.enabled = True
+
+    def __del__(self):
+        print('Binding.__del__')
 
     def getPatch(self):
         return self.parent()
@@ -375,6 +384,7 @@ class Binding(QObject):
 
     def removeAction(self, action):
         self.actions.remove(action)
+        action.setParent(None)
         self.getPatch().setDirty()
 
     def onMidiMessage(self, portName, midi):

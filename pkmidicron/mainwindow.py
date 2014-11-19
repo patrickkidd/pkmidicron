@@ -1,6 +1,7 @@
 import rtmidi
 from .pyqt_shim import *
-from . import util, mainwindow_form, bindinglistitem, patch, preferencesdialog_form, preferencesdialog, ports
+from . import util, mainwindow_form, bindinglistitem, patch, preferencesdialog_form, preferencesdialog
+from .ports import inputs
 
 
 CONFIRM_SAVE = True
@@ -71,14 +72,23 @@ class MainWindow(QMainWindow):
         self.ui.actionToggleBindingProperties.triggered.connect(self.toggleBindingProperties)
         self.ui.actionToggleMainWindow.triggered.connect(self.toggleMainWindow)
 
-        ports.ports().portAdded.connect(self.collector.addCollector)
-        ports.ports().portAdded.connect(self.collector.removeCollector)
+        inputs().portAdded.connect(self.collector.addCollector)
+        inputs().portAdded.connect(self.collector.removeCollector)
 
         # Init
 
         self.patch = None
         self.prefs = prefs and prefs or QSettings()
         self.readPrefs()
+
+    def cleanup(self):
+        """ close and delete all editors for shutdown """
+        if self.patch:
+            for b in self.patch.bindings:
+                for a in b.actions:
+                    if hasattr(a, 'editor') and a.editor:
+                        a.editor.close()
+                        a.editor = None
 
     # Patch mgmt
 

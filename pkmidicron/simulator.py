@@ -3,7 +3,7 @@ from .pyqt_shim import *
 #from .util import *
 from . import util
 from .midiedit import MidiEdit
-from .ports import ports
+from .ports import outputs
 CRAZY_INTERVAL = 10
 
 
@@ -72,11 +72,11 @@ class Simulator(QWidget):
             if self.fakeBox.isChecked():
                 self.received.emit(portName, m)
             else:
-                ports().sendMessage(portName, m)
+                outputs().sendMessage(portName, m)
         if msg is None or type(msg) == bool:
             msg = self.simulator.midi
         if self.simulator.portName == util.ALL_TEXT:
-            for portName in ports().allPorts():
+            for portName in outputs().allPorts():
                 _send(portName, msg)
         else:
             _send(self.simulator.portName, msg)
