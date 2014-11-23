@@ -1,6 +1,10 @@
 import os
+import types
+import sys
+import time
 import rtmidi
-from . import util
+from .util import refs
+from . import util, ports
 from .pyqt_shim import Qt, QSettings, QObject, pyqtSignal, QFileInfo
 
 
@@ -95,6 +99,9 @@ class Criteria(MidiMessage):
     def __init__(self, parent=None):
         MidiMessage.__init__(self, parent)
 
+    def clear(self):
+        pass
+
     def match(self, portName, midi):
         if portName != self.portName and self.portName != util.ANY_TEXT:
             return
@@ -152,6 +159,9 @@ class Action(QObject):
         QObject.__init__(self, parent)
         self.type = iType
 
+    def clear(self):
+        pass
+
     def read(self, patch):
         self.type = patch.value('type', type=int)
 
@@ -171,7 +181,6 @@ class SendMessageAction(Action):
         self.midiMessage = MidiMessage(self)
         self.midiMessage.changed.connect(self.onMidiChanged)
         self.forward = False
-        self.device = None
 
     def read(self, patch):
         super().read(patch)
@@ -188,15 +197,11 @@ class SendMessageAction(Action):
         patch.endGroup()
 
     def trigger(self, midi):
-        if not self.device:
-            self.device = util.openPort(self.midiMessage.portName)
-            if not self.device:
-                return
         was = self.getPatch().setBlock(True)
         if self.forward:
-            self.device.sendMessage(midi)
+            ports.outputs().sendMessage(self.midiMessage.portName, midi)
         else:
-            self.device.sendMessage(self.midiMessage.midi)
+            ports.outputs().sendMessage(self.midiMessage.portName, self.midiMessage.midi)
         self.getPatch().setBlock(was)
 
     def setForward(self, x):
@@ -205,7 +210,6 @@ class SendMessageAction(Action):
 
     def onMidiChanged(self):
         self.changed.emit()
-        self.device = util.openPort(self.midiMessage.portName)
 
 
 class OpenFileAction(Action):
@@ -231,6 +235,9 @@ class RunProgramAction(Action):
         Action.__init__(self, util.ACTION_RUN_PROGRAM, parent)
         self.text = None
 
+#    def __del__(self):
+#        print('RunProgramAction.__del__')
+
     def read(self, patch):
         super().read(patch)
         self.text = patch.value('text', type=str)
@@ -254,29 +261,68 @@ class RunScriptAction(Action):
         Action.__init__(self, util.ACTION_RUN_SCRIPT, parent)
         self.source = None
         self.editor = None # bleh
+        self.module = None
+        self.nameSeed = time.time()
 
-    def __del__(self):
-        print('__del__')
+    def clear(self):
         if self.editor:
             self.editor.close()
             self.editor = None
+        if self.module:
+            self.resetMod()
+            self.module = None
 
     def read(self, patch):
         super().read(patch)
-        self.source = patch.value('source', type=str)
+        source = patch.value('source', type=str, defaultValue=None)
+        if not source:
+            self.source = None
+        else:
+            self.doSetSource(source)
 
     def write(self, patch):
         super().write(patch)
         patch.setValue('source', self.source)
 
-    def setSource(self, x):
+    def resetMod(self):
+        if not self.module:
+            return
+        # try to clear out the module by deleting all global refs
+        d = self.module.__dict__
+        for k in dict(d).keys():
+            if not k in ['__spec__', '__name__', '__loader__',
+                         '__package__', '__doc__', '__builtins__']:
+                del d[k]
+
+    def doSetSource(self, x):
         self.source = x
-        self.getPatch().setDirty()
-        self.changed.emit()
+        name = 'RunScriptAction_%i' % self.nameSeed
+        if not self.module:
+            self.module = types.ModuleType(name)
+        self.resetMod()
+        self.module.__dict__.update({
+            'sendMessage': self.sendMessage,
+            'inputs': ports.inputs,
+            'outputs': ports.outputs,
+        })
+        try:
+            exec(self.source, self.module.__dict__)
+        except Exception:
+            import traceback
+            traceback.print_exc(file=sys.stdout)
+
+    def setSource(self, x):
+        if x != self.source:
+            self.doSetSource(x)
+            self.getPatch().setDirty()
+            self.changed.emit()
 
     def trigger(self, midi):
-        if self.source:
-            exec(self.source, { 'midi': midi }, {})
+        if hasattr(self.module, 'onMidiMessage'):
+            self.module.onMidiMessage(midi)
+
+    def sendMessage(self, name, m):
+        ports.outputs().sendMessage(name, m)
 
 
 class Binding(QObject):
@@ -289,23 +335,25 @@ class Binding(QObject):
         self.criteria = [
             Criteria(self)
         ]
-        self.criteria[0].changed.connect(self.changed.emit)
+#        self.criteria[0].changed.connect(self.changed.emit)
         self.actions = []
         self.title = ''
         self.triggerCount = 0
         self.enabled = True
 
-    def __del__(self):
-        print('Binding.__del__')
+#    def __del__(self):
+#       print('Binding.__del__')
 
     def getPatch(self):
         return self.parent()
 
     def clear(self):
         for c in self.criteria:
+            c.clear()
             c.setParent(None)
         self.criteria = []
         for a in self.actions:
+            a.clear()
             a.setParent(None)
         self.actions = []
 
@@ -384,6 +432,7 @@ class Binding(QObject):
 
     def removeAction(self, action):
         self.actions.remove(action)
+        action.clear()
         action.setParent(None)
         self.getPatch().setDirty()
 
@@ -471,6 +520,7 @@ class Patch(QObject):
 
     def removeBinding(self, binding):
         self.bindings.remove(binding)
+        binding.clear()
         binding.setParent(None)
         self.setDirty(True)
 

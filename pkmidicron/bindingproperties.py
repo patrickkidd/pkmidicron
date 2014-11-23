@@ -156,9 +156,9 @@ class RunScriptAction(ActionWidget):
         Layout.addWidget(self.testButton)
 
         self.saveTimer = QTimer(self)
-        self.saveTimer.timeout.connect(self.save)
+        #self.saveTimer.timeout.connect(self.save)
         self.saveTimer.setSingleShot(True)
-
+        
         if action.editor:
             self._initEditor(action.editor)
 
@@ -170,6 +170,7 @@ class RunScriptAction(ActionWidget):
     def _initEditor(self, editor):
         editor.closed.connect(self.onEditorClosed)
         editor.textChanged.connect(self.onTextChanged)
+        editor.saved.connect(self.save)
 
     def showEditor(self):
         if not self.action.editor:
@@ -180,7 +181,8 @@ class RunScriptAction(ActionWidget):
         self.action.editor.raise_()
 
     def onTextChanged(self):
-        self.saveTimer.start(100) # bounce
+        #self.saveTimer.start(100) # bounce
+        pass
 
     def testScript(self):
         midi = rtmidi.MidiMessage.noteOn(1, 100, 100)

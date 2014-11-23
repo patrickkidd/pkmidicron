@@ -35,10 +35,10 @@ class PortList(QObject):
         self.update()
 
     def _getPortIndex(self, name):
-        return self.allPorts().index(name)
+        return self.names().index(name)
 
     def update(self):
-        newNames = self.allPorts()
+        newNames = self.names()
         added = set(newNames) - set(self.ports.keys())
         removed = set(self.ports.keys()) - set(newNames)
         for name in added:
@@ -50,7 +50,7 @@ class PortList(QObject):
             del self.ports[name]
             self.portRemoved.emit(name)
 
-    def allPorts(self):
+    def names(self):
         return [self.dev.getPortName(i) for i in range(self.dev.getPortCount())]
 
     def addVirtualPort(self, name):

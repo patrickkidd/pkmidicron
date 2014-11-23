@@ -1,3 +1,4 @@
+import sys
 import time
 import rtmidi
 from . import pyqt_shim as qt
@@ -21,6 +22,9 @@ ACTION_RUN_SCRIPT = 3
 EXTENSIONS = ['pmc']
 FILE_TYPES = "PKMidiCron files (%s)" % ','.join(['*.'+i for i in EXTENSIONS])
 
+
+def refs(o,s=''):
+    print('refs: ', s, sys.getrefcount(o), o)
 
 class Application(QApplication):
     def __init__(self, *args, **kwargs):
@@ -257,9 +261,9 @@ class ClickToEdit(QLineEdit):
         self.textAnimation.start()
 
 
-class HR(qt.QWidget):
+class HR(QWidget):
     def __init__(self, parent=None):
-        qt.QWidget.__init__(self, parent)
+        QWidget.__init__(self, parent)
 
     def paintEvent(self, e):
         p = QPainter(e)
@@ -269,32 +273,32 @@ class HR(qt.QWidget):
         p.setPen(Qt.black)
         p.drawLine(line)
 
-class CollapsableBox(qt.QFrame):
+class CollapsableBox(QFrame):
     def __init__(self, title, parent=None):
-        qt.QFrame.__init__(self, parent)
+        QFrame.__init__(self, parent)
 
         self.isCollapsed = False
         self.image = QImage(":/box-bg-2.jpg")
 
-        self.header = qt.QWidget(self)
+        self.header = QWidget(self)
         self.header.setFixedHeight(40)
-        self.headerButton = qt.QPushButton('-', self)
+        self.headerButton = QPushButton('-', self)
         self.headerButton.setFixedWidth(20)
         self.headerButton.hide()
         if type(title) == QPixmap:
-            self.headerLabel = qt.QLabel('', self)
+            self.headerLabel = QLabel('', self)
             self.headerLabel.setPixmap(title)
         else:
-            self.headerLabel = qt.QLabel(title, self)
+            self.headerLabel = QLabel(title, self)
 
-        HeaderLayout = qt.QHBoxLayout()
+        HeaderLayout = QHBoxLayout()
         HeaderLayout.addWidget(self.headerButton)
         HeaderLayout.addWidget(self.headerLabel)
         self.header.setLayout(HeaderLayout)
 
-        self.content = qt.QWidget()
+        self.content = QWidget()
 
-        Layout = qt.QVBoxLayout()
+        Layout = QVBoxLayout()
         Layout.setContentsMargins(0, 0, 0, 0)
         Layout.setSpacing(0)
         Layout.addWidget(self.header, 0)
@@ -331,8 +335,8 @@ class CollapsableBox(qt.QFrame):
 def setBackgroundColor(w, c):
     if not hasattr(w, '_orig_palette'):
         w._orig_palette = w.palette()
-    p = qt.QPalette(w.palette())
-    p.setColor(qt.QPalette.Background, c);
+    p = QPalette(w.palette())
+    p.setColor(QPalette.Background, c);
     w.setAutoFillBackground(True)
     w.setPalette(p)
 
@@ -346,26 +350,26 @@ def clearBackgroundColor(w):
 
 
 
-class EmptyTabBar(qt.QTabBar):
+class EmptyTabBar(QTabBar):
     def __init__(self, parent=None):
-        qt.QTabBar.__init__(self, parent)
+        QTabBar.__init__(self, parent)
 
     def paintEvent(self, e):
         pass
 
 
 
-class Led(qt.QFrame):
+class Led(QFrame):
     def __init__(self, parent=None):
-        qt.QFrame.__init__(self, parent)
+        QFrame.__init__(self, parent)
         h = self.fontMetrics().height()
         self.setMinimumSize(h * 2, h)
-        self._color = qt.Qt.red
-        self.timer = qt.QTimer(self)
+        self._color = red
+        self.timer = QTimer(self)
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.off)
         self.isOn = False
-#        self.setFrameStyle(qt.QFrame.Box)
+#        self.setFrameStyle(QFrame.Box)
 
     def setColor(self, c):
         self._color = c

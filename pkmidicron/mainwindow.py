@@ -1,10 +1,12 @@
+import sys
 import rtmidi
 from .pyqt_shim import *
 from . import util, mainwindow_form, bindinglistitem, patch, preferencesdialog_form, preferencesdialog
 from .ports import inputs
+from .util import refs
 
 
-CONFIRM_SAVE = True
+CONFIRM_SAVE = False
 
 
 class MainWindow(QMainWindow):
@@ -21,6 +23,7 @@ class MainWindow(QMainWindow):
         self.ui.innerSplitter.setStretchFactor(2, 1)
 
         self.prefsDialog = None
+        self.firstMessage = True
 
         self.collector = util.CollectorBin(parent=self, autolist=False)
         self.collector.message.connect(self.onMidiMessage)
@@ -66,7 +69,7 @@ class MainWindow(QMainWindow):
         self.ui.actionDeleteBinding.triggered.connect(self.removeSelectedBinding)
         self.ui.actionClearLog.triggered.connect(self.clearActivityLog)
         self.ui.bindingsList.selectionModel().selectionChanged.connect(self.onBindingSelectionChanged)
-        self.ui.actionExit.triggered.connect(QApplication.quit)
+        self.ui.actionExit.triggered.connect(self.onQuit)
         self.ui.actionToggleSimulator.triggered.connect(self.toggleSimulator)
         self.ui.actionToggleLog.triggered.connect(self.toggleLog)
         self.ui.actionToggleBindingProperties.triggered.connect(self.toggleBindingProperties)
@@ -107,13 +110,18 @@ class MainWindow(QMainWindow):
                 return False
         return True
 
-    def closeEvent(self, e):
+    def _closeEvent(self, e):
         if not self.confirmSave():
             e.ignore()
             return
         e.accept()
         self.writePrefs()
         self.collector.stop()
+
+    def onQuit(self):
+        if self.confirmSave():
+            self.writePrefs()
+            QApplication.quit()
 
     def onDirtyChanged(self, on):
         if on:
@@ -349,16 +357,18 @@ class MainWindow(QMainWindow):
     def addBinding(self, binding=None):
         if binding is None or type(binding) == bool:
             binding = self.patch.addBinding()
-        bindinglistitem.BindingListItem(self.ui.bindingsList, binding)
-        return binding
-        
+        item = bindinglistitem.BindingListItem(self.ui.bindingsList, binding)
+        item.binding = binding
+        self.ui.actionDeleteBinding.setEnabled(True)
+
     def removeSelectedBinding(self):
         items = self.ui.bindingsList.selectedItems()
-        if not items:
-            return
-        iItem = self.ui.bindingsList.row(items[0])
-        item = self.ui.bindingsList.takeItem(iItem)
-        self.patch.removeBinding(item.binding)
+        if not items: return
+        item = items[0]
+        binding = item.binding
+        self.ui.bindingsList.takeItem(self.ui.bindingsList.row(item))
+        item.cleanup()
+        self.patch.removeBinding(binding)
 
     def onBindingSelectionChanged(self, x, y):
         if x.indexes():
@@ -400,6 +410,10 @@ class MainWindow(QMainWindow):
         for col, item in enumerate(items):
             item.setFont(QFont(f))
             self.ui.activityLog.setItem(rows, col, items[col])
+        if self.firstMessage:
+            self.ui.activityLog.resizeColumnsToContents()
+            self.ui.activityLog.horizontalHeader().setStretchLastSection(True)
+            self.firstMessage = False
         if bottom:
             QTimer.singleShot(0, self.ui.activityLog.scrollToBottom)
         self.patch.onMidiMessage(portName, midi)
@@ -415,7 +429,7 @@ class TrayIcon(QSystemTrayIcon):
         self.showAction = self.menu.addAction(tr("Main Window"))
         self.showAction.triggered.connect(mainwindow.toggleMainWindow)
         self.quitAction = self.menu.addAction(tr("Quit"))
-        self.quitAction.triggered.connect(QApplication.quit)
+        self.quitAction.triggered.connect(mainwindow.onQuit)
 
         if QApplication.platformName() == 'windows':
             self.activated.connect(self.iconActivated)

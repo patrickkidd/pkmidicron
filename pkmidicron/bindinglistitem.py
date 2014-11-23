@@ -59,6 +59,10 @@ class BindingListItem(QListWidgetItem):
 
         self.resizeEvent(None)
 
+    def cleanup(self):
+        self.widget.setParent(None)
+        self.widget = None
+
     def updateTriggerCount(self):
         if not hasattr(self, 'countLabel'):
             return

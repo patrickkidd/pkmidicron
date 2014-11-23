@@ -95,10 +95,10 @@ class PreferencesDialog(QDialog):
 
         self.installEventFilter(self)
 
-        for name in inputs().allPorts():
-            self.onPortAdded(name)
-        inputs().portAdded.connect(self.onPortAdded)
-        inputs().portRemoved.connect(self.onPortRemoved)
+        for name in inputs().names():
+            self.onInputPortAdded(name)
+        inputs().portAdded.connect(self.onInputPortAdded)
+        inputs().portRemoved.connect(self.onInputPortRemoved)
 
     def prefs(self):
         return self.mainwindow.prefs
@@ -122,13 +122,13 @@ class PreferencesDialog(QDialog):
         inputs().addVirtualPort(name)
         self.setPortEnabled(name, True)
 
-    def onPortAdded(self, name):
+    def onInputPortAdded(self, name):
         isVirtual = name in inputs().virtualPorts
-        enabled = self.prefs().value('InputPorts/%s/enabled' % name, type=bool)
+        enabled = self.prefs().value('InputPorts/%s/enabled' % name, type=bool, defaultValue=True)
         item = PortListItem(self.ui.portList, self, portName=name, isVirtual=isVirtual, enabled=enabled)
-        iPort = inputs().allPorts().index(name)
+        iPort = inputs().names().index(name)
         self.ui.portList.insertItem(iPort, item)
-        self.item.added()
+        item.added()
         item.widget.enabledBox.setChecked(enabled)
 
     def eventFilter(self, o, e):
@@ -145,7 +145,7 @@ class PreferencesDialog(QDialog):
         inputs().removeVirtualPort(name)
         self.prefs().remove('InputPorts/' + name)
 
-    def onPortRemoved(self, name):
+    def onInputPortRemoved(self, name):
         for i in range(self.ui.portList.count()):
             item = self.ui.portList.item(i)
             if item.name == name:

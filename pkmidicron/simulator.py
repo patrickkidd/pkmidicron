@@ -76,7 +76,7 @@ class Simulator(QWidget):
         if msg is None or type(msg) == bool:
             msg = self.simulator.midi
         if self.simulator.portName == util.ALL_TEXT:
-            for portName in outputs().allPorts():
+            for portName in outputs().names():
                 _send(portName, msg)
         else:
             _send(self.simulator.portName, msg)

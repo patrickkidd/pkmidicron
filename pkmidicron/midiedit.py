@@ -23,7 +23,7 @@ class MidiEdit(QWidget):
 
         self.portBox = QComboBox()
         ports = input and inputs or outputs
-        for name in ports().allPorts():
+        for name in ports().names():
             self.portBox.addItem(name)
         ports().portAdded.connect(self.addPortName)
         ports().portRemoved.connect(self.removePortName)
@@ -31,7 +31,7 @@ class MidiEdit(QWidget):
             self.portBox.addItem(util.ANY_TEXT)
         if all:
             self.portBox.addItem(util.ALL_TEXT)
-        self.portBox.addItem(util.NONE_TEXT)
+#        self.portBox.addItem(util.NONE_TEXT)
         self.portBox.setMinimumWidth(100)
         self.portBox.currentTextChanged.connect(self.updateValue)
         if not portBox:
@@ -165,11 +165,14 @@ class MidiEdit(QWidget):
         wildcards = midimessage.wildcards
 
         self.block = True
-        if not portName:
-            portName = util.NONE_TEXT
-        elif self.portBox.findText(portName) == -1:
-            self.portBox.addItem(portName)
-        self.portBox.setCurrentText(portName)
+        if portName:
+            self.portBox.setCurrentText(portName)
+        else:
+            self.portBox.setCurrentIndex(-1)
+#        elif self.portBox.findText(portName) == -1:
+#            self.portBox.addItem(portName)
+#        if not portName:
+#            portName = util.NONE_TEXT
         if wildcards['channel']:
             if self.any:
                 self.channelBox.setCurrentText(util.ANY_TEXT)
@@ -239,7 +242,7 @@ class MidiEdit(QWidget):
 
     def clear(self):
         self.setType(0)
-        self.portBox.setCurrentIndex(0)
+        self.portBox.setCurrentIndex(-1)
         self.channelBox.setCurrentIndex(0)
         self.typeBox.setCurrentIndex(0)
         self.noteNumBox.setCurrentIndex(0)
@@ -268,7 +271,7 @@ class MidiEdit(QWidget):
             midi = MidiMessage.aftertouchChange(channel,
                                                 self.atNumBox.currentIndex(),
                                                 self.atValueBox.currentIndex())
-        if self.portBox.currentText() == util.NONE_TEXT:
+        if self.portBox.currentIndex() == -1:
             portName = None
         else:
             portName = self.portBox.currentText()
@@ -306,8 +309,8 @@ class MidiEdit(QWidget):
             i = self.portBox.findText(util.ANY_TEXT)
         if self.all:
             i = self.portBox.findText(util.ALL_TEXT)
-        if not self.any and not self.all:
-            i = self.portBox.findText(util.NONE_TEXT)
+#        if not self.any and not self.all:
+#            i = self.portBox.findText(util.NONE_TEXT)
         self.portBox.insertItem(i, name)
     
     def removePortName(self, name):

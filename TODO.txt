@@ -1,3 +1,4 @@
+- add error console
 - connect port boxes to port.ports()
 - no trigger count on just added bindings
 - any midi msg type wildcard
