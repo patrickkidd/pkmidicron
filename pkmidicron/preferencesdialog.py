@@ -1,3 +1,4 @@
+import sys
 from .pyqt_shim import *
 from . import util, preferencesdialog_form
 from .ports import inputs
@@ -104,10 +105,11 @@ class PreferencesDialog(QDialog):
         self.prefs().beginGroup('python/paths')
         for i in self.prefs().childGroups():
             path = self.prefs().value('paths/' + i, type=str)
-            item = self.ui.pythonPathList.addItem(path)
-            item.setFlags(Qt.ItemIsEditable)
             if not path in sys.path:
                 sys.path.append(path)
+        for path in sys.path:
+            item = QListWidgetItem(path, self.ui.pythonPathList)
+            item.setFlags(Qt.ItemIsEditable)
         self.prefs().endGroup()
 
     def prefs(self):

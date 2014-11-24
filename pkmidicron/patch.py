@@ -312,15 +312,23 @@ class RunScriptAction(Action):
             'inputs': ports.inputs,
             'outputs': ports.outputs,
             'print': self.mod_print,
+            '__file__': 'pk_' + str(time.time()),
         })
         try:
             exec(self.source, self.module.__dict__)
         except:
-            s = io.StringIO()
-            import traceback
-            nFrames = sys.exc_info()[2]
-            traceback.print_exc(file=s)
-            self.editor.appendConsole(s.getvalue())
+            self.printTraceback()
+
+    def printTraceback(self):
+        import traceback
+        # take out the first stack frame so you don't see app code
+        lines = traceback.format_exc().splitlines()
+        first = lines[0]
+        diads = lines[1:-1]
+        last = lines[-1]
+        lines = [first] + diads[2:] + [last]
+        lines = [s.replace('<string>', '<script>') for s in lines]
+        self.editor.appendConsole('\n'.join(lines))
 
     def mod_print(self, *args, **kwargs):
         s = ' '.join([str(x) for x in args])
@@ -337,11 +345,14 @@ class RunScriptAction(Action):
             self.editor.setText(self.source)
             self.editor.closed.connect(self.save)
             self.editor.saved.connect(self.save)
+            self.editor.test.connect(self.testScript)
             if self.editorSize:
                 self.editor.resize(self.editorSize)
             if self.editorSplitterSizes:
                 self.editor.splitter.setSizes(self.editorSplitterSizes)
                 self.editor.updateResize()
+            else:
+                self.editor.splitter.setSizes([100, 0])
         self.editor.show()
         self.editor.updateResize()
         self.editor.raise_()
@@ -357,10 +368,7 @@ class RunScriptAction(Action):
             try:
                 self.module.onMidiMessage(midi)
             except:
-                s = io.StringIO()
-                import traceback
-                traceback.print_exc(file=s)
-                self.editor.appendConsole(s.getvalue())
+                self.printTraceback()
 
     def testScript(self):
         midi = rtmidi.MidiMessage.noteOn(1, 100, 100)
