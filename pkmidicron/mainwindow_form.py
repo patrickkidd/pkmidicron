@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Tue Nov  4 13:07:53 2014
+# Created: Sun Nov 23 19:05:03 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -68,7 +68,7 @@ class Ui_MainWindow(object):
         self.bindingPropertiesScroller.setWidgetResizable(True)
         self.bindingPropertiesScroller.setObjectName("bindingPropertiesScroller")
         self.bindingProperties = BindingProperties()
-        self.bindingProperties.setGeometry(QtCore.QRect(0, 0, 317, 295))
+        self.bindingProperties.setGeometry(QtCore.QRect(0, 0, 316, 295))
         self.bindingProperties.setObjectName("bindingProperties")
         self.bindingPropertiesScroller.setWidget(self.bindingProperties)
         self.verticalLayout.addWidget(self.outerSplitter)
@@ -199,6 +199,6 @@ class Ui_MainWindow(object):
         self.actionToggleMainWindow.setText(_translate("MainWindow", "Main Window"))
         self.actionToggleMainWindow.setShortcut(_translate("MainWindow", "Ctrl+W"))
 
-from .bindingproperties import BindingProperties
-from .util import ListWidget, ScrollArea
 from .simulator import Simulator
+from .util import ListWidget, ScrollArea
+from .bindingproperties import BindingProperties

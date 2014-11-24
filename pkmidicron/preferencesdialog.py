@@ -92,6 +92,7 @@ class PreferencesDialog(QDialog):
         self.ui.iconPlusNameButton.toggled.connect(self.setIconPlusName)
         self.ui.portList.installEventFilter(self)
         self.ui.addPortButton.clicked.connect(self.addPort)
+        self.ui.addPathButton.clicked.connect(self.addPythonPath)
 
         self.installEventFilter(self)
 
@@ -99,6 +100,15 @@ class PreferencesDialog(QDialog):
             self.onInputPortAdded(name)
         inputs().portAdded.connect(self.onInputPortAdded)
         inputs().portRemoved.connect(self.onInputPortRemoved)
+
+        self.prefs().beginGroup('python/paths')
+        for i in self.prefs().childGroups():
+            path = self.prefs().value('paths/' + i, type=str)
+            item = self.ui.pythonPathList.addItem(path)
+            item.setFlags(Qt.ItemIsEditable)
+            if not path in sys.path:
+                sys.path.append(path)
+        self.prefs().endGroup()
 
     def prefs(self):
         return self.mainwindow.prefs
@@ -165,3 +175,11 @@ class PreferencesDialog(QDialog):
         self.prefs().beginGroup('InputPorts/%s' % newName)
         self.prefs().setValue('enabled', enabled)
         self.prefs().endGroup()
+
+    def addPythonPath(self):
+        item = QListWidgetItem('something', self.ui.pythonPathList)
+        item.setFlags(Qt.ItemIsEditable)
+        self.ui.pythonPathList.setEnabled(True)
+
+    def onPythonPathChanged(self, item):
+        print(item.text())

@@ -110,14 +110,6 @@ class MainWindow(QMainWindow):
                 return False
         return True
 
-    def _closeEvent(self, e):
-        if not self.confirmSave():
-            e.ignore()
-            return
-        e.accept()
-        self.writePrefs()
-        self.collector.stop()
-
     def onQuit(self):
         if self.confirmSave():
             self.writePrefs()
@@ -287,7 +279,7 @@ class MainWindow(QMainWindow):
     def toggleMainWindow(self):
         self.setVisible(not self.isVisible())
         
-    def hideEvent(self, e):
+    def closeEvent(self, e):
         self.trayIcon.showHello()
         self.prefs.setValue("MainWindowShown", False)
         

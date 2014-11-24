@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/preferencesdialog.ui'
 #
-# Created: Tue Nov  4 13:07:54 2014
+# Created: Sun Nov 23 19:05:03 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -59,10 +59,28 @@ class Ui_PreferencesDialog(object):
         self.horizontalLayout.addWidget(self.addPortButton)
         self.verticalLayout_3.addLayout(self.horizontalLayout)
         self.verticalLayout_4.addWidget(self.groupBox_2)
+        self.groupBox_3 = QtWidgets.QGroupBox(self.generalPage)
+        self.groupBox_3.setObjectName("groupBox_3")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.groupBox_3)
+        self.verticalLayout_2.setSpacing(0)
+        self.verticalLayout_2.setContentsMargins(-1, -1, -1, 0)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.pythonPathList = QtWidgets.QListWidget(self.groupBox_3)
+        self.pythonPathList.setObjectName("pythonPathList")
+        self.verticalLayout_2.addWidget(self.pythonPathList)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        spacerItem2 = QtWidgets.QSpacerItem(48, 15, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem2)
+        self.addPathButton = QtWidgets.QPushButton(self.groupBox_3)
+        self.addPathButton.setObjectName("addPathButton")
+        self.horizontalLayout_2.addWidget(self.addPathButton)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.verticalLayout_4.addWidget(self.groupBox_3)
         self.stackedWidget.addWidget(self.generalPage)
-        self.page_2 = QtWidgets.QWidget()
-        self.page_2.setObjectName("page_2")
-        self.stackedWidget.addWidget(self.page_2)
+        self.pythonPage = QtWidgets.QWidget()
+        self.pythonPage.setObjectName("pythonPage")
+        self.stackedWidget.addWidget(self.pythonPage)
         self.verticalLayout_5.addWidget(self.stackedWidget)
 
         self.retranslateUi(PreferencesDialog)
@@ -77,5 +95,7 @@ class Ui_PreferencesDialog(object):
         self.iconPlusNameButton.setText(_translate("PreferencesDialog", "Icon + Name"))
         self.groupBox_2.setTitle(_translate("PreferencesDialog", "Ports"))
         self.addPortButton.setText(_translate("PreferencesDialog", "+"))
+        self.groupBox_3.setTitle(_translate("PreferencesDialog", "Python Search Paths"))
+        self.addPathButton.setText(_translate("PreferencesDialog", "+"))
 
 from .util import ListWidget

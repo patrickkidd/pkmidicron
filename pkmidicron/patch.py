@@ -1,11 +1,12 @@
 import os
+import io
 import types
 import sys
 import time
 import rtmidi
 from .util import refs
-from . import util, ports
-from .pyqt_shim import Qt, QSettings, QObject, pyqtSignal, QFileInfo
+from . import util, ports, scripteditor
+from .pyqt_shim import Qt, QSettings, QObject, pyqtSignal, QFileInfo, QSize
 
 
 class MidiMessage(QObject):
@@ -261,6 +262,8 @@ class RunScriptAction(Action):
         Action.__init__(self, util.ACTION_RUN_SCRIPT, parent)
         self.source = None
         self.editor = None # bleh
+        self.editorSizes = None
+        self.editorSplitterSizes = None
         self.module = None
         self.nameSeed = time.time()
 
@@ -279,10 +282,15 @@ class RunScriptAction(Action):
             self.source = None
         else:
             self.doSetSource(source)
+        self.editorSize = patch.value('editor/size', type=QSize)
+        self.editorSplitterSizes = util.int_list(patch.value('editor/splitterSizes'))
 
     def write(self, patch):
         super().write(patch)
         patch.setValue('source', self.source)
+        if self.editor:
+            patch.setValue('editor/size', self.editor.size())
+            patch.setValue('editor/splitterSizes', self.editor.splitter.sizes())
 
     def resetMod(self):
         if not self.module:
@@ -301,28 +309,62 @@ class RunScriptAction(Action):
             self.module = types.ModuleType(name)
         self.resetMod()
         self.module.__dict__.update({
-            'sendMessage': self.sendMessage,
             'inputs': ports.inputs,
             'outputs': ports.outputs,
+            'print': self.mod_print,
         })
         try:
             exec(self.source, self.module.__dict__)
-        except Exception:
+        except:
+            s = io.StringIO()
             import traceback
-            traceback.print_exc(file=sys.stdout)
+            nFrames = sys.exc_info()[2]
+            traceback.print_exc(file=s)
+            self.editor.appendConsole(s.getvalue())
+
+    def mod_print(self, *args, **kwargs):
+        s = ' '.join([str(x) for x in args])
+        self.editor.appendConsole(s)
 
     def setSource(self, x):
-        if x != self.source:
-            self.doSetSource(x)
-            self.getPatch().setDirty()
-            self.changed.emit()
+        self.doSetSource(x)
+        self.getPatch().setDirty()
+        self.changed.emit()
+
+    def showEditor(self):
+        if not self.editor:
+            self.editor = scripteditor.ScriptEditor()
+            self.editor.setText(self.source)
+            self.editor.closed.connect(self.save)
+            self.editor.saved.connect(self.save)
+            if self.editorSize:
+                self.editor.resize(self.editorSize)
+            if self.editorSplitterSizes:
+                self.editor.splitter.setSizes(self.editorSplitterSizes)
+                self.editor.updateResize()
+        self.editor.show()
+        self.editor.updateResize()
+        self.editor.raise_()
+
+    def save(self):
+        #if self.editor.dirty:
+        text = self.editor.text()
+        self.setSource(text)
+        self.editor.setDirty(False)
 
     def trigger(self, midi):
         if hasattr(self.module, 'onMidiMessage'):
-            self.module.onMidiMessage(midi)
+            try:
+                self.module.onMidiMessage(midi)
+            except:
+                s = io.StringIO()
+                import traceback
+                traceback.print_exc(file=s)
+                self.editor.appendConsole(s.getvalue())
 
-    def sendMessage(self, name, m):
-        ports.outputs().sendMessage(name, m)
+    def testScript(self):
+        midi = rtmidi.MidiMessage.noteOn(1, 100, 100)
+        self.trigger(midi)
 
 
 class Binding(QObject):

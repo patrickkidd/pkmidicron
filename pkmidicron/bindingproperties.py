@@ -1,5 +1,5 @@
 from .pyqt_shim import *
-from . import util, midiedit, scripteditor
+from . import util, midiedit
 import rtmidi
 
 
@@ -142,10 +142,10 @@ class RunScriptAction(ActionWidget):
         ActionWidget.__init__(self, action, tr("Run Script"), parent)
 
         self.editButton = QPushButton(tr('Edit'), self)
-        self.editButton.clicked.connect(self.showEditor)
+        self.editButton.clicked.connect(action.showEditor)
 
         self.testButton = QPushButton(tr('Test'), self)
-        self.testButton.clicked.connect(self.testScript)
+        self.testButton.clicked.connect(action.testScript)
 
         self.editButton.setFixedWidth(100)
         self.testButton.setFixedWidth(100)
@@ -154,49 +154,8 @@ class RunScriptAction(ActionWidget):
         Layout.addWidget(self.editButton)
         Layout.addSpacing(10)
         Layout.addWidget(self.testButton)
-
-        self.saveTimer = QTimer(self)
-        #self.saveTimer.timeout.connect(self.save)
-        self.saveTimer.setSingleShot(True)
-        
-        if action.editor:
-            self._initEditor(action.editor)
-
         self.layout().addLayout(Layout)
 
-    def init(self, action):
-        super().init(action)
-
-    def _initEditor(self, editor):
-        editor.closed.connect(self.onEditorClosed)
-        editor.textChanged.connect(self.onTextChanged)
-        editor.saved.connect(self.save)
-
-    def showEditor(self):
-        if not self.action.editor:
-            self.action.editor = scripteditor.ScriptEditor()
-            self.action.editor.setText(self.action.source)
-            self._initEditor(self.action.editor)
-        self.action.editor.show()
-        self.action.editor.raise_()
-
-    def onTextChanged(self):
-        #self.saveTimer.start(100) # bounce
-        pass
-
-    def testScript(self):
-        midi = rtmidi.MidiMessage.noteOn(1, 100, 100)
-        self.action.trigger(midi)
-
-    def save(self):
-        if self.action.editor.dirty:
-            text = self.action.editor.text()
-            self.action.setSource(text)
-            self.action.editor.setDirty(False)
-        
-    def onEditorClosed(self):
-        self.save()
-        
 
 class ActionBox(util.CollapsableBox):
     def __init__(self, parent=None):
@@ -210,12 +169,12 @@ class ActionBox(util.CollapsableBox):
         self.addBox.addItem('Open File')
         self.addBox.addItem('Run Script')
         self.addBox.activated.connect(self.addAction)
-
         self.addBox.installEventFilter(self)
+        self.header.layout().insertWidget(2, self.addBox)
 
         self.actionsLayout = QVBoxLayout()
         Layout = QVBoxLayout()
-        Layout.addWidget(self.addBox)
+#        Layout.addWidget(self.addBox)
         Layout.addLayout(self.actionsLayout)
         self.content.setLayout(Layout)
 
