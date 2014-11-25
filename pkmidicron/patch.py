@@ -4,6 +4,7 @@ import types
 import sys
 import time
 import rtmidi
+import slugify
 from .util import refs
 from . import util, ports, scripteditor
 from .pyqt_shim import Qt, QSettings, QObject, pyqtSignal, QFileInfo, QSize
@@ -258,6 +259,9 @@ class RunProgramAction(Action):
 
 
 class RunScriptAction(Action):
+
+    lastIndex = 1
+
     def __init__(self, parent=None):
         Action.__init__(self, util.ACTION_RUN_SCRIPT, parent)
         self.source = None
@@ -265,7 +269,11 @@ class RunScriptAction(Action):
         self.editorSizes = None
         self.editorSplitterSizes = None
         self.module = None
-        self.nameSeed = time.time()
+        self.name = 'RunScriptAction_%i' % RunScriptAction.lastIndex
+        self.slug = self.getSlug(self.name)
+        self.editorSize = None
+        self.editorSplitterSizes = None
+        RunScriptAction.lastIndex += 1
 
     def clear(self):
         if self.editor:
@@ -278,6 +286,8 @@ class RunScriptAction(Action):
     def read(self, patch):
         super().read(patch)
         source = patch.value('source', type=str, defaultValue=None)
+        self.name = patch.value('name', type=str)
+        self.slug = self.getSlug(self.name)
         if not source:
             self.source = None
         else:
@@ -291,6 +301,7 @@ class RunScriptAction(Action):
         if self.editor:
             patch.setValue('editor/size', self.editor.size())
             patch.setValue('editor/splitterSizes', self.editor.splitter.sizes())
+        patch.setValue('name', self.name)
 
     def resetMod(self):
         if not self.module:
@@ -304,38 +315,63 @@ class RunScriptAction(Action):
 
     def doSetSource(self, x):
         self.source = x
-        name = 'RunScriptAction_%i' % self.nameSeed
         if not self.module:
-            self.module = types.ModuleType(name)
+            self.module = types.ModuleType(self.name)
         self.resetMod()
         self.module.__dict__.update({
             'inputs': ports.inputs,
             'outputs': ports.outputs,
             'print': self.mod_print,
-            '__file__': 'pk_' + str(time.time()),
+            '__file__': self.slug,
         })
         try:
             exec(self.source, self.module.__dict__)
+            success = True
         except:
             self.printTraceback()
+            success = False
+        if success:
+            sys.modules[self.slug] = self.module
+        
 
     def printTraceback(self):
-        import traceback
-        # take out the first stack frame so you don't see app code
-        lines = traceback.format_exc().splitlines()
-        first = lines[0]
-        diads = lines[1:-1]
-        last = lines[-1]
-        lines = [first] + diads[2:] + [last]
-        lines = [s.replace('<string>', '<script>') for s in lines]
-        self.editor.appendConsole('\n'.join(lines))
+        if self.editor:
+            import traceback
+            # take out the first stack frame so you don't see app code
+            lines = traceback.format_exc().splitlines()
+            first = lines[0]
+            diads = lines[1:-1]
+            last = lines[-1]
+            lines = [first] + diads[2:] + [last]
+            lines = [s.replace('<string>', '<script>') for s in lines]
+            self.editor.appendConsole('\n'.join(lines))
 
     def mod_print(self, *args, **kwargs):
-        s = ' '.join([str(x) for x in args])
-        self.editor.appendConsole(s)
+        if self.editor:
+            s = ' '.join([str(x) for x in args])
+            self.editor.appendConsole(s)
+        else:
+            print(*args, **kwargs)
+
+    def getSlug(self, x):
+        return slugify.slugify(x).replace('-', '_')
 
     def setSource(self, x):
         self.doSetSource(x)
+        self.getPatch().setDirty()
+        self.changed.emit()
+
+    def setName(self, x):
+        if not str(x):
+            return
+        oldName = self.name
+        self.name = str(x)
+        self.slug = self.getSlug(self.name)
+        if self.module:
+            self.module.__name__ = self.slug
+            if oldName in sys.modules:
+                del sys.modules[oldName]
+                sys.modules[self.name] = self.module
         self.getPatch().setDirty()
         self.changed.emit()
 

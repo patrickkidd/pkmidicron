@@ -141,6 +141,11 @@ class RunScriptAction(ActionWidget):
     def __init__(self, action, parent=None):
         ActionWidget.__init__(self, action, tr("Run Script"), parent)
 
+        self.nameLabel = QLabel(tr('Name:'), self)
+        self.nameEdit = QLineEdit(self)
+        self.nameEdit.setText(action.name)
+        self.nameEdit.textChanged.connect(self.setName)
+
         self.editButton = QPushButton(tr('Edit'), self)
         self.editButton.clicked.connect(action.showEditor)
 
@@ -151,10 +156,15 @@ class RunScriptAction(ActionWidget):
         self.testButton.setFixedWidth(100)
 
         Layout = QHBoxLayout()
+        Layout.addWidget(self.nameLabel)
+        Layout.addWidget(self.nameEdit)
         Layout.addWidget(self.editButton)
         Layout.addSpacing(10)
         Layout.addWidget(self.testButton)
         self.layout().addLayout(Layout)
+
+    def setName(self, x):
+        self.action.setName(x)
 
 
 class ActionBox(util.CollapsableBox):

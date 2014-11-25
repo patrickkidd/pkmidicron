@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Sun Nov 23 19:05:03 2014
+# Created: Mon Nov 24 20:07:36 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -199,6 +199,6 @@ class Ui_MainWindow(object):
         self.actionToggleMainWindow.setText(_translate("MainWindow", "Main Window"))
         self.actionToggleMainWindow.setShortcut(_translate("MainWindow", "Ctrl+W"))
 
-from .simulator import Simulator
 from .util import ListWidget, ScrollArea
+from .simulator import Simulator
 from .bindingproperties import BindingProperties
