@@ -1,10 +1,15 @@
+import os
 from .pyqt_shim import *
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 
 
-font = QFont('Andale Mono')
-font.setPointSize(12)
 
+if hasattr(os, 'uname'):
+    font = QFont('Andale Mono')
+    font.setPointSize(12)
+else:
+    font = QFont('Courier New')
+    font.setPointSize(10)
 BUTTON_WIDTH = 80
 
 TINT = QColor('#dcffdb')
