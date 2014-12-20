@@ -158,8 +158,8 @@ class RunScriptAction(ActionWidget):
         Layout = QHBoxLayout()
         Layout.addWidget(self.nameLabel)
         Layout.addWidget(self.nameEdit)
-        Layout.addWidget(self.editButton)
         Layout.addSpacing(10)
+        Layout.addWidget(self.editButton)
         Layout.addWidget(self.testButton)
         self.layout().addLayout(Layout)
 

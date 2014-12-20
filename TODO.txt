@@ -1,8 +1,13 @@
+PUNCH LIST
+============================
 - set save button bg to green when compile is a success, pulsing red when error
 - no trigger count on just added bindings
 - any midi msg type wildcard
 - prevent 0 vel selected for note on
+- drag menu bar
 
+WISH LIST
+============================
 - set dirty when action data is changed, namely run program text
 - simulator on windows
 - file save on windows

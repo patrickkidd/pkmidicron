@@ -281,7 +281,7 @@ class CollapsableBox(QFrame):
         self.image = QImage(":/box-bg-2.jpg")
 
         self.header = QWidget(self)
-        self.header.setFixedHeight(40)
+        self.header.setFixedHeight(45)
         self.headerButton = QPushButton('-', self)
         self.headerButton.setFixedWidth(20)
         self.headerButton.hide()

@@ -109,7 +109,8 @@ class PreferencesDialog(QDialog):
                 sys.path.append(path)
         for path in sys.path:
             item = QListWidgetItem(path, self.ui.pythonPathList)
-            item.setFlags(Qt.ItemIsEditable)
+            item.setFlags(item.flags() | Qt.ItemIsEditable)
+        self.ui.pythonPathList.itemChanged.connect(self.onPythonPathChanged)
         self.prefs().endGroup()
 
     def prefs(self):
@@ -180,8 +181,7 @@ class PreferencesDialog(QDialog):
 
     def addPythonPath(self):
         item = QListWidgetItem('something', self.ui.pythonPathList)
-        item.setFlags(Qt.ItemIsEditable)
-        self.ui.pythonPathList.setEnabled(True)
+        item.setFlags(item.flags() | Qt.ItemIsEditable)
 
     def onPythonPathChanged(self, item):
         print(item.text())

@@ -273,8 +273,7 @@ class MainWindow(QMainWindow):
     def showPreferences(self):
         if self.prefsDialog is None:
             self.prefsDialog = preferencesdialog.PreferencesDialog(self)
-            self.prefsDialog.exec()
-            self.prefsDialog = None
+        self.prefsDialog.exec()
 
     def toggleMainWindow(self):
         self.setVisible(not self.isVisible())
