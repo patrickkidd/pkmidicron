@@ -239,7 +239,7 @@ class MainWindow(QMainWindow):
         self.prefs.beginGroup('InputPorts')
         for portName in self.prefs.childGroups():
             self.prefs.beginGroup(portName)
-            enabled = self.prefs.value('enabled', type=bool)
+            enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
             self.setInputPortEnabled(portName, enabled)
             self.prefs.endGroup()
         self.prefs.endGroup()
@@ -377,6 +377,14 @@ class MainWindow(QMainWindow):
 
     def setInputPortEnabled(self, name, x):
         self.collector.setPortEnabled(name, x)
+        
+    # def onInputPortAdded(self, portName):
+        # self.prefs.beginGroup('InputPorts/')
+        # self.prefs.beginGroup(portName)
+        # enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
+        # self.setInputPortEnabled(portName, enabled)
+        # self.prefs.endGroup()
+        # self.prefs.endGroup()        
 
     def onMidiMessage(self, portName, midi):
         if self.patch.block:
