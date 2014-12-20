@@ -140,7 +140,8 @@ class ListWidget(QListWidget):
 
 
 
-def openPort(name):
+def _openPort(name):
+    print('openPort:', name)
     device = rtmidi.RtMidiOut()
     for i in range(device.getPortCount()):
         if device.getPortName(i) == name:

@@ -43,7 +43,12 @@ class PortList(QObject):
         removed = set(self.ports.keys()) - set(newNames)
         for name in added:
             self.ports[name] = self.ctor()
-            self.ports[name].openPort(self._getPortIndex(name))
+            # print("OPEN %i: %s" % (self._getPortIndex(name), name))
+            # try:
+            #     self.ports[name].openPort(self._getPortIndex(name))
+            # except rtmidi.Error:
+            #     import traceback
+            #     traceback.print_exc()
             self.portAdded.emit(name)
         for name in removed:
             self.ports[name].closePort()

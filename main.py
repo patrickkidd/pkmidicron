@@ -28,6 +28,7 @@ QToolButton {
 def main():
     import rtmidi
     prefs = util.Settings('vedanamedia', 'PKMidiCron')
+    print('PREFERENCES: ', prefs.fileName())
     prefs.setAutoSave(True)
     app = util.Application(sys.argv)
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
