@@ -95,6 +95,9 @@ class PreferencesDialog(QDialog):
         self.ui.addPortButton.clicked.connect(self.addPort)
         self.ui.addPathButton.clicked.connect(self.addPythonPath)
 
+        self.ui.enableAllInputsBox.setChecked(self.mainwindow.enableAllInputs)
+        self.ui.enableAllInputsBox.toggled.connect(self.setEnableAllInputs)
+
         self.installEventFilter(self)
 
         for name in inputs().names():
@@ -165,9 +168,14 @@ class PreferencesDialog(QDialog):
                 self.ui.portList.takeItem(i)
                 return
 
+    def setEnableAllInputs(self, on):
+        self.prefs().setValue('EnableAllInputs', bool(on))
+        self.mainwindow.setEnableAllInputs(on)
+
     def setPortEnabled(self, name, x):
         self.prefs().setValue('InputPorts/%s/enabled' % name, bool(x))
-        self.mainwindow.setInputPortEnabled(name, x)
+        if not self.mainwindow.enableAllInputs:
+            self.mainwindow.setInputPortEnabled(name, x)
 
     def renamePort(self, oldName, newName):
         self.prefs().beginGroup('InputPorts/%s' % oldName)

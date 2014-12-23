@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/preferencesdialog.ui'
 #
-# Created: Thu Nov 27 11:18:05 2014
+# Created: Tue Dec 23 10:44:38 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -42,8 +42,15 @@ class Ui_PreferencesDialog(object):
         self.groupBox_2.setObjectName("groupBox_2")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.groupBox_2)
         self.verticalLayout_3.setSpacing(0)
-        self.verticalLayout_3.setContentsMargins(-1, -1, -1, 0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.enableAllInputsBox = QtWidgets.QCheckBox(self.groupBox_2)
+        self.enableAllInputsBox.setObjectName("enableAllInputsBox")
+        self.horizontalLayout_3.addWidget(self.enableAllInputsBox)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_3.addItem(spacerItem)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_3)
         self.portList = ListWidget(self.groupBox_2)
         self.portList.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.portList.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
@@ -53,8 +60,8 @@ class Ui_PreferencesDialog(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
         self.addPortButton = QtWidgets.QPushButton(self.groupBox_2)
         self.addPortButton.setObjectName("addPortButton")
         self.horizontalLayout.addWidget(self.addPortButton)
@@ -71,8 +78,8 @@ class Ui_PreferencesDialog(object):
         self.verticalLayout_2.addWidget(self.pythonPathList)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        spacerItem1 = QtWidgets.QSpacerItem(48, 15, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem1)
+        spacerItem2 = QtWidgets.QSpacerItem(48, 15, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem2)
         self.addPathButton = QtWidgets.QPushButton(self.groupBox_3)
         self.addPathButton.setObjectName("addPathButton")
         self.horizontalLayout_2.addWidget(self.addPathButton)
@@ -95,6 +102,8 @@ class Ui_PreferencesDialog(object):
         self.iconOnlyButton.setText(_translate("PreferencesDialog", "Icon Only"))
         self.iconPlusNameButton.setText(_translate("PreferencesDialog", "Icon + Name"))
         self.groupBox_2.setTitle(_translate("PreferencesDialog", "Ports"))
+        self.enableAllInputsBox.setToolTip(_translate("PreferencesDialog", "This overrides all settings in the ports list"))
+        self.enableAllInputsBox.setText(_translate("PreferencesDialog", "Always Enable All Inputs (Ignores checkboxes below)"))
         self.addPortButton.setText(_translate("PreferencesDialog", "+"))
         self.groupBox_3.setTitle(_translate("PreferencesDialog", "Python Search Paths"))
         self.addPathButton.setText(_translate("PreferencesDialog", "+"))

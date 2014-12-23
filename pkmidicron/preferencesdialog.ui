@@ -78,9 +78,33 @@
            <property name="spacing">
             <number>0</number>
            </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QCheckBox" name="enableAllInputsBox">
+               <property name="toolTip">
+                <string>This overrides all settings in the ports list</string>
+               </property>
+               <property name="text">
+                <string>Always Enable All Inputs (Ignores checkboxes below)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
            <item>
             <widget class="ListWidget" name="portList">
              <property name="selectionMode">

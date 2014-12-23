@@ -25,8 +25,12 @@ class MainWindow(QMainWindow):
         self.prefsDialog = None
         self.firstMessage = True
 
+        # don't auto list here because we will add post explicitly using ports().portAdded
+        self.enableAllInputs = False
         self.collector = util.CollectorBin(parent=self, autolist=False)
         self.collector.message.connect(self.onMidiMessage)
+        inputs().portAdded.connect(self.onInputPortAdded)
+        inputs().portAdded.connect(self.onInputPortRemoved)
         self.collector.start()
 
         self.toolbar = self.addToolBar(tr("File"))
@@ -74,9 +78,6 @@ class MainWindow(QMainWindow):
         self.ui.actionToggleLog.triggered.connect(self.toggleLog)
         self.ui.actionToggleBindingProperties.triggered.connect(self.toggleBindingProperties)
         self.ui.actionToggleMainWindow.triggered.connect(self.toggleMainWindow)
-
-        inputs().portAdded.connect(self.collector.addCollector)
-        inputs().portAdded.connect(self.collector.removeCollector)
 
         # Init
 
@@ -236,13 +237,16 @@ class MainWindow(QMainWindow):
         else:
             self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
         #
-        self.prefs.beginGroup('InputPorts')
-        for portName in self.prefs.childGroups():
-            self.prefs.beginGroup(portName)
-            enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
-            self.setInputPortEnabled(portName, enabled)
+        enableAll = self.prefs.value('EnableAllInputs', defaultValue=False)
+        self.setEnableAllInputs(enableAll)
+        if not enableAll:
+            self.prefs.beginGroup('InputPorts')
+            for portName in self.prefs.childGroups():
+                self.prefs.beginGroup(portName)
+                enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
+                self.setInputPortEnabled(portName, enabled)
+                self.prefs.endGroup()
             self.prefs.endGroup()
-        self.prefs.endGroup()
         #
         filePath = self.prefs.value('lastFilePath')
         if filePath and QFileInfo(filePath).isFile():
@@ -261,6 +265,7 @@ class MainWindow(QMainWindow):
         elif x == Qt.ToolButtonTextUnderIcon:
             y = 'iconPlusName'
         self.prefs.setValue('toolButtonStyle', y)
+        self.prefs.setValue('EnableAllInputs', bool(self.enableAllInputs))
         self.prefs.setAutoSave(was)
         self.prefs.sync()
 
@@ -375,16 +380,32 @@ class MainWindow(QMainWindow):
         self.ui.activityLog.setRowCount(0)
         self.ui.actionClearLog.setEnabled(False)
 
+    def setEnableAllInputs(self, on):
+        self.enableAllInputs = on
+        for name in inputs().names():
+            if on:
+                enabled = True
+            else:
+                enabled = self.prefs.value('InputPorts/%s/enabled' % name, type=bool, defaultValue=True)
+            self.setInputPortEnabled(name, enabled)
+
     def setInputPortEnabled(self, name, x):
+        """ called from prefs dialog """
         self.collector.setPortEnabled(name, x)
         
-    # def onInputPortAdded(self, portName):
-        # self.prefs.beginGroup('InputPorts/')
-        # self.prefs.beginGroup(portName)
-        # enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
-        # self.setInputPortEnabled(portName, enabled)
-        # self.prefs.endGroup()
-        # self.prefs.endGroup()        
+    def onInputPortAdded(self, portName):
+        if self.enableAllInputs:
+            enabled = True
+        else:
+            self.prefs.beginGroup('InputPorts/')
+            self.prefs.beginGroup(portName)
+            enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
+            self.prefs.endGroup()
+            self.prefs.endGroup()
+        self.setInputPortEnabled(portName, enabled)
+
+    def onInputPortRemoved(self, portName):
+        self.setInputPortEnabled(portName, False)
 
     def onMidiMessage(self, portName, midi):
         if self.patch.block:

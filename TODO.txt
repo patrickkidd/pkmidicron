@@ -1,5 +1,7 @@
 PUNCH LIST
 ============================
+- set dirty for cmd lin change in run program action
+- sys.path in preferences
 - set save button bg to green when compile is a success, pulsing red when error
 - no trigger count on just added bindings
 - any midi msg type wildcard
@@ -19,3 +21,4 @@ https://itunes.apple.com/us/app/evernote/id406056744?mt=12
 https://itunes.apple.com/us/app/loop-editor/id901443398?mt=12
 https://itunes.apple.com/us/app/midi-connections/id697996969?mt=12
 http://das.nasophon.de/mididings/
+

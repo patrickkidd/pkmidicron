@@ -4,6 +4,7 @@ from .pyqt_shim import QObject, pyqtSignal, QTimer, QCoreApplication
 
 import time
 class PortList(QObject):
+    """ Maintains a list of ports. This class does NOT open and close ports. """
 
     portAdded = pyqtSignal(str)
     portRemoved = pyqtSignal(str)
