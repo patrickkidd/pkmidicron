@@ -29,7 +29,6 @@ class BindingListItem(QListWidgetItem):
         self.changed = self.proxy.changed
 
         self.widget = Widget(self)
-        parent.setItemWidget(self, self.widget)
 
         self.enabledBox = QCheckBox(self.widget)
         self.enabledBox.setChecked(binding.enabled)
@@ -44,6 +43,7 @@ class BindingListItem(QListWidgetItem):
         self.nameEdit.textChanged.connect(self.onNameChanged)
 
         self.countLabel = QLabel('triggered 0 times', self.widget)
+        self.countLabel.hide()
         font = self.countLabel.font()
         font.setPixelSize(8)
         self.countLabel.setFont(font)
@@ -57,6 +57,7 @@ class BindingListItem(QListWidgetItem):
         Layout.addWidget(self.nameEdit)
         self.widget.setLayout(Layout)
 
+        parent.setItemWidget(self, self.widget)
         self.resizeEvent(None)
 
     def cleanup(self):
@@ -64,12 +65,12 @@ class BindingListItem(QListWidgetItem):
         self.widget = None
 
     def updateTriggerCount(self):
-        if not hasattr(self, 'countLabel'):
-            return
-        self.countLabel.setText('triggered %i times' % self.binding.triggerCount)
-        self.countLabel.resize(self.countLabel.sizeHint())
-        self.countLabel.move(self.widget.width() - 5 - self.countLabel.width(),
-                             self.widget.height() - 2 - self.countLabel.height())
+        if self.binding.triggerCount:
+            self.countLabel.show()
+            self.countLabel.setText('triggered %i times' % self.binding.triggerCount)
+            self.countLabel.resize(self.countLabel.sizeHint())
+            self.countLabel.move(self.widget.width() - 5 - self.countLabel.width(),
+                                 self.widget.height() - 2 - self.countLabel.height())
 
     def resizeEvent(self, e):
         self.updateTriggerCount()
