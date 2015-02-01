@@ -12,6 +12,7 @@ class CriteriaBox(util.CollapsableBox):
         Layout = QHBoxLayout()
         Layout.addWidget(self.midiEdit)
         Layout.addSpacing(1)
+        Layout.setContentsMargins(-1, 0, -1, -1) # just remove top margin
         self.content.setLayout(Layout)
 
     def init(self, binding):
@@ -238,8 +239,8 @@ class ActionBox(util.CollapsableBox):
 
         self.actionsLayout = QVBoxLayout()
         Layout = QVBoxLayout()
-#        Layout.addWidget(self.addBox)
         Layout.addLayout(self.actionsLayout)
+        Layout.setContentsMargins(-1, 0, -1, -1) # remove top margin
         self.content.setLayout(Layout)
 
     def eventFilter(self, o, e):

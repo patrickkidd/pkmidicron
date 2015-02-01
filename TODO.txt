@@ -1,11 +1,10 @@
 PUNCH LIST
 ============================
 - sys.path in preferences
-- set save button bg to green when compile is a success, pulsing red when error
 - no trigger count on just added bindings
+- set save button bg to green when compile is a success, pulsing red when error
 - any midi msg type wildcard
 - prevent 0 vel selected for note on
-- detect app bundles in run program action
 
 WISH LIST
 ============================

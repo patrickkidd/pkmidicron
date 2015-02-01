@@ -163,7 +163,8 @@ class MainWindow(QMainWindow):
         if not filePath:
             filePath = self.prefs.value('lastFilePath', type=str)
         if not filePath:
-            self.saveAs()
+            if not self.saveAs():
+                return
         self.patch.write(filePath)
         self.patch.setDirty(False)
         self.setWindowFilePath(filePath)
@@ -183,9 +184,10 @@ class MainWindow(QMainWindow):
                                                       filePath,
                                                       util.FILE_TYPES)
         if not filePath:
-            return
+            return False
         self.prefs.setValue('lastFileSavePath', filePath)
         self.save(filePath)
+        return True
 
     def open(self, filePath=None):
         usedDialog = False
@@ -467,7 +469,6 @@ class MainWindow(QMainWindow):
         self.ui.actionClearLog.setEnabled(False)
 
     def onMidiMessage(self, portName, midi):
-        print(midi)
         if self.patch.block:
             return
         s = midi.__str__().replace('<', '').replace('>', '')

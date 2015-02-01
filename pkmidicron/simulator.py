@@ -66,7 +66,7 @@ class Simulator(QWidget):
         self.simulator = None
         
     def send(self, msg=None):
-        def _send(portName, m):
+        def _sendToOnePort(portName, m):
             if not portName:
                 return
             if self.fakeBox.isChecked():
@@ -77,9 +77,9 @@ class Simulator(QWidget):
             msg = self.simulator.midi
         if self.simulator.portName == util.ALL_TEXT:
             for portName in outputs().names():
-                _send(portName, msg)
+                _sendToOnePort(portName, msg)
         else:
-            _send(self.simulator.portName, msg)
+            _sendToOnePort(self.simulator.portName, msg)
 
     def goCrazy(self, on):
         if self._timer:

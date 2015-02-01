@@ -13,6 +13,7 @@ class PortList(QObject):
         super().__init__(parent)
         self.ports = {}
         self.virtualPorts = {}
+        self._names_cached = []
         self.prefs = prefs
         self.isInput = bool(input)
         self.ctor = self.isInput and rtmidi.RtMidiIn or rtmidi.RtMidiOut
@@ -57,7 +58,11 @@ class PortList(QObject):
             self.portRemoved.emit(name)
 
     def names(self):
-        return [self.dev.getPortName(i) for i in range(self.dev.getPortCount())]
+        self._names_cached = [self.dev.getPortName(i) for i in range(self.dev.getPortCount())]
+        return self._names_cached
+
+    def names_cached(self):
+        return self._names_cached
 
     def addVirtualPort(self, name):
         if name in self.virtualPorts:
@@ -104,6 +109,11 @@ class OutputPorts(PortList):
     def sendMessage(self, portName, m):
         if not portName in self.ports:
             raise ValueError('No midi output port with the name ' + portName)
+        port = self.ports[portName]
+        if not port.isPortOpen():
+            for i in range(port.getPortCount()):
+                if port.getPortName(i) == portName:
+                    port.openPort(i)
         self.ports[portName].sendMessage(m)
 
 
