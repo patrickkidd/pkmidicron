@@ -29,8 +29,10 @@ class MidiEdit(QWidget):
         ports().portRemoved.connect(self.removePortName)
         if any:
             self.portBox.addItem(util.ANY_TEXT)
+            self.portBox.setCurrentIndex(self.portBox.count())
         if all:
             self.portBox.addItem(util.ALL_TEXT)
+            self.portBox.setCurrentIndex(self.portBox.count())
 #        self.portBox.addItem(util.NONE_TEXT)
         self.portBox.setMinimumWidth(100)
         self.portBox.currentTextChanged.connect(self.updateValue)

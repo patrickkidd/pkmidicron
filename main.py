@@ -6,11 +6,13 @@ import os, sys
 from pkmidicron import MainWindow, util, ports
 from pkmidicron.pyqt_shim import Qt, QSettings, QApplication, QIcon, QWidget, QLibraryInfo, QFileSystemWatcher, QFile
 
-
 STYLE_SHEET = """
 QLineEdit:read-only {
     border: 0;
     background: transparent;
+}
+QLineEdit {
+    padding-left: 1px;
 }
 QListView::item {
     border-bottom: 1px solid #ececec;

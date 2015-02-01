@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/preferencesdialog.ui'
 #
-# Created: Tue Dec 23 10:44:38 2014
+# Created: Sat Jan 31 17:26:27 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ class Ui_PreferencesDialog(object):
     def setupUi(self, PreferencesDialog):
         PreferencesDialog.setObjectName("PreferencesDialog")
         PreferencesDialog.setWindowModality(QtCore.Qt.WindowModal)
-        PreferencesDialog.resize(415, 440)
+        PreferencesDialog.resize(415, 449)
         PreferencesDialog.setMinimumSize(QtCore.QSize(250, 0))
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(PreferencesDialog)
         self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -37,11 +37,13 @@ class Ui_PreferencesDialog(object):
         self.verticalLayout_4.addWidget(self.groupBox)
         self.splitter = QtWidgets.QSplitter(self.generalPage)
         self.splitter.setOrientation(QtCore.Qt.Vertical)
+        self.splitter.setChildrenCollapsible(False)
         self.splitter.setObjectName("splitter")
         self.groupBox_2 = QtWidgets.QGroupBox(self.splitter)
         self.groupBox_2.setObjectName("groupBox_2")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.groupBox_2)
         self.verticalLayout_3.setSpacing(0)
+        self.verticalLayout_3.setContentsMargins(-1, -1, -1, 0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")

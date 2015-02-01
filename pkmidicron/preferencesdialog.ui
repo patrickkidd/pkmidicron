@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>415</width>
-    <height>440</height>
+    <height>449</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -70,12 +70,18 @@
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
+         <property name="childrenCollapsible">
+          <bool>false</bool>
+         </property>
          <widget class="QGroupBox" name="groupBox_2">
           <property name="title">
            <string>Ports</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
             <number>0</number>
            </property>
            <item>

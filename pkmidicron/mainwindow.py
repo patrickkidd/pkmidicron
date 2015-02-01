@@ -286,6 +286,8 @@ class MainWindow(QMainWindow):
         self.prefs.setAutoSave(was)
         self.prefs.sync()
 
+    ## Views
+
     def showAbout(self):
         version = 1.1
         QMessageBox.about(self, tr("About PKMidiCron"),
@@ -322,6 +324,16 @@ class MainWindow(QMainWindow):
             if i.isVisible():
                 any = True
         return not any
+
+    def showBindingsList(self):
+        """ ensure not visible but collapsed """
+        if not self.ui.bindingsList.isVisible():
+            self.toggleBindings()
+        else:
+            sizes = self.ui.outerSplitter.sizes()
+            if sizes[0] == 0:
+                sizes[0] = self.ui.bindingsList.sizeHint().width()
+                self.ui.outerSplitter.setSizes(sizes)
 
     def toggleBindings(self):
         if self.isLastView(self.ui.bindingsList):
@@ -372,12 +384,19 @@ class MainWindow(QMainWindow):
         x = not self.ui.bindingPropertiesScroller.isVisible()
         self.ui.bindingPropertiesScroller.setVisible(x)
         if x:
-            sizes = self.ui.innerSplitter.sizes()
-            if sizes[2] == 0:
-                h = self.ui.bindingPropertiesScroller.sizeHint().height()
-                self.ui.innerSplitter.setSizes([sizes[0], sizes[1], h])
+            self.showBindingProperties()
         self.prefs.setValue('bindingPropertiesShown', x)
         self.checkInnerSplitter(x)
+
+    def showBindingProperties(self):
+        """ ensure not visible but collapsed """
+        w = self.ui.bindingPropertiesScroller
+        if not w.isVisible():
+            w.setVisible(True)
+        sizes = self.ui.innerSplitter.sizes()
+        if sizes[2] == 0:
+            sizes[2] = w.sizeHint().height()
+            self.ui.innerSplitter.setSizes(sizes)
 
     def checkSimulatorHeight(self):
         x = self.ui.simulator.isVisible()
@@ -439,6 +458,7 @@ class MainWindow(QMainWindow):
     ## Functionality
 
     def addBinding(self, binding=None):
+        self.showBindingsList()
         if binding is None or type(binding) == bool:
             binding = self.patch.addBinding()
         item = bindinglistitem.BindingListItem(self.ui.bindingsList, binding)
@@ -459,6 +479,7 @@ class MainWindow(QMainWindow):
             self.ui.actionDeleteBinding.setEnabled(True)
             item = self.ui.bindingsList.item(x.indexes()[0].row())
             self.ui.bindingProperties.init(item.binding)
+            self.showBindingProperties()
         elif y.indexes():
             self.ui.actionDeleteBinding.setEnabled(False)
             self.ui.bindingProperties.clear()

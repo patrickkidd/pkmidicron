@@ -94,12 +94,14 @@ class MidiMessage(QObject):
 class Simulator(MidiMessage):
     def __init__(self, parent=None):
         MidiMessage.__init__(self, parent)
+        self.portName = util.ALL_TEXT
 
 
 class Criteria(MidiMessage):
 
     def __init__(self, parent=None):
         MidiMessage.__init__(self, parent)
+        self.portName = util.ANY_TEXT
 
     def clear(self):
         pass
@@ -203,6 +205,8 @@ class SendMessageAction(Action):
         patch.endGroup()
 
     def trigger(self, midi):
+        if not self.portName:
+            return
         was = self.getPatch().setBlock(True)
         if self.forward:
             ports.outputs().sendMessage(self.midiMessage.portName, midi)

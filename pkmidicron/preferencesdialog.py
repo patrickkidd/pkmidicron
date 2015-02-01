@@ -106,14 +106,14 @@ class PreferencesDialog(QDialog):
         inputs().portAdded.connect(self.onInputPortAdded)
         inputs().portRemoved.connect(self.onInputPortRemoved)
 
+        self.exludePaths = list(sys.path)
         self.prefs().beginGroup('python/paths')
         for i in self.prefs().childGroups():
             path = self.prefs().value('paths/' + i, type=str)
             if not path in sys.path:
                 sys.path.append(path)
-        for path in sys.path:
-            item = QListWidgetItem(path, self.ui.pythonPathList)
-            item.setFlags(item.flags() | Qt.ItemIsEditable)
+                item = QListWidgetItem(path, self.ui.pythonPathList)
+                item.setFlags(item.flags() | Qt.ItemIsEditable)
         self.ui.pythonPathList.itemChanged.connect(self.onPythonPathChanged)
         self.prefs().endGroup()
 
