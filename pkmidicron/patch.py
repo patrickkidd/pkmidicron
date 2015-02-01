@@ -339,27 +339,36 @@ class RunScriptAction(Action):
             'print': self.mod_print,
             '__file__': self.slug,
         })
+        tb = None
         try:
             exec(self.source, self.module.__dict__)
-            success = True
         except:
-            self.printTraceback()
-            success = False
-        if success:
+            tb = self.printTraceback()
+        if tb is None:
             sys.modules[self.slug] = self.module
-        
+            if self.editor:
+                self.editor.editor.setDirtyState(scripteditor.STATE_COMPILED)
+                self.editor.editor.setExceptionLine(None)
+        else:
+            if self.editor:
+                self.editor.editor.setDirtyState(scripteditor.STATE_ERROR)
+                # last = tb.splitlines()[-2]
+                # line = int(last.split(', line ')[1].split(', in ')[0])
+                # self.editor.editor.setExceptionLine(line)
 
     def printTraceback(self):
         if self.editor:
             import traceback
             # take out the first stack frame so you don't see app code
-            lines = traceback.format_exc().splitlines()
+            tb = traceback.format_exc()
+            lines = tb.splitlines()
             first = lines[0]
             diads = lines[1:-1]
             last = lines[-1]
             lines = [first] + diads[2:] + [last]
             lines = [s.replace('<string>', '<script>') for s in lines]
             self.editor.appendConsole('\n'.join(lines))
+            return tb
 
     def mod_print(self, *args, **kwargs):
         if self.editor:
@@ -390,6 +399,9 @@ class RunScriptAction(Action):
         self.getPatch().setDirty()
         self.changed.emit()
 
+    def setDirtyState(self, state):
+        self.editor.editor.setDirtyState(state)
+
     def showEditor(self):
         if not self.editor:
             self.editor = scripteditor.ScriptEditor()
@@ -412,7 +424,7 @@ class RunScriptAction(Action):
         #if self.editor.dirty:
         text = self.editor.text()
         self.setSource(text)
-        self.editor.setDirty(False)
+        #self.editor.editor.setDirty(False)
 
     def trigger(self, midi):
         if hasattr(self.module, 'onMidiMessage'):

@@ -332,8 +332,9 @@ class CollapsableBox(QFrame):
             self.isCollapsed = True
 
 
-
 def setBackgroundColor(w, c):
+    if c is None:
+        clearBackgroundColor(w)
     if not hasattr(w, '_orig_palette'):
         w._orig_palette = w.palette()
     p = QPalette(w.palette())

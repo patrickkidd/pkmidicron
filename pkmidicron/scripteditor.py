@@ -1,8 +1,7 @@
 import os
 from .pyqt_shim import *
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
-
-
+from . import util
 
 if hasattr(os, 'uname'):
     font = QFont('Andale Mono')
@@ -10,9 +9,17 @@ if hasattr(os, 'uname'):
 else:
     font = QFont('Courier New')
     font.setPointSize(10)
+
 BUTTON_WIDTH = 80
 
-TINT = QColor('#dcffdb')
+TINT_COMPILED = QColor('#dcffdb')
+TINT_EDITED = QColor('#fdffbd')
+TINT_ERROR = QColor('#ffdbdb')
+
+STATE_COMPILED = 1
+STATE_EDITED = 2
+STATE_ERROR = 3
+
 
 class Editor(QsciScintilla):
 
@@ -29,17 +36,15 @@ class Editor(QsciScintilla):
         self.setProperty("canHaveFocus", True)
         self.viewport().setProperty("canHaveFocus", True)
         self.errorLine = self.markerDefine(QsciScintilla.Background)
+        self.lastErrorMarker = None
         self.resize(500, 500)
-  
-        highlightColor = QColor('yellow')
-        highlightColor.setAlpha(0.3921568627451)
-      
-        self.setMarkerBackgroundColor(highlightColor)
+
+        self.setMarkerBackgroundColor(TINT_ERROR)
         self.setEolMode(QsciScintilla.EolUnix)
         self.setAutoIndent(True)
         self.setMarginType(1, QsciScintilla.NumberMargin)
         self.setMarginWidth(1, 25)
-        self.setMarginsBackgroundColor(TINT)
+        self.setMarginsBackgroundColor(TINT_COMPILED)
         self.setMarginLineNumbers(1, True)
         self.setIndentationWidth(4)
         self.setIndentationsUseTabs(False)
@@ -48,11 +53,11 @@ class Editor(QsciScintilla):
         self.setFont(font)
         # self.lexer().setPaper(QColor('red'))
 
-        self.textChanged.connect(self.parent().setDirty)
+        self.textChanged.connect(self.onTextChanged)
 
-        self.saveButton = QPushButton(tr('Compile'), self)
-        self.saveButton.clicked.connect(self.saved.emit)
-        self.saveButton.setFixedWidth(BUTTON_WIDTH)
+        self.compileButton = QPushButton(tr('Compile'), self)
+        self.compileButton.clicked.connect(self.saved.emit)
+        self.compileButton.setFixedWidth(BUTTON_WIDTH)
 
         self.testButton = QPushButton(tr('Test'), self)
         self.testButton.clicked.connect(self.test.emit)
@@ -78,6 +83,7 @@ class Editor(QsciScintilla):
         self.saveAction.triggered.connect(self.saved.emit)
         self.addAction(self.saveAction)
 
+        self.setDirtyState(STATE_COMPILED)
         self.resizeEvent(None)
 
     def resizeEvent(self, e):
@@ -89,9 +95,9 @@ class Editor(QsciScintilla):
             elif not self.isCollapsed and e.size().height() == 0:
                 self.isCollapsed = True
                 self.hidden.emit()            
-        self.saveButton.move(self.width() - self.saveButton.width(), 0)
+        self.compileButton.move(self.width() - self.compileButton.width(), 0)
         self.testButton.move(self.width() - self.testButton.width(),
-                             self.saveButton.height())
+                             self.compileButton.height())
         self.consoleButton.move(self.width() - self.consoleButton.width(),
                                 self.testButton.y() + self.testButton.height())
 
@@ -109,6 +115,36 @@ class Editor(QsciScintilla):
     def unindentLineOrSelection(self):
         pass
 
+    def onTextChanged(self):
+        self.setDirtyState(STATE_EDITED)
+
+    def setDirtyState(self, state):
+        if state == STATE_COMPILED:
+            self.setMarginsBackgroundColor(TINT_COMPILED)
+            p = QPalette(self.compileButton.palette())
+            p.setColor(QPalette.Button, TINT_COMPILED)
+            self.compileButton.setPalette(p)
+        elif state == STATE_EDITED:
+            self.setMarginsBackgroundColor(TINT_EDITED)
+            p = QPalette(self.compileButton.palette())
+            p.setColor(QPalette.Button, TINT_EDITED)
+            self.compileButton.setPalette(p)
+        elif state == STATE_ERROR:
+            self.setMarginsBackgroundColor(TINT_ERROR)
+            p = QPalette(self.compileButton.palette())
+            p.setColor(QPalette.Button, TINT_ERROR)
+            self.compileButton.setPalette(p)
+
+    def setExceptionLine(self, iLine):
+        if self.lastErrorMarker:
+            self.markerDeleteHandle(self.lastErrorMarker)
+            self.lastErrorMarker = None
+        if iLine is not None:
+            iLine =- 1
+            self.lastErrorMarker = self.markerAdd(iLine, self.errorLine)
+            self.ensureLineVisible(iLine)
+        self.update()
+
 
 class Console(QTextEdit):
 
@@ -123,7 +159,7 @@ class Console(QTextEdit):
         self.setFrameStyle(QFrame.NoFrame)
         self.setReadOnly(True)
         p = QPalette(self.palette())
-        p.setColor(QPalette.Base, TINT)
+        p.setColor(QPalette.Base, TINT_COMPILED)
         p.setColor(QPalette.Text, QColor('black'))
         self.setPalette(p)
         self.setFont(font)
@@ -164,8 +200,6 @@ class ScriptEditor(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.dirty = False
-
         self.editor = Editor(self)
         self.editor.saved.connect(self.saved.emit)
         self.editor.textChanged.connect(self.textChanged.emit)
@@ -198,9 +232,6 @@ class ScriptEditor(QWidget):
 
     def closeEvent(self, e):
         self.closed.emit()
-
-    def setDirty(self, x=True):
-        self.dirty = x
 
     def text(self):
         return self.editor.text()

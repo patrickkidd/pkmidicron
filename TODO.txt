@@ -1,6 +1,6 @@
 PUNCH LIST
 ============================
-- set save button bg to green when compile is a success, pulsing red when error
+- fix exception line highlight
 - any midi msg type wildcard
 
 WISH LIST

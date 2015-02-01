@@ -402,7 +402,8 @@ class MainWindow(QMainWindow):
             w.setVisible(True)
         sizes = self.ui.innerSplitter.sizes()
         if sizes[2] == 0:
-            sizes[2] = w.sizeHint().height()
+            m = (sizes[0] + sizes[1]) / .3
+            sizes[2] = w.sizeHint().height() + m
             self.ui.innerSplitter.setSizes(sizes)
 
     def checkSimulatorHeight(self):

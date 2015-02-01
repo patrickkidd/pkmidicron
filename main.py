@@ -30,7 +30,7 @@ def main():
     import rtmidi
     prefs = util.Settings('vedanamedia', 'PKMidiCron')
     isDefault = not QFile(prefs.fileName()).exists()
-    print('PREFERENCES (isDefault: %s): %s' % (isDefault, prefs.fileName()))
+#    print('PREFERENCES (isDefault: %s): %s' % (isDefault, prefs.fileName()))
     prefs.setAutoSave(True)
     app = util.Application(sys.argv)
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
