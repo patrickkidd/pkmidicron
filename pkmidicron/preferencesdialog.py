@@ -84,6 +84,10 @@ class PreferencesDialog(QDialog):
         self.ui = preferencesdialog_form.Ui_PreferencesDialog()
         self.ui.setupUi(self)
         self.mainwindow = mainwindow
+        self.block = False
+
+        #self.actionDeleteBinding.setShortcut(_translate("MainWindow", "Backspace"))
+
 
         x = self.mainwindow.toolbar.toolButtonStyle()
         self.ui.iconOnlyButton.setChecked(x == Qt.ToolButtonIconOnly)
@@ -106,16 +110,24 @@ class PreferencesDialog(QDialog):
         inputs().portAdded.connect(self.onInputPortAdded)
         inputs().portRemoved.connect(self.onInputPortRemoved)
 
-        self.exludePaths = list(sys.path)
-        self.prefs().beginGroup('python/paths')
-        for i in self.prefs().childGroups():
-            path = self.prefs().value('paths/' + i, type=str)
-            if not path in sys.path:
-                sys.path.append(path)
-                item = QListWidgetItem(path, self.ui.pythonPathList)
-                item.setFlags(item.flags() | Qt.ItemIsEditable)
+        self.originalPaths = list(sys.path)
+        self.prefs().beginGroup('Python/Paths')
+        for i in self.prefs().childKeys():
+            path = self.prefs().value(i, type=str)
+            sys.path.append(path)
+            item = QListWidgetItem(path, self.ui.pythonPathList)
+            item.setFlags(item.flags() | Qt.ItemIsEditable)
         self.ui.pythonPathList.itemChanged.connect(self.onPythonPathChanged)
         self.prefs().endGroup()
+
+    def event(self, e):
+        """ no idea why this has to go here """
+        if e.type() == QEvent.KeyPress and e.key() == Qt.Key_Backspace:
+            if QApplication.focusWidget() == self.ui.pythonPathList:
+                e.accept()
+                self.removeSelectedPythonPath()
+                return True
+        return super().event(e)
 
     def prefs(self):
         return self.mainwindow.prefs
@@ -190,8 +202,40 @@ class PreferencesDialog(QDialog):
         self.prefs().endGroup()
 
     def addPythonPath(self):
-        item = QListWidgetItem(QDir.homePath(), self.ui.pythonPathList)
+        self.block = True
+        path = QDir.homePath()
+        item = QListWidgetItem(path, self.ui.pythonPathList)
         item.setFlags(item.flags() | Qt.ItemIsEditable)
+        self.block = False
+        self.savePythonPaths()
 
     def onPythonPathChanged(self, item):
-        print(item.text())
+        if self.block:
+            return
+        self.savePythonPaths()
+
+    def removeSelectedPythonPath(self):
+        items = self.ui.pythonPathList.selectedItems()
+        if not items:
+            return
+        item = items[0]
+        sys.path.remove(item.text())
+        self.ui.pythonPathList.takeItem(self.ui.pythonPathList.row(item))
+        self.savePythonPaths()
+
+    def savePythonPaths(self):
+        if self.block:
+            return
+        self.block = True
+        sys.path = self.originalPaths
+        self.prefs().beginGroup('Python/Paths')
+        self.prefs().remove('')
+        index = 0
+        for item in self.ui.pythonPathList.findItems('*', Qt.MatchWildcard):
+            self.prefs().setValue(str(index), item.text())
+            item.setData(Qt.UserRole, index)
+            sys.path.append(item.text())
+            index += 1
+        self.prefs().endGroup()
+        self.prefs().sync()
+        self.block = False

@@ -24,6 +24,7 @@ class MainWindow(QMainWindow):
 
         self.prefsDialog = None
         self.firstMessage = True
+        self.originalPaths = sys.path
 
         # don't auto list here because we will add post explicitly using ports().portAdded
         self.enableAllInputs = False
@@ -250,7 +251,7 @@ class MainWindow(QMainWindow):
         #
         self.enableAllInputs = self.prefs.value('EnableAllInputs', defaultValue=True)
         self.prefs.beginGroup('InputPorts')
-        names = self.prefs.childGroups()
+        names = self.prefs.childKeys()
         for x in inputs().names():
             if not x in names:
                 names.append(x)
@@ -263,7 +264,13 @@ class MainWindow(QMainWindow):
             self.setInputPortEnabled(portName, enabled)
             self.prefs.endGroup()
         self.prefs.endGroup()
-
+        #
+        self.prefs.beginGroup('Python/Paths')
+        sys.path = self.originalPaths
+        for i in self.prefs.childKeys():
+            path = self.prefs.value(i, type=str)
+            sys.path.append(path)
+        self.prefs.endGroup()
         #
         filePath = self.prefs.value('lastFilePath')
         if filePath and QFileInfo(filePath).isFile():

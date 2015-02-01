@@ -50,7 +50,7 @@ class Editor(QsciScintilla):
 
         self.textChanged.connect(self.parent().setDirty)
 
-        self.saveButton = QPushButton(tr('Save'), self)
+        self.saveButton = QPushButton(tr('Compile'), self)
         self.saveButton.clicked.connect(self.saved.emit)
         self.saveButton.setFixedWidth(BUTTON_WIDTH)
 
