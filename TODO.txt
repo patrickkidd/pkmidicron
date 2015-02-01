@@ -1,12 +1,13 @@
 PUNCH LIST
 ============================
-- set dirty for cmd lin change in run program action
+- set dirty for cmd line change in run program action
+- drag menu bar
 - sys.path in preferences
 - set save button bg to green when compile is a success, pulsing red when error
 - no trigger count on just added bindings
 - any midi msg type wildcard
 - prevent 0 vel selected for note on
-- drag menu bar
+- detect app bundles in run program action
 
 WISH LIST
 ============================

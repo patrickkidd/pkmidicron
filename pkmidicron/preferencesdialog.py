@@ -97,6 +97,7 @@ class PreferencesDialog(QDialog):
 
         self.ui.enableAllInputsBox.setChecked(self.mainwindow.enableAllInputs)
         self.ui.enableAllInputsBox.toggled.connect(self.setEnableAllInputs)
+        self.ui.portList.setEnabled(not self.mainwindow.enableAllInputs)
 
         self.installEventFilter(self)
 
@@ -170,6 +171,7 @@ class PreferencesDialog(QDialog):
 
     def setEnableAllInputs(self, on):
         self.prefs().setValue('EnableAllInputs', bool(on))
+        self.ui.portList.setEnabled(not on)
         self.mainwindow.setEnableAllInputs(on)
 
     def setPortEnabled(self, name, x):

@@ -4,7 +4,7 @@ import os, sys
 #import rtmidi
 #rtmidi.DEBUG = True
 from pkmidicron import MainWindow, util, ports
-from pkmidicron.pyqt_shim import Qt, QSettings, QApplication, QIcon, QWidget, QLibraryInfo, QFileSystemWatcher
+from pkmidicron.pyqt_shim import Qt, QSettings, QApplication, QIcon, QWidget, QLibraryInfo, QFileSystemWatcher, QFile
 
 
 STYLE_SHEET = """
@@ -24,11 +24,11 @@ QToolButton {
 """
 
 
-
 def main():
     import rtmidi
     prefs = util.Settings('vedanamedia', 'PKMidiCron')
-    print('PREFERENCES: ', prefs.fileName())
+    isDefault = not QFile(prefs.fileName()).exists()
+    print('PREFERENCES (isDefault: %s): %s' % (isDefault, prefs.fileName()))
     prefs.setAutoSave(True)
     app = util.Application(sys.argv)
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)

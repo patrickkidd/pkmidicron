@@ -176,6 +176,10 @@ class Action(QObject):
     def getPatch(self):
         return self.parent().getPatch()
 
+    def testScript(self):
+        midi = rtmidi.MidiMessage.noteOn(1, 100, 100)
+        self.trigger(midi)
+
 
 class SendMessageAction(Action):
     def __init__(self, parent=None):
@@ -254,7 +258,10 @@ class RunProgramAction(Action):
 
     def trigger(self, midi):
         if self.text:
-            os.system(self.text)
+            if self.text.endswith('.app'):
+                os.system('open ' + self.text)
+            else:
+                os.system(self.text)
 
 
 
@@ -405,10 +412,6 @@ class RunScriptAction(Action):
                 self.module.onMidiMessage(midi)
             except:
                 self.printTraceback()
-
-    def testScript(self):
-        midi = rtmidi.MidiMessage.noteOn(1, 100, 100)
-        self.trigger(midi)
 
 
 class Binding(QObject):

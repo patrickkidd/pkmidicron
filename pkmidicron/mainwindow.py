@@ -74,6 +74,7 @@ class MainWindow(QMainWindow):
         self.ui.actionClearLog.triggered.connect(self.clearActivityLog)
         self.ui.bindingsList.selectionModel().selectionChanged.connect(self.onBindingSelectionChanged)
         self.ui.actionExit.triggered.connect(self.onQuit)
+        self.ui.actionToggleBindings.triggered.connect(self.toggleBindings)
         self.ui.actionToggleSimulator.triggered.connect(self.toggleSimulator)
         self.ui.actionToggleLog.triggered.connect(self.toggleLog)
         self.ui.actionToggleBindingProperties.triggered.connect(self.toggleBindingProperties)
@@ -94,7 +95,7 @@ class MainWindow(QMainWindow):
                         a.editor.close()
                         a.editor = None
 
-    # Patch mgmt
+    ## Patch mgmt
 
     def confirmSave(self):
         if not CONFIRM_SAVE:
@@ -207,25 +208,30 @@ class MainWindow(QMainWindow):
         if usedDialog:
             self.prefs.setValue('lastFileOpenPath', filePath)
 
-    # General app stuff
+    ## Generic App Stuff
 
     def readPrefs(self):
-        self.resize(self.prefs.value('size', type=QSize))
+        self.resize(self.prefs.value('size', type=QSize, defaultValue=QSize(600, 400)))
         #
         state = util.int_list(self.prefs.value('outerSplitter'))
         if state:
             self.ui.outerSplitter.setSizes(state)
-        x = self.prefs.value('innerSplitterShown', type=bool, defaultValue=False)
+            if state[0] == 0:
+                self.ui.bindingsList.hide()
+        #
+        x = self.prefs.value('innerSplitterShown', type=bool, defaultValue=True)
         self.ui.innerSplitter.setVisible(x)
         innerState = util.int_list(self.prefs.value('innerSplitter'))
         if innerState:
             self.ui.innerSplitter.setSizes(innerState)
         #
-        x = self.prefs.value('simulatorShown', type=bool, defaultValue=True)
+        x = self.prefs.value('bindingsShown', type=bool, defaultValue=False)
+        self.ui.bindingsList.setVisible(x)
+        x = self.prefs.value('simulatorShown', type=bool, defaultValue=False)
         self.ui.simulator.setVisible(x)
         x = self.prefs.value('activityLogShown', type=bool, defaultValue=True)
         self.ui.activityLog.setVisible(x)
-        x = self.prefs.value('bindingPropertiesShown', type=bool, defaultValue=True)
+        x = self.prefs.value('bindingPropertiesShown', type=bool, defaultValue=False)
         self.ui.bindingPropertiesScroller.setVisible(x)
         QTimer.singleShot(0, self.checkSimulatorHeight)
         #
@@ -237,16 +243,22 @@ class MainWindow(QMainWindow):
         else:
             self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
         #
-        enableAll = self.prefs.value('EnableAllInputs', defaultValue=False)
-        self.setEnableAllInputs(enableAll)
-        if not enableAll:
-            self.prefs.beginGroup('InputPorts')
-            for portName in self.prefs.childGroups():
-                self.prefs.beginGroup(portName)
+        self.enableAllInputs = self.prefs.value('EnableAllInputs', defaultValue=True)
+        self.prefs.beginGroup('InputPorts')
+        names = self.prefs.childGroups()
+        for x in inputs().names():
+            if not x in names:
+                names.append(x)
+        for portName in names:
+            self.prefs.beginGroup(portName)
+            if self.enableAllInputs:
                 enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
-                self.setInputPortEnabled(portName, enabled)
-                self.prefs.endGroup()
+            else:
+                enabled = True
+            self.setInputPortEnabled(portName, enabled)
             self.prefs.endGroup()
+        self.prefs.endGroup()
+
         #
         filePath = self.prefs.value('lastFilePath')
         if filePath and QFileInfo(filePath).isFile():
@@ -290,7 +302,42 @@ class MainWindow(QMainWindow):
     def showEvent(self, e):
         self.prefs.setValue("MainWindowShown", True)
 
+    def isLastView(self, x):
+        """ Return True if all other views are hidden and this one is shown,
+        meaning that if this one is shown then the mainwindow would be blank. """
+        if not x.isVisible():
+            return False
+        w = [self.ui.simulator,
+             self.ui.activityLog,
+             self.ui.bindingPropertiesScroller,
+             self.ui.bindingsList]
+        w.remove(x)
+        any = False
+        for i in w:
+            if i.isVisible():
+                any = True
+        return not any
+
+    def toggleBindings(self):
+        if self.isLastView(self.ui.bindingsList):
+            return
+        x = self.ui.simulator.isVisible()
+        y = self.ui.activityLog.isVisible()
+        z = self.ui.bindingPropertiesScroller.isVisible()
+        if not x and not y and not z and self.ui.bindingsList.isVisible():
+            return
+        x = not self.ui.bindingsList.isVisible()
+        self.ui.bindingsList.setVisible(x)
+        if x:
+            sizes = self.ui.outerSplitter.sizes()
+            if sizes[0] == 0:
+                h = self.ui.bindingsList.sizeHint().height()
+                self.ui.outerSplitter.setSizes([h, sizes[1]])
+        self.prefs.setValue('bindingsShown', x)
+
     def toggleSimulator(self):
+        if self.isLastView(self.ui.simulator):
+            return
         x = not self.ui.simulator.isVisible()
         self.ui.simulator.setVisible(x)
         if x:
@@ -302,6 +349,8 @@ class MainWindow(QMainWindow):
         self.checkInnerSplitter(x)
 
     def toggleLog(self):
+        if self.isLastView(self.ui.activityLog):
+            return
         x = not self.ui.activityLog.isVisible()
         self.ui.activityLog.setVisible(x)
         if x:
@@ -313,6 +362,8 @@ class MainWindow(QMainWindow):
         self.checkInnerSplitter(x)
 
     def toggleBindingProperties(self):
+        if self.isLastView(self.ui.bindingPropertiesScroller):
+            return
         x = not self.ui.bindingPropertiesScroller.isVisible()
         self.ui.bindingPropertiesScroller.setVisible(x)
         if x:
@@ -334,6 +385,7 @@ class MainWindow(QMainWindow):
                 self.ui.innerSplitter.setSizes(sizes)        
 
     def checkInnerSplitter(self, on=False):
+        """ Hide entire splitter of all children are hidden to remove handle """
         x = self.ui.simulator.isVisible()
         y = self.ui.activityLog.isVisible()
         z = self.ui.bindingPropertiesScroller.isVisible()
@@ -348,7 +400,38 @@ class MainWindow(QMainWindow):
             self.prefs.setValue('innerSplitterShown', False)
         QTimer.singleShot(0, self.checkSimulatorHeight)
 
-    # Functionality
+    ## MIDI Ports
+
+    def setEnableAllInputs(self, on):
+        self.enableAllInputs = on
+        for name in inputs().names():
+            if on:
+                enabled = True
+            else:
+                enabled = self.prefs.value('InputPorts/%s/enabled' % name, type=bool, defaultValue=True)
+            self.setInputPortEnabled(name, enabled)
+
+    def setInputPortEnabled(self, name, x):
+        """ called from prefs, port added / removed """
+        self.collector.setPortEnabled(name, x)
+        
+    def onInputPortAdded(self, portName):
+        """ called from ports.py """
+        if self.enableAllInputs:
+            enabled = True
+        else:
+            self.prefs.beginGroup('InputPorts/')
+            self.prefs.beginGroup(portName)
+            enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
+            self.prefs.endGroup()
+            self.prefs.endGroup()
+        self.setInputPortEnabled(portName, enabled)
+
+    def onInputPortRemoved(self, portName):
+        """ called from ports.py """
+        self.setInputPortEnabled(portName, False)
+
+    ## Functionality
 
     def addBinding(self, binding=None):
         if binding is None or type(binding) == bool:
@@ -380,34 +463,8 @@ class MainWindow(QMainWindow):
         self.ui.activityLog.setRowCount(0)
         self.ui.actionClearLog.setEnabled(False)
 
-    def setEnableAllInputs(self, on):
-        self.enableAllInputs = on
-        for name in inputs().names():
-            if on:
-                enabled = True
-            else:
-                enabled = self.prefs.value('InputPorts/%s/enabled' % name, type=bool, defaultValue=True)
-            self.setInputPortEnabled(name, enabled)
-
-    def setInputPortEnabled(self, name, x):
-        """ called from prefs dialog """
-        self.collector.setPortEnabled(name, x)
-        
-    def onInputPortAdded(self, portName):
-        if self.enableAllInputs:
-            enabled = True
-        else:
-            self.prefs.beginGroup('InputPorts/')
-            self.prefs.beginGroup(portName)
-            enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
-            self.prefs.endGroup()
-            self.prefs.endGroup()
-        self.setInputPortEnabled(portName, enabled)
-
-    def onInputPortRemoved(self, portName):
-        self.setInputPortEnabled(portName, False)
-
     def onMidiMessage(self, portName, midi):
+        print(midi)
         if self.patch.block:
             return
         s = midi.__str__().replace('<', '').replace('>', '')

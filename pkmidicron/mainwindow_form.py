@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Mon Nov 24 22:30:54 2014
+# Created: Sat Jan 31 14:07:30 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -125,6 +125,8 @@ class Ui_MainWindow(object):
         self.actionGo_Home.setObjectName("actionGo_Home")
         self.actionToggleMainWindow = QtWidgets.QAction(MainWindow)
         self.actionToggleMainWindow.setObjectName("actionToggleMainWindow")
+        self.actionToggleBindings = QtWidgets.QAction(MainWindow)
+        self.actionToggleBindings.setObjectName("actionToggleBindings")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
@@ -135,6 +137,7 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionExit)
         self.menuView.addAction(self.actionToggleMainWindow)
         self.menuView.addSeparator()
+        self.menuView.addAction(self.actionToggleBindings)
         self.menuView.addAction(self.actionToggleSimulator)
         self.menuView.addAction(self.actionToggleLog)
         self.menuView.addAction(self.actionToggleBindingProperties)
@@ -198,6 +201,8 @@ class Ui_MainWindow(object):
         self.actionGo_Home.setShortcut(_translate("MainWindow", "Ctrl+J, Ctrl+G"))
         self.actionToggleMainWindow.setText(_translate("MainWindow", "Main Window"))
         self.actionToggleMainWindow.setShortcut(_translate("MainWindow", "Ctrl+W"))
+        self.actionToggleBindings.setText(_translate("MainWindow", "Bindings"))
+        self.actionToggleBindings.setShortcut(_translate("MainWindow", "Ctrl+0"))
 
 from .simulator import Simulator
 from .util import ScrollArea, ListWidget

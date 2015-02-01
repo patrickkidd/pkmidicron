@@ -161,6 +161,7 @@
     </property>
     <addaction name="actionToggleMainWindow"/>
     <addaction name="separator"/>
+    <addaction name="actionToggleBindings"/>
     <addaction name="actionToggleSimulator"/>
     <addaction name="actionToggleLog"/>
     <addaction name="actionToggleBindingProperties"/>
@@ -317,6 +318,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionToggleBindings">
+   <property name="text">
+    <string>Bindings</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
    </property>
   </action>
  </widget>

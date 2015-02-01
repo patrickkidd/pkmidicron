@@ -1,0 +1,5 @@
+INIT
+=============================
+main => create prefs, mainwindow
+mainwindow => init port prefs
+mainwindow: values, callbacks, etc => prefs: manipulate values, callbacks on mainwindow

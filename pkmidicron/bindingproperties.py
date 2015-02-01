@@ -29,6 +29,9 @@ class ActionWidget(QFrame):
     clicked = pyqtSignal(QFrame)
     removeMe = pyqtSignal(QFrame)
 
+    BUTTON_WIDTH = 75
+    SPACING = 10
+
     def __init__(self, action, title, parent=None):
         QFrame.__init__(self, parent)
 
@@ -44,7 +47,7 @@ Button {
     background: transparent;
 }
 Button:hover {
-        background: rgba(255, 50, 50, .5);
+    background: rgba(255, 50, 50, .5);
     border-radius: 3px;
 }
 Button:pressed {
@@ -54,15 +57,16 @@ Button:pressed {
     background: rgba(255, 50, 50, .7);
 }
         """)
-
-        UpperLayout = QHBoxLayout()
-        UpperLayout.addWidget(self.titleLabel)
-        UpperLayout.addStretch(1)
-        UpperLayout.addWidget(self.removeButton)
-        Layout = QVBoxLayout()
-        Layout.addLayout(UpperLayout)
-        Layout.addSpacing(1)
-        self.setLayout(Layout)
+        LabelLayout = QHBoxLayout()
+        LabelLayout.addWidget(self.titleLabel)
+        LabelLayout.addStretch(1)
+        LabelLayout.addWidget(self.removeButton)
+        LabelLayout.setContentsMargins(0, 0, 0, 0)
+        MainLayout = QVBoxLayout() # obtained by subclasses via layout()
+        MainLayout.addLayout(LabelLayout)
+        MainLayout.addSpacing(1)
+        MainLayout.setSpacing(0)
+        self.setLayout(MainLayout)
 
     def paintEvent(self, e):
         e.accept()
@@ -90,19 +94,36 @@ class SendMessageAction(ActionWidget):
 
         self.midiEdit = midiedit.MidiEdit(self, portBox=True)
 
-        self.forwardBox = QCheckBox('Forward', self)
+        self.forwardBox = QCheckBox('Forward Triggering Message', self)
         self.forwardBox.setChecked(action.forward)
-        self.forwardBox.stateChanged.connect(self.setForward)
+        self.forwardBox.toggled.connect(self.setForward)
+        self.testButton = QPushButton(tr('Test'), self)
+        self.testButton.clicked.connect(action.testScript)
+        self.testButton.setFixedWidth(self.BUTTON_WIDTH)
 
-        self.layout().addWidget(self.forwardBox)
-        self.layout().addWidget(self.midiEdit)
+        Layout1 = QHBoxLayout()
+        Layout1.addWidget(self.midiEdit)
+        Layout1.setContentsMargins(0, 0, 0, 0)
+        Layout1.setSpacing(0)
+        Layout2 = QHBoxLayout()
+        Layout2.addWidget(self.forwardBox)
+        Layout2.addSpacing(10)
+        Layout2.addWidget(self.testButton)
+        Layout2.setContentsMargins(0, 0, 0, 0)
+        self.layout().addLayout(Layout1)
+        self.layout().addLayout(Layout2)
 
     def init(self, action):
         super().init(action)
         self.midiEdit.init(action.midiMessage)
+        self.setForward(action.forward, False)
 
-    def setForward(self, x):
-        self.action.setForward(x == Qt.Checked)
+    def setForward(self, on, save=True):
+        if save:
+            self.action.setForward(on)
+        for w in self.midiEdit.findChildren(QComboBox):
+            if w != self.midiEdit.portBox:
+                w.setEnabled(not on)
 
 
 class RunProgramAction(ActionWidget):
@@ -111,14 +132,32 @@ class RunProgramAction(ActionWidget):
 
         self.cmdEdit = QLineEdit(self)
         self.cmdEdit.textChanged.connect(self.setCmd)
-        self.layout().addWidget(self.cmdEdit)
+        self.selectButton = QPushButton('...', self)
+        self.selectButton.clicked.connect(self.onSelectButton)
+        self.testButton = QPushButton(tr('Test'), self)
+        self.testButton.clicked.connect(action.testScript)
+        self.testButton.setFixedWidth(self.BUTTON_WIDTH)
+        Layout = QHBoxLayout()
+        Layout.addWidget(self.cmdEdit)
+        Layout.addWidget(self.selectButton)
+        Layout.addWidget(self.testButton)
+        Layout.setSpacing(self.SPACING)
+        self.layout().addLayout(Layout)
 
     def init(self, action):
         super().init(action)
+        self.block = True
         self.cmdEdit.setText(action.text)
+        self.block = False
 
     def setCmd(self, x):
-        self.action.text = x        
+        if self.block: return
+        self.action.setText(x)
+
+    def onSelectButton(self):
+        path = QFileDialog.getOpenFileName()[0]
+        if path:
+            self.cmdEdit.setText(path)
 
 
 class OpenFileAction(ActionWidget):
@@ -127,7 +166,17 @@ class OpenFileAction(ActionWidget):
 
         self.cmdEdit = QLineEdit(self)
         self.cmdEdit.textChanged.connect(self.setCmd)
-        self.layout().addWidget(self.cmdEdit)
+        self.selectButton = QPushButton('...', self)
+        self.selectButton.clicked.connect(self.onSelectButton)
+        self.testButton = QPushButton(tr('Test'), self)
+        self.testButton.clicked.connect(action.testScript)
+        self.testButton.setFixedWidth(self.BUTTON_WIDTH)
+        Layout = QHBoxLayout()
+        Layout.addWidget(self.cmdEdit)
+        Layout.addWidget(self.selectButton)
+        Layout.addWidget(self.testButton)
+        Layout.setSpacing(self.SPACING)
+        self.layout().addLayout(Layout)
 
     def init(self, action):
         super().init(action)
@@ -135,6 +184,11 @@ class OpenFileAction(ActionWidget):
 
     def setCmd(self, x):
         self.action.text = x
+
+    def onSelectButton(self):
+        path = QFileDialog.getOpenFileName()[0]
+        if path:
+            self.cmdEdit.setText(path)
 
 
 class RunScriptAction(ActionWidget):
@@ -151,16 +205,16 @@ class RunScriptAction(ActionWidget):
 
         self.testButton = QPushButton(tr('Test'), self)
         self.testButton.clicked.connect(action.testScript)
+        self.testButton.setFixedWidth(self.BUTTON_WIDTH)
 
         self.editButton.setFixedWidth(100)
-        self.testButton.setFixedWidth(100)
 
         Layout = QHBoxLayout()
         Layout.addWidget(self.nameLabel)
         Layout.addWidget(self.nameEdit)
-        Layout.addSpacing(10)
         Layout.addWidget(self.editButton)
         Layout.addWidget(self.testButton)
+        Layout.setSpacing(self.SPACING)
         self.layout().addLayout(Layout)
 
     def setName(self, x):
