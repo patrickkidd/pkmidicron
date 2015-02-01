@@ -86,7 +86,7 @@ class MidiEdit(QWidget):
         self.noteNumBox.currentIndexChanged.connect(self.updateValue)
 
         self.noteVelBox = QComboBox(self)
-        for i in range(128):
+        for i in range(1, 128):
             self.noteVelBox.addItem(str(i))
         if any:
             self.noteVelBox.addItem(util.ANY_TEXT)
@@ -197,7 +197,7 @@ class MidiEdit(QWidget):
                 elif self.all:
                     self.noteVelBox.setCurrentText(util.ALL_TEXT)
             else:
-                self.noteVelBox.setCurrentIndex(midi.getVelocity())
+                self.noteVelBox.setCurrentIndex(midi.getVelocity() == 0 and 0 or midi.getVelocity() - 1) # 1-indexed
         elif midi.isNoteOff():
             iType = util.MSG_NOTE_OFF
             if wildcards['noteNum']:
@@ -261,7 +261,7 @@ class MidiEdit(QWidget):
         if self.typeBox.currentIndex() == 0:
             midi = MidiMessage.noteOn(channel,
                                       self.noteNumBox.currentIndex(),
-                                      self.noteVelBox.currentIndex())
+                                      self.noteVelBox.currentIndex()+1)
         if self.typeBox.currentIndex() == 1:
             midi = MidiMessage.noteOff(channel,
                                        self.noteNumBox.currentIndex())

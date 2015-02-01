@@ -227,12 +227,14 @@ class ActionBox(util.CollapsableBox):
         util.CollapsableBox.__init__(self, QPixmap(':/Actions.png'), parent)
 
         self.widgets = []
+        self.block = False
 
         self.addBox = QComboBox(self)
         self.addBox.addItem('Send message')
         self.addBox.addItem('Run Program')
         self.addBox.addItem('Open File')
         self.addBox.addItem('Run Script')
+        self.addBox.setCurrentIndex(-1)
         self.addBox.activated.connect(self.addAction)
         self.addBox.installEventFilter(self)
         self.header.layout().insertWidget(2, self.addBox)
@@ -264,6 +266,11 @@ class ActionBox(util.CollapsableBox):
         self.binding = None
 
     def addAction(self, x):
+        if self.block:
+            return
+        self.block = True
+        self.addBox.setCurrentIndex(-1)
+        self.block = False
         if type(x) == int:
             action = self.binding.addAction(x)
             iType = x
