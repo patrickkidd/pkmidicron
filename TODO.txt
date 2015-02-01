@@ -1,12 +1,13 @@
 PUNCH LIST
 ============================
 - fix exception line highlight
-- any midi msg type wildcard
+- buffer script output before console is shown
 
 WISH LIST
 ============================
 - simulator on windows
-- file save on windows
+- file save on windows (huh?)
+- simulator wildcards cause loop
 
 APPS
 ============

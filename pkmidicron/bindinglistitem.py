@@ -23,7 +23,7 @@ class BindingListItem(QListWidgetItem):
         self.setSizeHint(QSize(100, 45))
 
         self.binding = binding
-        self.binding.triggered.connect(self.onTriggered)
+        self.binding.matched.connect(self.onMatched)
 
         self.proxy = Proxy()
         self.changed = self.proxy.changed
@@ -51,6 +51,8 @@ class BindingListItem(QListWidgetItem):
         p.setColor(QPalette.Text, Qt.gray)
         self.countLabel.setPalette(p)
         self.countLabel.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        labelClickFilter = util.ClickFilter(self.countLabel)
+        labelClickFilter.clicked.connect(self.resetTriggerCount)
 
         Layout = QHBoxLayout()
         Layout.addWidget(self.enabledBox)
@@ -65,12 +67,15 @@ class BindingListItem(QListWidgetItem):
         self.widget = None
 
     def updateTriggerCount(self):
-        if self.binding.triggerCount:
-            self.countLabel.show()
-            self.countLabel.setText('triggered %i times' % self.binding.triggerCount)
-            self.countLabel.resize(self.countLabel.sizeHint())
-            self.countLabel.move(self.widget.width() - 5 - self.countLabel.width(),
-                                 self.widget.height() - 2 - self.countLabel.height())
+        self.countLabel.show()
+        self.countLabel.setText('triggered %i times' % self.binding.triggerCount)
+        self.countLabel.resize(self.countLabel.sizeHint())
+        self.countLabel.move(self.widget.width() - 5 - self.countLabel.width(),
+                             self.widget.height() - 2 - self.countLabel.height())
+
+    def resetTriggerCount(self):
+        self.binding.triggerCount = 0
+        self.updateTriggerCount()
 
     def resizeEvent(self, e):
         self.updateTriggerCount()
@@ -82,9 +87,12 @@ class BindingListItem(QListWidgetItem):
     def onNameChanged(self, x):
         self.binding.setTitle(x)
 
-    def onTriggered(self):
+    def onMatched(self):
         self.updateTriggerCount()
-        self.nameEdit.flash()
+        if self.binding.enabled:
+            self.nameEdit.flash(QColor('red'))
+        else:
+            self.nameEdit.flash(QColor('orange').darker(150))
 
     def setEnabled(self, state):
         self.binding.setEnabled(state == Qt.Checked)

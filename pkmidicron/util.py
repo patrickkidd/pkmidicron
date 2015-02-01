@@ -12,6 +12,8 @@ MSG_NOTE_ON = 0
 MSG_NOTE_OFF = 1
 MSG_CC = 2
 MSG_AFTERTOUCH = 3
+MSG_ANY = 4
+MSG_ALL = 5
 MSG_ALL_NOTES_OFF = 127
 
 ACTION_SEND_MESSAGE = 0
@@ -199,7 +201,7 @@ class ClickToEdit(QLineEdit):
 
     clicked = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, flashColor=None):
         QLineEdit.__init__(self, parent)
         self.clickTimer = QTimer(parent)
         self.clickTimer.timeout.connect(self.clickTimerTimeout)
@@ -209,7 +211,8 @@ class ClickToEdit(QLineEdit):
 
         self.textAnimation = QPropertyAnimation(self, "textColor", self)
         self.textAnimation.setDuration(500)
-        self.textAnimation.setStartValue(QColor("red"))
+        self.defaultFlashColor = flashColor and QColor(flashColor) or QColor("red")
+        self.textAnimation.setStartValue(self.defaultFlashColor)
         self.textAnimation.setEndValue(self.palette().color(QPalette.Text))
         self.textAnimation.setEasingCurve(QEasingCurve.InOutQuad)
 
@@ -257,7 +260,11 @@ class ClickToEdit(QLineEdit):
         p.setColor(QPalette.Text, x)
         self.setPalette(p)
         
-    def flash(self):
+    def flash(self, color=None):
+        if color:
+            self.textAnimation.setStartValue(color)
+        else:
+            self.textAnimation.setStartValue(self.defaultFlashColor)
         self.textAnimation.stop()
         self.textAnimation.start()
 
@@ -392,4 +399,43 @@ class Led(QFrame):
     def flash(self):
         self.on(100)
 
+
+
+""" decorator to block recursive signal emissions. """
+def blocked(x):
+    if type(x) == type(blocked): # function
+        def wrapper(*args):
+            self = args[0]
+            if self.block:
+                return
+            was = self.block
+            self.block = True
+            ret = x(*args)
+            self.block = was
+        return wrapper
+    elif isinstance(x, type):
+        def init_wrapper(*args, **kwargs):
+            args[0].block = False
+            return x.__orig_init__(*args, **kwargs)
+        x.__orig_init__ = x.__init__
+        x.__init__ = init_wrapper
+        return x
+    else:
+        assert '@blocked: not sure what to do with this: ' + str(x)
+
+
+class ClickFilter(QObject):
+
+    clicked = pyqtSignal()
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        parent.installEventFilter(self)
+
+    def eventFilter(self, o, e):
+        if o == self.parent():
+            if e.type() == QEvent.MouseButtonRelease:
+                self.clicked.emit()
+                return True
+        return super().eventFilter(o, e)
 

@@ -258,9 +258,9 @@ class MainWindow(QMainWindow):
         for portName in names:
             self.prefs.beginGroup(portName)
             if self.enableAllInputs:
-                enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
-            else:
                 enabled = True
+            else:
+                enabled = self.prefs.value('enabled', type=bool, defaultValue=True)
             self.setInputPortEnabled(portName, enabled)
             self.prefs.endGroup()
         self.prefs.endGroup()

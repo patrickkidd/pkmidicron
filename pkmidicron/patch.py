@@ -14,13 +14,12 @@ class MidiMessage(QObject):
 
     changed = pyqtSignal()
 
-    WILDCARD = -1
-    
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
         self.portName = None
         self.midi = rtmidi.MidiMessage.noteOn(1, 0, 100)
         self.wildcards = {
+            "type": False,
             "channel": False,
             "noteNum": False,
             "noteVel": False,
@@ -83,12 +82,18 @@ class MidiMessage(QObject):
         self.midi = midi
         self.changed.emit()
 
+    def getMidi(self):
+        return self.midi
+
     def setWildcard(self, key, x, emit=True):
         if not key in self.wildcards:
             raise KeyError('%s is not a valid MidiMessage value' % key)
         self.wildcards[key] = x
         if emit:
             self.changed.emit()
+
+    def wildcard(self, key):
+        return self.wildcards.get(key, None)
  
 
 class Simulator(MidiMessage):
@@ -102,6 +107,14 @@ class Criteria(MidiMessage):
     def __init__(self, parent=None):
         MidiMessage.__init__(self, parent)
         self.portName = util.ANY_TEXT
+        self.setWildcard('type', True)
+        self.setWildcard('channel', True)
+        self.setWildcard('noteNum', True)
+        self.setWildcard('noteVel', True)
+        self.setWildcard('ccNum', True)
+        self.setWildcard('ccValue', True)
+        self.setWildcard('atNum', True)
+        self.setWildcard('atValue', True)
 
     def clear(self):
         pass
@@ -113,7 +126,9 @@ class Criteria(MidiMessage):
         m1 = rtmidi.MidiMessage(midi)
         m2 = rtmidi.MidiMessage(self.midi)
 
-        if m2.isNoteOn() or m2.isNoteOff():
+        if self.wildcards['type']:
+            m2 = rtmidi.MidiMessage(m1)
+        elif m2.isNoteOn() or m2.isNoteOff():
             if self.wildcards['channel']:
                 if m2.getVelocity() > 0: # careful!
                     m2 = rtmidi.MidiMessage.noteOn(m1.getChannel(),
@@ -205,7 +220,7 @@ class SendMessageAction(Action):
         patch.endGroup()
 
     def trigger(self, midi):
-        if not self.portName:
+        if not self.midiMessage.portName:
             return
         was = self.getPatch().setBlock(True)
         if self.forward:
@@ -288,6 +303,7 @@ class RunScriptAction(Action):
         self.slug = self.getSlug(self.name)
         self.editorSize = None
         self.editorSplitterSizes = None
+        self.state = None
         RunScriptAction.lastIndex += 1
 
     def clear(self):
@@ -340,18 +356,22 @@ class RunScriptAction(Action):
             '__file__': self.slug,
         })
         tb = None
+        success = False
         try:
             exec(self.source, self.module.__dict__)
+            success = True
         except:
             tb = self.printTraceback()
-        if tb is None:
+        if success:
             sys.modules[self.slug] = self.module
+            self.state = scripteditor.STATE_COMPILED
             if self.editor:
-                self.editor.editor.setDirtyState(scripteditor.STATE_COMPILED)
+                self.editor.editor.setDirtyState(self.state)
                 self.editor.editor.setExceptionLine(None)
         else:
+            self.state = scripteditor.STATE_ERROR
             if self.editor:
-                self.editor.editor.setDirtyState(scripteditor.STATE_ERROR)
+                self.editor.editor.setDirtyState(self.state)
                 # last = tb.splitlines()[-2]
                 # line = int(last.split(', line ')[1].split(', in ')[0])
                 # self.editor.editor.setExceptionLine(line)
@@ -416,6 +436,7 @@ class RunScriptAction(Action):
                 self.editor.updateResize()
             else:
                 self.editor.splitter.setSizes([100, 0])
+            self.editor.editor.setDirtyState(self.state)
         self.editor.show()
         self.editor.updateResize()
         self.editor.raise_()
@@ -438,6 +459,7 @@ class Binding(QObject):
 
     changed = pyqtSignal()
     triggered = pyqtSignal()
+    matched = pyqtSignal()
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
@@ -557,9 +579,11 @@ class Binding(QObject):
 
     def onMatched(self, midi):
         self.triggerCount += 1
-        self.triggered.emit()
-        for action in self.actions:
-            action.trigger(midi)
+        self.matched.emit()
+        if self.enabled:
+            self.triggered.emit()
+            for action in self.actions:
+                action.trigger(midi)
 
 
 class Patch(QObject):
@@ -635,8 +659,7 @@ class Patch(QObject):
 
     def onMidiMessage(self, portName, midi):
         for b in self.bindings:
-            if b.enabled:
-                b.onMidiMessage(portName, midi)
+            b.onMidiMessage(portName, midi)
 
     def setBlock(self, x):
         y = self.block

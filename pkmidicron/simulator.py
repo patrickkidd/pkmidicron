@@ -28,6 +28,19 @@ class Simulator(QWidget):
         self.fakeBox.setToolTip("Don't send through hardware, just route within the app.")
 
         self.midiEdit = MidiEdit(self, portBox=True, all=True, input=False)
+        # all this just to pass that 'all' param. ugh..
+        trim = [
+            self.midiEdit.channelBox,
+            self.midiEdit.typeBox,
+            self.midiEdit.noteNumBox,
+            self.midiEdit.noteVelBox,
+            self.midiEdit.ccNumBox,
+            self.midiEdit.ccValueBox,
+            self.midiEdit.atNumBox,
+            self.midiEdit.atValueBox,
+        ]
+        for w in trim:
+            w.removeItem(w.count()-1)
         self.all = True
 
         self.sendButton = QPushButton("&Send", self)
@@ -74,7 +87,7 @@ class Simulator(QWidget):
             else:
                 outputs().sendMessage(portName, m)
         if msg is None or type(msg) == bool:
-            msg = self.simulator.midi
+            msg = self.simulator.getMidi()
         if self.simulator.portName == util.ALL_TEXT:
             for portName in outputs().names():
                 _sendToOnePort(portName, msg)
