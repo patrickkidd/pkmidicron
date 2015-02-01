@@ -235,6 +235,10 @@ class OpenFileAction(Action):
         self.text = x
         self.changed.emit()
 
+    def trigger(self, midi):
+        if self.text:
+            os.system('open ' + self.text)
+
 
 class RunProgramAction(Action):
     def __init__(self, parent=None):
