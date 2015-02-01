@@ -18,7 +18,7 @@ class Editor(QsciScintilla):
 
     saved = pyqtSignal()
     test = pyqtSignal()
-    showConsole = pyqtSignal()
+    toggleConsole = pyqtSignal()
     shown = pyqtSignal()
     hidden = pyqtSignal()
 
@@ -59,9 +59,9 @@ class Editor(QsciScintilla):
         self.testButton.setFixedWidth(BUTTON_WIDTH)
 
         self.consoleButton = QPushButton(tr('Console'), self)
-        self.consoleButton.clicked.connect(self.showConsole.emit)
+        self.consoleButton.clicked.connect(self.toggleConsole.emit)
         self.consoleButton.setFixedWidth(BUTTON_WIDTH)
-        self.consoleButton.hide()
+        # self.consoleButton.hide()
 
         self.indentAction = QAction(tr("Indent Selection"), self)
         self.indentAction.setShortcut(QKeySequence(Qt.MetaModifier | Qt.Key_BracketRight))
@@ -170,15 +170,15 @@ class ScriptEditor(QWidget):
         self.editor.saved.connect(self.saved.emit)
         self.editor.textChanged.connect(self.textChanged.emit)
         self.editor.test.connect(self.test.emit)
-        self.editor.showConsole.connect(self.showConsole)
+        self.editor.toggleConsole.connect(self.toggleConsole)
 
         self.console = Console(self)
         self.console.showEditor.connect(self.showEditor)
 
         self.editor.shown.connect(self.console.editorButton.hide)
         self.editor.hidden.connect(self.console.editorButton.show)
-        self.console.shown.connect(self.editor.consoleButton.hide)
-        self.console.hidden.connect(self.editor.consoleButton.show)
+        #self.console.shown.connect(self.editor.consoleButton.hide)
+        #self.console.hidden.connect(self.editor.consoleButton.show)
 
         self.splitter = QSplitter(Qt.Vertical, self)
         self.splitter.addWidget(self.editor)
@@ -205,10 +205,14 @@ class ScriptEditor(QWidget):
     def text(self):
         return self.editor.text()
 
-    def showConsole(self):
+    def toggleConsole(self):
         sizes = self.splitter.sizes()
         if sizes[1] == 0:
             self.splitter.setSizes([sizes[0] - 200, 200])
+            self.console.show()
+        else:
+            self.splitter.setSizes([sizes[0], 0])
+            self.console.hide()
 
     def showEditor(self):
         sizes = self.splitter.sizes()

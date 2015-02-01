@@ -201,14 +201,14 @@ class RunScriptAction(ActionWidget):
         self.nameEdit.setText(action.name)
         self.nameEdit.textChanged.connect(self.setName)
 
-        self.editButton = QPushButton(tr('Edit'), self)
+        self.editButton = QPushButton(tr('...'), self)
         self.editButton.clicked.connect(action.showEditor)
 
         self.testButton = QPushButton(tr('Test'), self)
         self.testButton.clicked.connect(action.testScript)
         self.testButton.setFixedWidth(self.BUTTON_WIDTH)
 
-        self.editButton.setFixedWidth(100)
+#        self.editButton.setFixedWidth(100)
 
         Layout = QHBoxLayout()
         Layout.addWidget(self.nameLabel)

@@ -299,7 +299,7 @@ class RunScriptAction(Action):
             self.source = None
         else:
             self.doSetSource(source)
-        self.editorSize = patch.value('editor/size', type=QSize)
+        self.editorSize = patch.value('editor/size', type=QSize, defaultValue=QSize(800, 600))
         self.editorSplitterSizes = util.int_list(patch.value('editor/splitterSizes'))
 
     def write(self, patch):
