@@ -1,6 +1,5 @@
 PUNCH LIST
 ============================
-- fix note type box on criteria
 - check script import order on patch load
 - fix exception line highlight
 - buffer script output before console is shown

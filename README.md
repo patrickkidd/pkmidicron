@@ -233,3 +233,4 @@ The scripting engine is intended to provide a clean and stable environment to wr
 
 - All scripts are executed in the application's main thread.
 - While the application's object-space is generally protected from user scripts, I'm sure it wouldn't be hard to figure out a way to break the app from a script. It's hard enough to do this that you will probably know what you are doing if you do.
+- The scripting engine uses the global Qt address space, so It is not necessary (or allowed!) to create a QApplication within your script. However, you can safely use all of the static methods on QApplication's class, for example QApplication.activeWindow().

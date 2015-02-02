@@ -18,8 +18,8 @@ class MidiEdit(QWidget):
         self.any = any
         self.all = all
         self.input = input
-
         self.midimessage = None
+        self.isInitting = False
 
         self.portBox = QComboBox()
         ports = input and inputs or outputs
@@ -176,6 +176,7 @@ class MidiEdit(QWidget):
 
     @util.blocked
     def init(self, midimessage):
+        self.isInitting = True
         self.midimessage = midimessage
         portName = midimessage.portName
         midi = midimessage.midi
@@ -259,6 +260,7 @@ class MidiEdit(QWidget):
         self.block = False
         self.setType(iType)
         self.block = was
+        self.isInitting = False
 
     @util.blocked
     def clear(self):
@@ -305,7 +307,7 @@ class MidiEdit(QWidget):
         else:
             portName = self.portBox.currentText()
 
-        if not self.block: # just meant to prevent init() from calling back and setting wildcards prematurely
+        if not self.isInitting:
             self.midimessage.setWildcard('channel',
                                          self.channelBox.currentText() in [util.ANY_TEXT, util.ALL_TEXT], emit=False)
             self.midimessage.setWildcard('type',
