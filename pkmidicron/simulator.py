@@ -20,12 +20,12 @@ class Simulator(QWidget):
         self.simulator = None
         self.image = QImage(":/box-bg-1.jpg")
 
+        self.fakeBox = QCheckBox("Route Internally", self)
+        self.fakeBox.setToolTip("Don't send through hardware, just route within the app.")
+
         self.crazyBox = QCheckBox("Go Crazy", self)
         self.crazyBox.stateChanged[int].connect(self.goCrazy)
         self.crazyBox.setToolTip("Spastically spew tons and tons of random messages.")
-
-        self.fakeBox = QCheckBox("Route Internally", self)
-        self.fakeBox.setToolTip("Don't send through hardware, just route within the app.")
 
         self.midiEdit = MidiEdit(self, portBox=True, all=True, input=False)
         # all this just to pass that 'all' param. ugh..
@@ -47,8 +47,8 @@ class Simulator(QWidget):
         self.sendButton.clicked.connect(self.send)
 
         LowerLayout = QHBoxLayout()
-        LowerLayout.addWidget(self.crazyBox)
         LowerLayout.addWidget(self.fakeBox)
+        LowerLayout.addWidget(self.crazyBox)
         LowerLayout.addStretch(1)
         LowerLayout.addWidget(self.sendButton)
         Layout = QVBoxLayout()

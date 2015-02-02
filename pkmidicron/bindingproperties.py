@@ -230,10 +230,10 @@ class ActionBox(util.CollapsableBox):
         self.block = False
 
         self.addBox = QComboBox(self)
-        self.addBox.addItem('Send message')
+        self.addBox.addItem('Send Message')
         self.addBox.addItem('Run Program')
         self.addBox.addItem('Open File')
-        self.addBox.addItem('Run Script')
+        self.addBox.addItem('Execute Script')
         self.addBox.setCurrentIndex(-1)
         self.addBox.activated.connect(self.addAction)
         self.addBox.installEventFilter(self)

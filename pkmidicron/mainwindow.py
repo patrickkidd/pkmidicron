@@ -83,6 +83,7 @@ class MainWindow(QMainWindow):
         self.ui.actionToggleLog.triggered.connect(self.toggleLog)
         self.ui.actionToggleBindingProperties.triggered.connect(self.toggleBindingProperties)
         self.ui.actionToggleMainWindow.triggered.connect(self.toggleMainWindow)
+        self.ui.actionShowHelp.triggered.connect(self.showHelp)
 
         # Init
 
@@ -300,6 +301,8 @@ class MainWindow(QMainWindow):
         QMessageBox.about(self, tr("About PKMidiCron"),
                           tr("""PKMidiCron %s\nvedanamedia.com""" % version))
 
+    def showHelp(self):
+        QDesktopServices.openUrl(QUrl('http://vedanamedia.com/products/pkmidicron'))
 
     def showPreferences(self):
         if self.prefsDialog is None:
@@ -307,7 +310,11 @@ class MainWindow(QMainWindow):
         self.prefsDialog.exec()
 
     def toggleMainWindow(self):
-        self.setVisible(not self.isVisible())
+        w = QApplication.activeWindow()
+        if w == self or w is None:
+            self.setVisible(not self.isVisible())
+        elif w:
+            w.close()
         
     def closeEvent(self, e):
         self.trayIcon.showHello()

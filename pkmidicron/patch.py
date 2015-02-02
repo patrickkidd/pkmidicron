@@ -352,6 +352,7 @@ class RunScriptAction(Action):
         self.module.__dict__.update({
             'inputs': ports.inputs,
             'outputs': ports.outputs,
+            'MidiMessage': rtmidi.MidiMessage,
             'print': self.mod_print,
             '__file__': self.slug,
         })
