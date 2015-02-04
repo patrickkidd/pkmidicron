@@ -146,7 +146,7 @@ class PreferencesDialog(QDialog):
         i = 1
         while not found:
             name = 'Virtual Port %i' % i
-            if not name in inputs().names:
+            if not name in inputs().names():
                 found = True
             i += 1
         inputs().addVirtualPort(name)
