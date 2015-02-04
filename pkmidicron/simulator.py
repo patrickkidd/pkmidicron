@@ -80,8 +80,6 @@ class Simulator(QWidget):
         
     def send(self, msg=None):
         def _sendToOnePort(portName, m):
-            if not portName:
-                return
             if self.fakeBox.isChecked():
                 self.received.emit(portName, m)
             else:
