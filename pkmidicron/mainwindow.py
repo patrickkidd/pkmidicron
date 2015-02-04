@@ -250,7 +250,7 @@ class MainWindow(QMainWindow):
         else:
             self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
         #
-        self.enableAllInputs = self.prefs.value('EnableAllInputs', defaultValue=True)
+        self.enableAllInputs = self.prefs.value('EnableAllInputs', defaultValue=True, type=bool)
         self.prefs.beginGroup('InputPorts')
         names = self.prefs.childKeys()
         for x in inputs().names():

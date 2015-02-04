@@ -256,7 +256,10 @@ class OpenFileAction(Action):
 
     def trigger(self, midi):
         if self.text:
-            os.system('open ' + self.text)
+            if os.name == 'nt':
+                os.system('start ' + self.text)
+            else:
+                os.system('open ' + self.text)
 
 
 class RunProgramAction(Action):
