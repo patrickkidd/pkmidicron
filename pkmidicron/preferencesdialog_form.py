@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/preferencesdialog.ui'
 #
-# Created: Sat Jan 31 17:26:27 2015
+# Created: Tue Feb  3 20:10:52 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -75,6 +75,8 @@ class Ui_PreferencesDialog(object):
         self.verticalLayout_2.setContentsMargins(-1, -1, -1, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.pythonPathList = QtWidgets.QListWidget(self.groupBox_3)
+        self.pythonPathList.setAcceptDrops(True)
+        self.pythonPathList.setDragDropMode(QtWidgets.QAbstractItemView.DropOnly)
         self.pythonPathList.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
         self.pythonPathList.setObjectName("pythonPathList")
         self.verticalLayout_2.addWidget(self.pythonPathList)

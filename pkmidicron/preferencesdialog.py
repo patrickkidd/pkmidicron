@@ -103,6 +103,7 @@ class PreferencesDialog(QDialog):
         self.ui.enableAllInputsBox.toggled.connect(self.setEnableAllInputs)
         self.ui.portList.setEnabled(not self.mainwindow.enableAllInputs)
 
+        self.ui.pythonPathList.installEventFilter(self)
         self.installEventFilter(self)
 
         for name in inputs().names():
@@ -161,7 +162,16 @@ class PreferencesDialog(QDialog):
         item.widget.enabledBox.setChecked(enabled)
 
     def eventFilter(self, o, e):
-        if e.type() == QEvent.KeyPress:
+        if o == self.ui.pythonPathList:
+            if e.type() == QEvent.DragEnter:
+                mime = e.mimeData()
+                if mime.hasText():
+                    print('TEXT', QUrl.fromEncoded(mime.text()))
+                if mime.hasUrls():
+                    print('URLS', mime.urls())
+                e.accept()
+                return True
+        elif e.type() == QEvent.KeyPress:
             # this was clicking the add button for some reason. WTF?!
             if e.key() in [Qt.Key_Return, Qt.Key_Enter]:
                 return True

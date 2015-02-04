@@ -166,6 +166,12 @@
            </property>
            <item>
             <widget class="QListWidget" name="pythonPathList">
+             <property name="acceptDrops">
+              <bool>true</bool>
+             </property>
+             <property name="dragDropMode">
+              <enum>QAbstractItemView::DropOnly</enum>
+             </property>
              <property name="selectionBehavior">
               <enum>QAbstractItemView::SelectItems</enum>
              </property>

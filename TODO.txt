@@ -2,8 +2,8 @@ PUNCH LIST
 ============================
 - ensure script objects are deleted on script compile & patch reload
 - on quit: dialog to confirm stop processing?
-- drag folder from Finder onto python search paths
 - user guide
+- drag folder from Finder onto python search paths
 
 WISH LIST
 ============================
