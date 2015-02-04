@@ -1,9 +1,11 @@
 PUNCH LIST
 ============================
-- check script import order on patch load
+- set console color with STATE_*
+- ensure script objects are deleted on script compile
+- on quit: dialog to confirm stop processing?
 - fix exception line highlight
-- buffer script output before console is shown
 - drag folder from Finder onto python search paths
+- user guide
 
 WISH LIST
 ============================

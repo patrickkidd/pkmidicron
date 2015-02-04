@@ -41,7 +41,7 @@ class ActionWidget(QFrame):
         self.titleLabel = QLabel(title, self)
         self.removeButton = util.Button(self)
         self.removeButton.clicked.connect(self._removeMe)
-        self.removeButton.setFixedSize(30, 30)
+        self.removeButton.setFixedSize(20, 20)
         self.removeButton.setIcon(QIcon(QPixmap(":/icons/retina/multiply.png")))
         self.removeButton.setStyleSheet("""
 Button {
@@ -65,7 +65,7 @@ Button:pressed {
         LabelLayout.setContentsMargins(0, 0, 0, 0)
         MainLayout = QVBoxLayout() # obtained by subclasses via layout()
         MainLayout.addLayout(LabelLayout)
-        MainLayout.addSpacing(1)
+        MainLayout.addSpacing(0)
         MainLayout.setSpacing(0)
         self.setLayout(MainLayout)
 

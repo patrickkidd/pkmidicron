@@ -298,6 +298,7 @@ class RunScriptAction(Action):
         self.editor = None # bleh
         self.editorSizes = None
         self.editorSplitterSizes = None
+        self.consoleBuffer = io.StringIO()
         self.module = None
         self.name = 'RunScriptAction_%i' % RunScriptAction.lastIndex
         self.slug = self.getSlug(self.name)
@@ -323,7 +324,7 @@ class RunScriptAction(Action):
             self.source = None
         else:
             self.doSetSource(source)
-        self.editorSize = patch.value('editor/size', type=QSize, defaultValue=QSize(800, 600))
+        self.editorSize = patch.value('editor/size', type=QSize, defaultValue=QSize(450, 300))
         self.editorSplitterSizes = util.int_list(patch.value('editor/splitterSizes'))
 
     def write(self, patch):
@@ -367,36 +368,39 @@ class RunScriptAction(Action):
             sys.modules[self.slug] = self.module
             self.state = scripteditor.STATE_COMPILED
             if self.editor:
-                self.editor.editor.setDirtyState(self.state)
+                self.editor.setDirtyState(self.state)
                 self.editor.editor.setExceptionLine(None)
         else:
             self.state = scripteditor.STATE_ERROR
             if self.editor:
-                self.editor.editor.setDirtyState(self.state)
+                self.editor.setDirtyState(self.state)
                 # last = tb.splitlines()[-2]
                 # line = int(last.split(', line ')[1].split(', in ')[0])
                 # self.editor.editor.setExceptionLine(line)
 
     def printTraceback(self):
+        import traceback
+        # take out the first stack frame so you don't see app code
+        tb = traceback.format_exc()
+        lines = tb.splitlines()
+        first = lines[0]
+        diads = lines[1:-1]
+        last = lines[-1]
+        lines = [first] + diads[2:] + [last]
+        lines = [s.replace('<string>', '<script>') for s in lines]
         if self.editor:
-            import traceback
-            # take out the first stack frame so you don't see app code
-            tb = traceback.format_exc()
-            lines = tb.splitlines()
-            first = lines[0]
-            diads = lines[1:-1]
-            last = lines[-1]
-            lines = [first] + diads[2:] + [last]
-            lines = [s.replace('<string>', '<script>') for s in lines]
             self.editor.appendConsole('\n'.join(lines))
-            return tb
+        else:
+            self.consoleBuffer.write('\n'.join(lines))
+        return tb
 
     def mod_print(self, *args, **kwargs):
+        s = ' '.join([str(x) for x in args])
         if self.editor:
-            s = ' '.join([str(x) for x in args])
             self.editor.appendConsole(s)
         else:
-            print(*args, **kwargs)
+            self.consoleBuffer.write(s + '\n')
+            #print(*args, **kwargs)
 
     def getSlug(self, x):
         return slugify.slugify(x).replace('-', '_')
@@ -417,11 +421,13 @@ class RunScriptAction(Action):
             if oldName in sys.modules:
                 del sys.modules[oldName]
                 sys.modules[self.name] = self.module
+        if self.editor:
+            self.editor.setWindowTitle(self.name)
         self.getPatch().setDirty()
         self.changed.emit()
 
-    def setDirtyState(self, state):
-        self.editor.editor.setDirtyState(state)
+#    def setDirtyState(self, state):
+#        self.editor.setDirtyState(state)
 
     def showEditor(self):
         if not self.editor:
@@ -437,7 +443,9 @@ class RunScriptAction(Action):
                 self.editor.updateResize()
             else:
                 self.editor.splitter.setSizes([100, 0])
-            self.editor.editor.setDirtyState(self.state)
+            self.editor.setDirtyState(self.state)
+            self.editor.setWindowTitle(self.name)
+            self.editor.console.append(self.consoleBuffer.getvalue())
         self.editor.show()
         self.editor.updateResize()
         self.editor.raise_()

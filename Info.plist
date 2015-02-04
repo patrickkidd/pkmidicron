@@ -21,6 +21,8 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeIconFile</key>
+			<string>icon.incs</string>
 			<key>LSTypeIsPackage</key>
 			<false/>
 			<key>CFBundleTypeMIMETypes</key>
@@ -41,6 +43,8 @@
 			<string>Editor</string>
 			<key>NSDocumentClass</key>
 			<string>MyDocument</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
 		</dict>
 	</array>
 </dict>
