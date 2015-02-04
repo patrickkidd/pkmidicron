@@ -1,7 +1,7 @@
 import sys
 import rtmidi
 from .pyqt_shim import *
-from . import util, mainwindow_form, bindinglistitem, patch, preferencesdialog_form, preferencesdialog
+from . import util, engine, mainwindow_form, bindinglistitem, preferencesdialog_form, preferencesdialog
 from .ports import inputs
 from .util import refs
 
@@ -136,7 +136,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSave.setEnabled(on)
 
     def clear(self):
-        self._setPatch(patch.Patch(), force=True)
+        self._setPatch(engine.Patch(), force=True)
 
     def _setPatch(self, patch, force=False):
         if self.patch:
@@ -149,7 +149,7 @@ class MainWindow(QMainWindow):
         self.patch.setParent(self)
         for binding in self.patch.bindings:
             self.addBinding(binding)
-        self.ui.simulator.init(patch.simulator)
+        self.ui.simulator.init(self.patch.simulator)
         self.patch.setDirty(False)
         self.patch.dirtyChanged.connect(self.onDirtyChanged)
 
@@ -206,7 +206,7 @@ class MainWindow(QMainWindow):
                 usedDialog = True
         if not filePath:
             return
-        p = patch.Patch(self)
+        p = engine.Patch(self)
         p.read(filePath)
         self._setPatch(p)
         self.setWindowFilePath(filePath)

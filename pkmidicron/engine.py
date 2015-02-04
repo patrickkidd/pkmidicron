@@ -374,9 +374,13 @@ class RunScriptAction(Action):
             self.state = scripteditor.STATE_ERROR
             if self.editor:
                 self.editor.setDirtyState(self.state)
-                # last = tb.splitlines()[-2]
-                # line = int(last.split(', line ')[1].split(', in ')[0])
-                # self.editor.editor.setExceptionLine(line)
+                lines = tb.splitlines()
+                lines.reverse()
+                for line in lines:
+                    if ', line ' in line:
+                        iLine = int(line.split(', line ')[1].split(', in ')[0])
+                        self.editor.editor.setExceptionLine(iLine)
+                        break
 
     def printTraceback(self):
         import traceback
@@ -400,7 +404,6 @@ class RunScriptAction(Action):
             self.editor.appendConsole(s)
         else:
             self.consoleBuffer.write(s + '\n')
-            #print(*args, **kwargs)
 
     def getSlug(self, x):
         return slugify.slugify(x).replace('-', '_')

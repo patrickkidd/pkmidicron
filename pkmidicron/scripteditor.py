@@ -31,15 +31,15 @@ class Editor(QsciScintilla):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.resize(500, 500)
 
         self.isCollapsed = False
         self.setProperty("canHaveFocus", True)
         self.viewport().setProperty("canHaveFocus", True)
-        self.errorLine = self.markerDefine(QsciScintilla.Background)
         self.lastErrorMarker = None
-        self.resize(500, 500)
 
-        self.setMarkerBackgroundColor(TINT_ERROR)
+        self.errorLine = self.markerDefine(QsciScintilla.Background)
+#        self.setMarkerBackgroundColor(TINT_ERROR, self.errorLine)
         self.setEolMode(QsciScintilla.EolUnix)
         self.setAutoIndent(True)
         self.setMarginType(1, QsciScintilla.NumberMargin)
@@ -117,10 +117,13 @@ class Editor(QsciScintilla):
             self.markerDeleteHandle(self.lastErrorMarker)
             self.lastErrorMarker = None
         if iLine is not None:
-            iLine =- 1
-            self.lastErrorMarker = self.markerAdd(iLine, self.errorLine)
+            self.lastErrorMarker = self.markerAdd(iLine - 1, self.errorLine)
             self.ensureLineVisible(iLine)
         self.update()
+
+    def setExceptionLineColor(self, c):
+        self.setMarkerBackgroundColor(c, self.errorLine)
+
 
 
 class Console(QTextEdit):
@@ -135,11 +138,11 @@ class Console(QTextEdit):
         self.isCollapsed = False
         self.setFrameStyle(QFrame.NoFrame)
         self.setReadOnly(True)
-        p = QPalette(self.palette())
-#        p.setColor(QPalette.Base, TINT_COMPILED)
-        p.setColor(QPalette.Text, QColor('black'))
-        self.setPalette(p)
         self.setFont(font)
+#        p = QPalette(self.palette())
+#        p.setColor(QPalette.Base, QColor('black'))
+#        p.setColor(QPalette.Text, QColor('white'))
+#        self.setPalette(p)
 
         self.clearButton = QPushButton(tr('Clear'), self)
         self.clearButton.clicked.connect(self.clear)
@@ -150,7 +153,7 @@ class Console(QTextEdit):
         self.editorButton.setFixedWidth(BUTTON_WIDTH)
         self.editorButton.hide()
 
-        self.resizeEvent(None)
+        self.resizeEvent(None)        
 
     def resizeEvent(self, e):
         if e:
@@ -177,6 +180,8 @@ class ScriptEditor(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.lastState = STATE_COMPILED
+
         self.editor = Editor(self)
         self.editor.saved.connect(self.saved.emit)
         self.editor.test.connect(self.test.emit)
@@ -185,9 +190,6 @@ class ScriptEditor(QWidget):
 
         self.console = Console(self)
         self.console.showEditor.connect(self.showEditor)
-        p = QPalette(self.console.palette())
-        p.setColor(QPalette.Base, TINT_COMPILED)
-        self.console.setPalette(p)
 
         self.editor.shown.connect(self.console.editorButton.hide)
         self.editor.hidden.connect(self.console.editorButton.show)
@@ -248,17 +250,21 @@ class ScriptEditor(QWidget):
 
     @util.blocked
     def setDirtyState(self, state):
+        if state == self.lastState:
+            return
         if state == STATE_COMPILED:
             c = TINT_COMPILED
         elif state == STATE_EDITED:
             c = TINT_EDITED
         elif state == STATE_ERROR:
             c = TINT_ERROR
-        p = QPalette(self.console.palette())
-        p.setColor(QPalette.Base, c)
-        self.console.setPalette(p)
+        self.editor.setExceptionLineColor(c)
+#        p = QPalette(self.console.palette())
+#        p.setColor(QPalette.Base, c)
+#        self.console.setPalette(p)
         self.editor.setMarginsBackgroundColor(c)
-        p = QPalette(self.editor.compileButton.palette())
-        p.setColor(QPalette.Button, c)
-        self.editor.compileButton.setPalette(p)
+        # don't know why this doesn't work
+#        p = QPalette(self.editor.compileButton.palette())
+#        p.setColor(QPalette.Button, c)
+#        self.editor.compileButton.setPalette(p)
 
