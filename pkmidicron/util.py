@@ -1,5 +1,6 @@
 import sys
 import time
+from traceback import print_stack
 import rtmidi
 from . import pyqt_shim as qt
 from .pyqt_shim import *
@@ -20,6 +21,10 @@ ACTION_SEND_MESSAGE = 0
 ACTION_RUN_PROGRAM = 1
 ACTION_OPEN_FILE = 2
 ACTION_RUN_SCRIPT = 3
+
+STATE_COMPILED = 1
+STATE_EDITED = 2
+STATE_ERROR = 3
 
 EXTENSIONS = ['pmc']
 FILE_TYPES = "PKMidiCron files (%s)" % ','.join(['*.'+i for i in EXTENSIONS])

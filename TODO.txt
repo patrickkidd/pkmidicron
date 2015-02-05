@@ -1,9 +1,11 @@
 PUNCH LIST
 ============================
 - ensure script objects are deleted on script compile & patch reload
-- on quit: dialog to confirm stop processing?
+  - editor is still showing after patch load
+  - binding objects are not deleted on patch load
 - user guide
-- drag folder from Finder onto python search paths
+- drag folder from Finder onto python search pathsn (upgrade to qt-5.4.1)
+- on quit: dialog to confirm stop processing?
 
 WISH LIST
 ============================

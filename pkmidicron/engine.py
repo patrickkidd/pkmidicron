@@ -267,8 +267,8 @@ class RunProgramAction(Action):
         Action.__init__(self, util.ACTION_RUN_PROGRAM, parent)
         self.text = None
 
-#    def __del__(self):
-#        print('RunProgramAction.__del__')
+    def __del__(self):
+        print('RunProgramAction.__del__')
 
     def read(self, patch):
         super().read(patch)
@@ -307,8 +307,11 @@ class RunScriptAction(Action):
         self.slug = self.getSlug(self.name)
         self.editorSize = None
         self.editorSplitterSizes = None
-        self.state = None
+        self.state = util.STATE_COMPILED
         RunScriptAction.lastIndex += 1
+    
+    def __del__(self):
+        print('RunScriptAction.__del__')
 
     def clear(self):
         if self.editor:
@@ -369,12 +372,12 @@ class RunScriptAction(Action):
             tb = self.printTraceback()
         if success:
             sys.modules[self.slug] = self.module
-            self.state = scripteditor.STATE_COMPILED
+            self.state = util.STATE_COMPILED
             if self.editor:
                 self.editor.setDirtyState(self.state)
                 self.editor.editor.setExceptionLine(None)
         else:
-            self.state = scripteditor.STATE_ERROR
+            self.state = util.STATE_ERROR
             if self.editor:
                 self.editor.setDirtyState(self.state)
                 lines = tb.splitlines()
@@ -441,7 +444,6 @@ class RunScriptAction(Action):
             self.editor.setText(self.source)
             self.editor.closed.connect(self.save)
             self.editor.saved.connect(self.save)
-            self.editor.test.connect(self.testScript)
             if self.editorSize:
                 self.editor.resize(self.editorSize)
             if self.editorSplitterSizes:
@@ -463,9 +465,9 @@ class RunScriptAction(Action):
         #self.editor.editor.setDirty(False)
 
     def trigger(self, midi):
-        if hasattr(self.module, 'onMidiMessage'):
+        if hasattr(self.module, 'onMidi'):
             try:
-                self.module.onMidiMessage(midi)
+                self.module.onMidi(midi)
             except:
                 self.printTraceback()
 
@@ -487,8 +489,8 @@ class Binding(QObject):
         self.triggerCount = 0
         self.enabled = True
 
-#    def __del__(self):
-#       print('Binding.__del__')
+    def __del__(self):
+        print('Binding.__del__')
 
     def getPatch(self):
         return self.parent()
@@ -614,6 +616,9 @@ class Patch(QObject):
         self.block = False
         self.fileName = 'Untitled.pmc'
         self.filePath = 'Untitled.pmc'
+
+    def __del__(self):
+        print('Patch.del')
 
     def read(self, filePath):
         patch = util.Settings(filePath, QSettings.IniFormat)

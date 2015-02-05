@@ -35,6 +35,7 @@ def main():
     app = util.Application(sys.argv)
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
     app.setQuitOnLastWindowClosed(False)
+    # print(app.applicationDirPath())
 
     def setStyleSheet():
 #        print('setStyleSheet')

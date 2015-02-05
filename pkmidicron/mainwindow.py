@@ -165,13 +165,13 @@ class MainWindow(QMainWindow):
         if not filePath:
             filePath = self.prefs.value('lastFilePath', type=str)
         if not filePath:
-            if not self.saveAs():
-                return
-        self.patch.write(filePath)
-        self.patch.setDirty(False)
-        self.setWindowFilePath(filePath)
-        self.setWindowTitle(QFileInfo(filePath).fileName())
-        self.prefs.setValue('lastFilePath', filePath)
+            self.saveAs()
+        else:
+            self.patch.write(filePath)
+            self.patch.setDirty(False)
+            self.setWindowFilePath(filePath)
+            self.setWindowTitle(QFileInfo(filePath).fileName())
+            self.prefs.setValue('lastFilePath', filePath)
 
     def saveAs(self):
         if self.patch.filePath:

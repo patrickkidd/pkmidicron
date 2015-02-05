@@ -16,15 +16,10 @@ TINT_COMPILED = QColor('#dcffdb')
 TINT_EDITED = QColor('#fdffbd')
 TINT_ERROR = QColor('#ffdbdb')
 
-STATE_COMPILED = 1
-STATE_EDITED = 2
-STATE_ERROR = 3
-
 
 class Editor(QsciScintilla):
 
     saved = pyqtSignal()
-    test = pyqtSignal()
     toggleConsole = pyqtSignal()
     shown = pyqtSignal()
     hidden = pyqtSignal()
@@ -56,10 +51,6 @@ class Editor(QsciScintilla):
         self.compileButton = QPushButton(tr('Compile'), self)
         self.compileButton.clicked.connect(self.saved.emit)
         self.compileButton.setFixedWidth(BUTTON_WIDTH)
-
-        self.testButton = QPushButton(tr('Test'), self)
-        self.testButton.clicked.connect(self.test.emit)
-        self.testButton.setFixedWidth(BUTTON_WIDTH)
 
         self.consoleButton = QPushButton(tr('Console'), self)
         self.consoleButton.clicked.connect(self.toggleConsole.emit)
@@ -93,10 +84,8 @@ class Editor(QsciScintilla):
                 self.isCollapsed = True
                 self.hidden.emit()            
         self.compileButton.move(self.width() - self.compileButton.width(), 0)
-        self.testButton.move(self.width() - self.testButton.width(),
-                             self.compileButton.height())
         self.consoleButton.move(self.width() - self.consoleButton.width(),
-                                self.testButton.y() + self.testButton.height())
+                                self.compileButton.height())
 
     def showEvent(self, e):
         super().showEvent(e)
@@ -130,7 +119,6 @@ class Console(QTextEdit):
 
     shown = pyqtSignal()
     hidden = pyqtSignal()
-    showEditor = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -139,19 +127,10 @@ class Console(QTextEdit):
         self.setFrameStyle(QFrame.NoFrame)
         self.setReadOnly(True)
         self.setFont(font)
-#        p = QPalette(self.palette())
-#        p.setColor(QPalette.Base, QColor('black'))
-#        p.setColor(QPalette.Text, QColor('white'))
-#        self.setPalette(p)
 
         self.clearButton = QPushButton(tr('Clear'), self)
         self.clearButton.clicked.connect(self.clear)
         self.clearButton.setFixedWidth(BUTTON_WIDTH)
-
-        self.editorButton = QPushButton(tr('Editor'), self)
-        self.editorButton.clicked.connect(self.showEditor)
-        self.editorButton.setFixedWidth(BUTTON_WIDTH)
-        self.editorButton.hide()
 
         self.resizeEvent(None)        
 
@@ -165,8 +144,6 @@ class Console(QTextEdit):
                 self.isCollapsed = True
                 self.hidden.emit()
         self.clearButton.move(self.width() - self.clearButton.width(), 0)
-        self.editorButton.move(self.width() - self.editorButton.width(),
-                               self.clearButton.height())
 
 
 @util.blocked
@@ -175,26 +152,20 @@ class ScriptEditor(QWidget):
     closed = pyqtSignal()
     saved = pyqtSignal()
     textChanged = pyqtSignal()
-    test = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.lastState = STATE_COMPILED
+        self.lastState = util.STATE_COMPILED
 
         self.editor = Editor(self)
         self.editor.saved.connect(self.saved.emit)
-        self.editor.test.connect(self.test.emit)
         self.editor.toggleConsole.connect(self.toggleConsole)
         self.editor.textChanged.connect(self.onTextChanged)
 
         self.console = Console(self)
-        self.console.showEditor.connect(self.showEditor)
-
-        self.editor.shown.connect(self.console.editorButton.hide)
-        self.editor.hidden.connect(self.console.editorButton.show)
-        #self.console.shown.connect(self.editor.consoleButton.hide)
-        #self.console.hidden.connect(self.editor.consoleButton.show)
+        self.console.hide()
+        self.lastConsoleHeight = None
 
         self.splitter = QSplitter(Qt.Vertical, self)
         self.splitter.addWidget(self.editor)
@@ -204,8 +175,6 @@ class ScriptEditor(QWidget):
         Layout.setContentsMargins(0, 0, 0, 0)
         Layout.addWidget(self.splitter)
         self.setLayout(Layout)
-
-#        self.setDirtyState(STATE_COMPILED)
 
     def updateResize(self):
         self.editor.resizeEvent(None)
@@ -221,7 +190,7 @@ class ScriptEditor(QWidget):
     @util.blocked
     def onTextChanged(self):
         self.block = False
-        self.setDirtyState(STATE_EDITED)
+        self.setDirtyState(util.STATE_EDITED)
         self.block = True
         self.textChanged.emit()
 
@@ -230,17 +199,16 @@ class ScriptEditor(QWidget):
 
     def toggleConsole(self):
         sizes = self.splitter.sizes()
-        if sizes[1] == 0:
-            self.splitter.setSizes([sizes[0] - 200, 200])
+        if not self.console.isVisible():
+            if self.lastConsoleHeight is None:
+                self.lastConsoleHeight = min(self.height() / 3, 200)
+            hw = self.splitter.handleWidth()
+            self.splitter.setSizes([self.height() - self.lastConsoleHeight - hw, self.lastConsoleHeight])
             self.console.show()
         else:
-            self.splitter.setSizes([sizes[0], 0])
+            self.lastConsoleHeight = sizes[1]
             self.console.hide()
-
-    def showEditor(self):
-        sizes = self.splitter.sizes()
-        if sizes[0] == 0:
-            self.splitter.setSizes([400, sizes[1] - 400])
+            self.splitter.setSizes([self.height(), 0])
 
     def appendConsole(self, s):
         p = QPalette(self.console.palette())
@@ -252,19 +220,13 @@ class ScriptEditor(QWidget):
     def setDirtyState(self, state):
         if state == self.lastState:
             return
-        if state == STATE_COMPILED:
+        if state == util.STATE_COMPILED:
             c = TINT_COMPILED
-        elif state == STATE_EDITED:
+        elif state == util.STATE_EDITED:
             c = TINT_EDITED
-        elif state == STATE_ERROR:
+        elif state == util.STATE_ERROR:
             c = TINT_ERROR
         self.editor.setExceptionLineColor(c)
-#        p = QPalette(self.console.palette())
-#        p.setColor(QPalette.Base, c)
-#        self.console.setPalette(p)
         self.editor.setMarginsBackgroundColor(c)
-        # don't know why this doesn't work
-#        p = QPalette(self.editor.compileButton.palette())
-#        p.setColor(QPalette.Button, c)
-#        self.editor.compileButton.setPalette(p)
+        self.lastState = state
 
