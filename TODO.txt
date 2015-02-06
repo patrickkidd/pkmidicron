@@ -1,17 +1,17 @@
 PUNCH LIST
 ============================
-- ensure script objects are deleted on script compile & patch reload
-  - editor is still showing after patch load
-  - binding objects are not deleted on patch load
 - user guide
-- drag folder from Finder onto python search pathsn (upgrade to qt-5.4.1)
-- on quit: dialog to confirm stop processing?
 
 WISH LIST
 ============================
-- simulator on windows
 - file save on windows (huh?)
 - simulator wildcards cause loop
+- drag folder from Finder onto python search pathsn (upgrade to qt-5.4.1)
+
+TESTING
+============================
+- all criteria
+
 
 APPS
 ============
