@@ -83,7 +83,8 @@ class Simulator(QWidget):
             if self.fakeBox.isChecked():
                 self.received.emit(portName, m)
             else:
-                outputs().sendMessage(portName, m)
+                if portName in outputs().names_cached():
+                    outputs().sendMessage(portName, m)
         if msg is None or type(msg) == bool:
             msg = self.simulator.getMidi()
         if self.simulator.portName == util.ALL_TEXT:

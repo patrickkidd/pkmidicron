@@ -108,7 +108,7 @@ class OutputPorts(PortList):
 
     def sendMessage(self, portName, m):
         if not portName in self.ports:
-            raise ValueError('No midi output port with the name ' + portName)
+            raise ValueError('No midi output port with the name \"%s\"' % portName)
         port = self.ports[portName]
         if not port.isPortOpen():
             for i in range(port.getPortCount()):
