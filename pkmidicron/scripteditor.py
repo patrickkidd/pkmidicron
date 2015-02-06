@@ -176,6 +176,9 @@ class ScriptEditor(QWidget):
         Layout.addWidget(self.splitter)
         self.setLayout(Layout)
 
+    # def __del__(self):
+    #     print('ScriptEditor.__del__')
+
     def updateResize(self):
         self.editor.resizeEvent(None)
         self.console.resizeEvent(None)

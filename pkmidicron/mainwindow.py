@@ -143,6 +143,8 @@ class MainWindow(QMainWindow):
             if not force and not self.confirmSave():
                 return
             self.patch.setParent(None)
+            for item in self.ui.bindingsList.findItems('*', Qt.MatchWildcard):
+                item.binding = None
             self.ui.bindingsList.clear()
             self.ui.simulator.clear()
         self.patch = patch

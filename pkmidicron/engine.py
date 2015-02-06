@@ -267,8 +267,8 @@ class RunProgramAction(Action):
         Action.__init__(self, util.ACTION_RUN_PROGRAM, parent)
         self.text = None
 
-    def __del__(self):
-        print('RunProgramAction.__del__')
+    # def __del__(self):
+    #     print('RunProgramAction.__del__')
 
     def read(self, patch):
         super().read(patch)
@@ -311,7 +311,9 @@ class RunScriptAction(Action):
         RunScriptAction.lastIndex += 1
     
     def __del__(self):
-        print('RunScriptAction.__del__')
+        if self.editor:
+            self.editor.close()
+            self.editor = None
 
     def clear(self):
         if self.editor:
@@ -490,7 +492,8 @@ class Binding(QObject):
         self.enabled = True
 
     def __del__(self):
-        print('Binding.__del__')
+        for action in self.actions:
+            action.clear()
 
     def getPatch(self):
         return self.parent()
@@ -617,8 +620,8 @@ class Patch(QObject):
         self.fileName = 'Untitled.pmc'
         self.filePath = 'Untitled.pmc'
 
-    def __del__(self):
-        print('Patch.del')
+    # def __del__(self):
+    #     print('Patch.__del__')
 
     def read(self, filePath):
         patch = util.Settings(filePath, QSettings.IniFormat)
