@@ -14,9 +14,12 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self, parent)
         self.ui = mainwindow_form.Ui_MainWindow()
         self.ui.setupUi(self)
+#        self.setIcon(QIcon(QPixmap(':/icon.png')))
 
         self.trayIcon = TrayIcon(self)
         self.trayIcon.show()
+
+        self.qnam = QNetworkAccessManager(self)
 
         self.ui.innerSplitter.setStretchFactor(0, 0)
         self.ui.innerSplitter.setStretchFactor(1, 1)
@@ -33,6 +36,12 @@ class MainWindow(QMainWindow):
         inputs().portAdded.connect(self.onInputPortAdded)
         inputs().portAdded.connect(self.onInputPortRemoved)
         self.collector.start()
+        
+        self.reply = None
+        self.ui.actionCheckForUpdates.setMenuRole(QAction.ApplicationSpecificRole)
+        self.ui.actionCheckForUpdates.triggered.connect(self.checkForUpdates)
+
+        # ToolBar
 
         self.toolbar = self.addToolBar(tr("File"))
         self.toolbar.setMovable(False)
@@ -296,12 +305,41 @@ class MainWindow(QMainWindow):
         self.prefs.setAutoSave(was)
         self.prefs.sync()
 
+    def checkForUpdates(self):
+        if self.reply:
+            return
+        req = QNetworkRequest(util.VERSION_URL)
+        req.setRawHeader('Cache-Control', 'no-cache')
+        req.setRawHeader('Pragma', 'no-cache')
+        req.setRawHeader('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36')
+        self.reply = self.qnam.get(req)
+        self.reply.finished.connect(self.onUpdatesReply)
+
+    def onUpdatesReply(self):
+        if self.reply.error() != QNetworkReply.NoError:
+            QMessageBox.critical(self, 'Error checking for updates',
+                                 'There was an error communicating with the server. Please check your internet connection or try again later.')
+            print('RESPONSE HEADERS:')
+            for k, v in self.reply.rawHeaderPairs():
+                print('    ', k, v)
+            return
+        b = self.reply.readAll()
+        # WTF!?!
+        text = str(b, encoding='ascii').strip()
+        self.reply.deleteLater()
+        self.reply = None
+        if util.updateAvailable(text):
+            QMessageBox.information(self, 'Update available',
+                                    'There is an update available, version %s. You have version %s. <br><br><a href="http://vedanamedia.com/products/pkmidicron/download">Click here to download the latest version.</a>' % (text, util.VERSION))
+        else:
+            QMessageBox.information(self, 'You are up-to-date',
+                                    'PKMidiCron %s is currently the newest version available.' % text)
+
     ## Views
 
     def showAbout(self):
-        version = 1.1
         QMessageBox.about(self, tr("About PKMidiCron"),
-                          tr("""PKMidiCron %s\nvedanamedia.com""" % version))
+                          tr("""PKMidiCron %s\n\nvedanamedia.com""" % util.VERSION))
 
     def showHelp(self):
         QDesktopServices.openUrl(QUrl('http://vedanamedia.com/products/pkmidicron'))

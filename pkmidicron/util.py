@@ -29,6 +29,23 @@ STATE_ERROR = 3
 EXTENSIONS = ['pmc']
 FILE_TYPES = "PKMidiCron files (%s)" % ','.join(['*.'+i for i in EXTENSIONS])
 
+VERSION_MAJOR = 0
+VERSION_MINOR = 5
+VERSION_MICRO = 0
+VERSION = '%s.%s.%s' % (VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO)
+VERSION_URL = QUrl('http://vedanamedia.com/products/pkmidicron/version.txt')
+
+def verint(a, b, c):
+    print('verint', a, b, c, type(a), type(b), type(c))
+    return (a << 24) | (b << 16) | c
+
+def updateAvailable(text):
+    text = text.strip()
+    major, minor, micro = [int(i) for i in text.split('.')]
+    there = verint(major, minor, micro)
+    here = verint(VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO)
+    return here < there
+    
 
 def refs(o,s=''):
     print('refs: ', s, sys.getrefcount(o), o)

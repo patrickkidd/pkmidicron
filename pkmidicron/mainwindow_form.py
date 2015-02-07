@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Sat Jan 31 14:07:30 2015
+# Created: Fri Feb  6 21:45:16 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -127,6 +127,8 @@ class Ui_MainWindow(object):
         self.actionToggleMainWindow.setObjectName("actionToggleMainWindow")
         self.actionToggleBindings = QtWidgets.QAction(MainWindow)
         self.actionToggleBindings.setObjectName("actionToggleBindings")
+        self.actionCheckForUpdates = QtWidgets.QAction(MainWindow)
+        self.actionCheckForUpdates.setObjectName("actionCheckForUpdates")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
@@ -135,6 +137,7 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionPreferences)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExit)
+        self.menuFile.addAction(self.actionCheckForUpdates)
         self.menuView.addAction(self.actionToggleMainWindow)
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionToggleBindings)
@@ -203,7 +206,8 @@ class Ui_MainWindow(object):
         self.actionToggleMainWindow.setShortcut(_translate("MainWindow", "Ctrl+W"))
         self.actionToggleBindings.setText(_translate("MainWindow", "Bindings"))
         self.actionToggleBindings.setShortcut(_translate("MainWindow", "Ctrl+0"))
+        self.actionCheckForUpdates.setText(_translate("MainWindow", "Check for Updates..."))
 
 from .simulator import Simulator
-from .util import ScrollArea, ListWidget
 from .bindingproperties import BindingProperties
+from .util import ListWidget, ScrollArea
