@@ -6,7 +6,7 @@ from .ports import inputs
 from .util import refs
 
 
-CONFIRM_SAVE = False
+CONFIRM_SAVE = True
 
 
 class MainWindow(QMainWindow):

@@ -6,7 +6,7 @@ build/PKMidiCron.app/Contents/MacOS/PKMidiCron: resources
 	python3 setup.py bdist_mac
 
 install: pkmidicron
-	cp -R build/PKMidiCron.app /Applications
+	cp -Rf build/PKMidiCron.app /Applications
 
 resources: pkmidicron/mainwindow_form.py pkmidicron/preferencesdialog_form.py pkmidicron/resources.py
 

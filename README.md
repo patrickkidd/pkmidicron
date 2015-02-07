@@ -3,32 +3,12 @@ PKMidiCron
 
 An app to fire commands when a midi message is received. Possible uses:
 
+- Open a DAW patch from your midi foot pedal
 - Remote PC control via MIDI
+- Translate MIDI to OSC
 - Central MIDI Router for complex setups
 - Programmable generative sequencer
 - Anything you can dream up!
-
-
-Bindings
-===============================
-You add bindings to define how the app should respond to particular midi messages coming into it. Each Binding 
-
-
-Send Message Action
-------------------------
-This action will send a midi message, or forward the original midi message that triggered the action. This allows you to create a midi patch bay that routes messages of all kinds between ports and applications. Selecting all ports will loop through and perform the action once for each port in the list.
-
-Run Program Action
-------------------------
-This action will execute a shell script, exe, or app bundle.
-
-Open File Action
-------------------------
-This will open a document using the appropriate program associated with the file's extension. For example, you could open a jpeg or a txt file.
-
-Execute Script
-------------------------
-This action will execute a custom python script which you can create using the built-in editor. More information on python scripts to follow.
 
 
 Simulator
@@ -37,9 +17,41 @@ The simulator will allow you to test your bindings by sending the precise messag
 
 Clicking "Route Internally" bypasses the midi hardware and just passes it to the bindings for evaluation. This is helpful when developing your bindings in a sensistive hardware setup.
 
+
 Activity Log
 ===============================
 This is a simple midi monitor, which displaus all messages from all ports enabled in the preferences. In the preferences window, you can also enable all ports by default which will ignore the individual enabled/disabled settings of each port and just accept all possible incoming midi, INCLUDING midi from new ports that are connected while the app is running.
+
+
+Bindings
+===============================
+Bindings bind a midi message to an action or actions. To add a binding, click the "+" button near the top of the window. Then click the binding at the left to edit it. You can also double-click the title of the binding to rename it.
+
+Each binding has a match criteria. When the indicated midi message is recieved, the binding will execute all of its actions in the order that they are shown.
+
+You may disable a binding by un-checking the checkbox next to the binding label. When disabled, the binding will still flash when a matching message is recieved btu at a slightly dimmer color than if enabled.
+
+A small label in the lower right of the box with the binding title shows how many times the binding has been triggered. A click on this label will reset the count.
+
+The available actions are found below. The most common will probably be to run a command, but you can also forward messages to new ports, trigger your own messages, or run a python script. If you have an idea for a new action please let me know!
+
+Send Message Action
+------------------------
+This action will send a midi message, or forward the original midi message that triggered the action. This allows you to create a midi patch bay that routes messages of all kinds between ports and applications. Selecting *all ports* will loop through and send the message to each port in the list.
+
+It is possible to create an infinite feedback loop if the output also matches the input criteria. If this ocurres then simply click the checkbox next to the binding title to disable it temporarily, or adjust the criteria so that the output doesn't match the input.
+
+Run Command Action
+------------------------
+This will execute a script, app bundle, or exe of your choice in a UNIX Shell on Mac and command prompt on Windows. Command execution occurs behind the scenes and output can be viewed by looking at the Console on Mac and there is currently no option to view output on windows.
+
+Open File Action
+------------------------
+This will open a document using the appropriate program associated with the file's extension. For example, you could open a jpeg or a txt file.
+
+Execute Script
+------------------------
+This action will execute a custom python script which you can create using the built-in editor. This allows you to do pretty much anything you want, including creating your own graphical interface, running programs, and sending more messages. More information on writing python script can be found below.
 
 
 Scripting Guide

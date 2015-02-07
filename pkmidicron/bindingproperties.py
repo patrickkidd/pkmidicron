@@ -129,7 +129,7 @@ class SendMessageAction(ActionWidget):
 
 class RunProgramAction(ActionWidget):
     def __init__(self, action, parent=None):
-        ActionWidget.__init__(self, action, tr("Run Program"), parent)
+        ActionWidget.__init__(self, action, tr("Run Command"), parent)
 
         self.cmdEdit = QLineEdit(self)
         self.cmdEdit.textChanged.connect(self.setCmd)
@@ -231,7 +231,7 @@ class ActionBox(util.CollapsableBox):
 
         self.addBox = QComboBox(self)
         self.addBox.addItem('Send Message')
-        self.addBox.addItem('Run Program')
+        self.addBox.addItem('Run Command')
         self.addBox.addItem('Open File')
         self.addBox.addItem('Execute Script')
         self.addBox.setCurrentIndex(-1)

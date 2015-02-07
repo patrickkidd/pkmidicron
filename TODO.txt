@@ -4,9 +4,11 @@ PUNCH LIST
 
 WISH LIST
 ============================
+- drag to re-order actions
 - file save on windows (huh?)
 - simulator wildcards cause loop
 - drag folder from Finder onto python search pathsn (upgrade to qt-5.4.1)
+
 
 TESTING
 ============================
