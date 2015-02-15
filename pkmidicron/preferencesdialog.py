@@ -92,9 +92,9 @@ class PreferencesDialog(QDialog):
         x = self.mainwindow.toolbar.toolButtonStyle()
         self.ui.iconOnlyButton.setChecked(x == Qt.ToolButtonIconOnly)
         self.ui.iconPlusNameButton.setChecked(x == Qt.ToolButtonTextUnderIcon)
-
         self.ui.iconOnlyButton.toggled.connect(self.setIconOnly)
         self.ui.iconPlusNameButton.toggled.connect(self.setIconPlusName)
+
         self.ui.portList.installEventFilter(self)
         self.ui.addPortButton.clicked.connect(self.addPort)
         self.ui.addPathButton.clicked.connect(self.addPythonPath)

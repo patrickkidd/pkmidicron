@@ -96,6 +96,8 @@ class MainWindow(QMainWindow):
 
         # Init
 
+        self.popupMenu = self.createPopupMenu()
+
         self.patch = None
         self.prefs = prefs and prefs or QSettings()
         self.readPrefs()
@@ -388,6 +390,41 @@ class MainWindow(QMainWindow):
             if sizes[0] == 0:
                 sizes[0] = self.ui.bindingsList.sizeHint().width()
                 self.ui.outerSplitter.setSizes(sizes)
+
+    def createPopupMenu(self):
+        """ re-impl """
+        menu = QMenu(self)
+        menu.aboutToShow.connect(self.initPopupMenu)
+        iconOnly = self.actionIconOnly = menu.addAction('Icon Only')
+        iconOnly.setCheckable(True)
+        iconOnly.triggered.connect(self._setIconOnly)
+        textAndIcon = self.actionTextAndIcon = menu.addAction('Icon and Name')
+        textAndIcon.setCheckable(True)
+        textAndIcon.triggered.connect(self._setTextAndIcon)
+        seperator = menu.addAction('')
+        seperator.setSeparator(True)
+        menu.addAction(self.ui.actionToggleBindings)
+        menu.addAction(self.ui.actionToggleSimulator)
+        menu.addAction(self.ui.actionToggleLog)
+        menu.addAction(self.ui.actionToggleBindingProperties)
+        return menu
+
+    def initPopupMenu(self):
+        self.actionTextAndIcon.setChecked(self.toolbar.toolButtonStyle() == Qt.ToolButtonTextUnderIcon)
+        self.actionIconOnly.setChecked(self.toolbar.toolButtonStyle() == Qt.ToolButtonIconOnly)
+        #
+        self.ui.actionToggleBindings.setChecked(self.ui.bindingsList.isVisible())
+        self.ui.actionToggleSimulator.setChecked(self.ui.simulator.isVisible())
+        self.ui.actionToggleLog.setChecked(self.ui.activityLog.isVisible())
+        self.ui.actionToggleBindingProperties.setChecked(self.ui.bindingProperties.isVisible())
+
+    def _setIconOnly(self):
+        self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.popupMenu.hide()
+        
+    def _setTextAndIcon(self):
+        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.popupMenu.hide()
 
     def toggleBindings(self):
         if self.isLastView(self.ui.bindingsList):

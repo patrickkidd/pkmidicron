@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Fri Feb  6 21:45:16 2015
+# Created: Sun Feb 15 13:39:20 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -100,10 +100,13 @@ class Ui_MainWindow(object):
         self.actionNew = QtWidgets.QAction(MainWindow)
         self.actionNew.setObjectName("actionNew")
         self.actionToggleSimulator = QtWidgets.QAction(MainWindow)
+        self.actionToggleSimulator.setCheckable(True)
         self.actionToggleSimulator.setObjectName("actionToggleSimulator")
         self.actionToggleLog = QtWidgets.QAction(MainWindow)
+        self.actionToggleLog.setCheckable(True)
         self.actionToggleLog.setObjectName("actionToggleLog")
         self.actionToggleBindingProperties = QtWidgets.QAction(MainWindow)
+        self.actionToggleBindingProperties.setCheckable(True)
         self.actionToggleBindingProperties.setObjectName("actionToggleBindingProperties")
         self.actionPreferences = QtWidgets.QAction(MainWindow)
         self.actionPreferences.setMenuRole(QtWidgets.QAction.PreferencesRole)
@@ -126,6 +129,7 @@ class Ui_MainWindow(object):
         self.actionToggleMainWindow = QtWidgets.QAction(MainWindow)
         self.actionToggleMainWindow.setObjectName("actionToggleMainWindow")
         self.actionToggleBindings = QtWidgets.QAction(MainWindow)
+        self.actionToggleBindings.setCheckable(True)
         self.actionToggleBindings.setObjectName("actionToggleBindings")
         self.actionCheckForUpdates = QtWidgets.QAction(MainWindow)
         self.actionCheckForUpdates.setObjectName("actionCheckForUpdates")
@@ -208,6 +212,6 @@ class Ui_MainWindow(object):
         self.actionToggleBindings.setShortcut(_translate("MainWindow", "Ctrl+0"))
         self.actionCheckForUpdates.setText(_translate("MainWindow", "Check for Updates..."))
 
-from .simulator import Simulator
 from .bindingproperties import BindingProperties
-from .util import ListWidget, ScrollArea
+from .util import ScrollArea, ListWidget
+from .simulator import Simulator

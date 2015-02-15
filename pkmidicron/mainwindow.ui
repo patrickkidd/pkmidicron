@@ -231,6 +231,9 @@
    </property>
   </action>
   <action name="actionToggleSimulator">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Simulator</string>
    </property>
@@ -239,6 +242,9 @@
    </property>
   </action>
   <action name="actionToggleLog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Activity Log</string>
    </property>
@@ -247,6 +253,9 @@
    </property>
   </action>
   <action name="actionToggleBindingProperties">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Binding Properties</string>
    </property>
@@ -322,6 +331,9 @@
    </property>
   </action>
   <action name="actionToggleBindings">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Bindings</string>
    </property>
