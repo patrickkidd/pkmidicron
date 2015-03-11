@@ -13,7 +13,7 @@ WISH LIST
 TESTING
 ============================
 - all criteria
-
+- save on exit
 
 APPS
 ============

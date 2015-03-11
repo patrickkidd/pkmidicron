@@ -164,11 +164,14 @@ class PreferencesDialog(QDialog):
     def eventFilter(self, o, e):
         if o == self.ui.pythonPathList:
             if e.type() == QEvent.DragEnter:
-                mime = e.mimeData()
-                if mime.hasText():
-                    print('TEXT', QUrl.fromEncoded(mime.text()))
-                if mime.hasUrls():
-                    print('URLS', mime.urls())
+                e.accept()
+                return True
+            elif e.type() == QEvent.Drop:
+                for url in e.mimeData().urls():
+                    if url.isLocalFile():
+                        fpath = url.toLocalFile()
+                        if QFileInfo(fpath).isDir() or fpath.endswith('.zip'):
+                            self.addPythonPath(url.toLocalFile())
                 e.accept()
                 return True
         elif e.type() == QEvent.KeyPress:
@@ -211,11 +214,12 @@ class PreferencesDialog(QDialog):
         self.prefs().setValue('enabled', enabled)
         self.prefs().endGroup()
 
-    def addPythonPath(self):
+    def addPythonPath(self, path=QDir.homePath()):
         self.block = True
-        path = QDir.homePath()
         item = QListWidgetItem(path, self.ui.pythonPathList)
         item.setFlags(item.flags() | Qt.ItemIsEditable)
+        if QFileInfo(path).isDir() or path.endswith('.zip'):
+            item.setText(path)
         self.block = False
         self.savePythonPaths()
 
