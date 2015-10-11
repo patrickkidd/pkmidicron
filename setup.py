@@ -16,7 +16,7 @@ options = {
         "bundle_name": "PKMidiCron",
         "custom_info_plist": "Info.plist",
         #"qt_menu_nib": "/Applications/Qt-5.3/5.3/Src/qtbase/src/plugins/platforms/cocoa/qt_menu.nib"
-        "qt_menu_nib": "/usr/local/Cellar/qt5/5.3.2/qt_menu.nib"
+        "qt_menu_nib": "/usr/local/Cellar/qt5/5.4.1/qt_menu.nib"
     }
 }
 
@@ -38,8 +38,10 @@ else:
 def get_data_files():
     return [('', [])]
 
+from pkmidicron import util
+
 setup(  name = "PKMidiCron",
-        version = "0.1",
+        version = "%s.%s.%s" % (util.VERSION_MAJOR, util.VERSION_MINOR, util.VERSION_MICRO),
         description = "Trigger the triggers!",
         options = options,
         executables = [
