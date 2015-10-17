@@ -30,7 +30,7 @@ EXTENSIONS = ['pmc']
 FILE_TYPES = "PKMidiCron files (%s)" % ','.join(['*.'+i for i in EXTENSIONS])
 
 VERSION_MAJOR = 1
-VERSION_MINOR = 0
+VERSION_MINOR = 1
 VERSION_MICRO = 0
 VERSION = '%s.%s.%s' % (VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO)
 VERSION_URL = QUrl('http://vedanamedia.com/products/pkmidicron/version.txt')

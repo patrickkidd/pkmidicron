@@ -19,8 +19,8 @@ RELEASE PROCEDURE
 ============================
 - version in util.py
 - version in Info.plist
-- version at http://vedanamedia.com/products/pkmidicron/version.txt
 - python3 setup.py bdist_mac
+- on RELEASE: version at http://vedanamedia.com/products/pkmidicron/version.txt
 
 APPS
 ============
