@@ -162,6 +162,8 @@
     </property>
     <addaction name="actionToggleMainWindow"/>
     <addaction name="separator"/>
+    <addaction name="actionToggleToolBar"/>
+    <addaction name="separator"/>
     <addaction name="actionToggleBindings"/>
     <addaction name="actionToggleSimulator"/>
     <addaction name="actionToggleLog"/>
@@ -344,6 +346,14 @@
   <action name="actionCheckForUpdates">
    <property name="text">
     <string>Check for Updates...</string>
+   </property>
+  </action>
+  <action name="actionToggleToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Tool Bar</string>
    </property>
   </action>
  </widget>
