@@ -30,8 +30,8 @@ else:
     ])
     base = None
     # Comment out for a console app
-    #if sys.platform == "win32":
-    #    base = "Win32GUI"
+    if sys.platform == "win32":
+        base = "Win32GUI"
     targetName = 'PKMidiCron.exe'
 
 
