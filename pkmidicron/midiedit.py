@@ -1,6 +1,6 @@
 from rtmidi import MidiMessage, RtMidiIn
 from .pyqt_shim import *
-from . import util, engine
+from . import util
 from .ports import inputs, outputs
 
 @util.blocked

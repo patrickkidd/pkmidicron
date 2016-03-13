@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Sun Feb 15 13:39:20 2015
-#      by: PyQt5 UI code generator 5.3.2
+# Created: Fri Oct 16 23:23:31 2015
+#      by: PyQt5 UI code generator 5.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -133,6 +133,9 @@ class Ui_MainWindow(object):
         self.actionToggleBindings.setObjectName("actionToggleBindings")
         self.actionCheckForUpdates = QtWidgets.QAction(MainWindow)
         self.actionCheckForUpdates.setObjectName("actionCheckForUpdates")
+        self.actionToggleToolBar = QtWidgets.QAction(MainWindow)
+        self.actionToggleToolBar.setCheckable(True)
+        self.actionToggleToolBar.setObjectName("actionToggleToolBar")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
@@ -143,6 +146,8 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionExit)
         self.menuFile.addAction(self.actionCheckForUpdates)
         self.menuView.addAction(self.actionToggleMainWindow)
+        self.menuView.addSeparator()
+        self.menuView.addAction(self.actionToggleToolBar)
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionToggleBindings)
         self.menuView.addAction(self.actionToggleSimulator)
@@ -211,7 +216,8 @@ class Ui_MainWindow(object):
         self.actionToggleBindings.setText(_translate("MainWindow", "Bindings"))
         self.actionToggleBindings.setShortcut(_translate("MainWindow", "Ctrl+0"))
         self.actionCheckForUpdates.setText(_translate("MainWindow", "Check for Updates..."))
+        self.actionToggleToolBar.setText(_translate("MainWindow", "Tool Bar"))
 
-from .bindingproperties import BindingProperties
-from .util import ScrollArea, ListWidget
 from .simulator import Simulator
+from .util import ListWidget, ScrollArea
+from .bindingproperties import BindingProperties

@@ -4,16 +4,23 @@ PUNCH LIST
 
 WISH LIST
 ============================
+- add note-off and duration to note mode in simulator
 - drag to re-order actions
 - file save on windows (huh?)
-- simulator wildcards cause loop
-- drag folder from Finder onto python search pathsn (upgrade to qt-5.4.1)
-
+- simulator wildcards cause loop (not sure what this means)
 
 TESTING
 ============================
 - all criteria
 - save on exit
+
+
+RELEASE PROCEDURE
+============================
+- version in util.py
+- version in Info.plist
+- python3 setup.py bdist_mac
+- on RELEASE: version at http://vedanamedia.com/products/pkmidicron/version.txt
 
 APPS
 ============

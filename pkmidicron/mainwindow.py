@@ -92,6 +92,7 @@ class MainWindow(QMainWindow):
         self.ui.actionToggleLog.triggered.connect(self.toggleLog)
         self.ui.actionToggleBindingProperties.triggered.connect(self.toggleBindingProperties)
         self.ui.actionToggleMainWindow.triggered.connect(self.toggleMainWindow)
+        self.ui.actionToggleToolBar.triggered.connect(self.toggleToolBar)
         self.ui.actionShowHelp.triggered.connect(self.showHelp)
 
         # Init
@@ -255,6 +256,9 @@ class MainWindow(QMainWindow):
         self.ui.bindingPropertiesScroller.setVisible(x)
         QTimer.singleShot(0, self.checkSimulatorHeight)
         #
+        x = self.prefs.value('ToolBarShown', type=bool, defaultValue=True)
+        self.toolbar.setVisible(x)
+        self.ui.actionToggleToolBar.setChecked(x)
         x = self.prefs.value('toolButtonStyle', type=str)
         if x == 'iconOnly':
             self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
@@ -332,7 +336,7 @@ class MainWindow(QMainWindow):
         self.reply = None
         if util.updateAvailable(text):
             QMessageBox.information(self, 'Update available',
-                                    'There is an update available, version %s. You have version %s. <br><br><a href="http://vedanamedia.com/products/pkmidicron/download">Click here to download the latest version.</a>' % (text, util.VERSION))
+                                    'There is an update available, version %s. You have version %s. <br><br><a href="http://vedanamedia.com/pkmidicron">Click here to download the latest version.</a>' % (text, util.VERSION))
         else:
             QMessageBox.information(self, 'You are up-to-date',
                                     'PKMidiCron %s is currently the newest version available.' % text)
@@ -357,6 +361,10 @@ class MainWindow(QMainWindow):
             self.setVisible(not self.isVisible())
         elif w:
             w.close()
+
+    def toggleToolBar(self, x):
+        self.toolbar.setVisible(x)
+        self.prefs.setValue("ToolBarShown", x)
         
     def closeEvent(self, e):
         self.trayIcon.showHello()
