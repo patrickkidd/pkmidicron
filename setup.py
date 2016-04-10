@@ -20,15 +20,15 @@ if hasattr(os, 'uname'):
 #    }
 else:
     sysPackages = [i for i in sys.path if 'site-packages' in i][0]
-    options['build_exe']['include_files'].append(*[
-        os.path.relpath(os.path.join(sysPackages, 'PyQt5\LibEGL.dll'))
-    ])
     options['build_exe'] = {
         "packages": ["os"],
         "excludes": ["tkinter"],
         "include_files": [],
         "icon": "icon.ico",
     }
+    options['build_exe']['include_files'].append(*[
+        os.path.relpath(os.path.join(sysPackages, 'PyQt5\LibEGL.dll'))
+    ])
     base = None
     # Comment out for a console app
     #if sys.platform == "win32":
@@ -45,7 +45,7 @@ setup(  name = "PKMidiCron",
         options = options,
         executables = [
             Executable(
-                "PKMidiCron.py",
+                "main.py",
                 targetName=targetName,
                 base=base
             )

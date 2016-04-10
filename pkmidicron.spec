@@ -16,6 +16,14 @@ a = Analysis(['main.py'],
              cipher=block_cipher)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
+
+if os.name == 'nt':
+    console = True
+    icon = 'icon.ico'
+else:
+    console = False
+    icon = 'icon.icns'
+             
 exe = EXE(pyz,
           a.scripts,
           a.binaries,
@@ -25,11 +33,15 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=False , icon='icon.icns')
-app = BUNDLE(exe,
-             name='PKMidiCron.app',
-             icon='icon.icns',
-             bundle_identifier='com.vedanamedia.PKMidiCron',
-             info_plist={
-                 'NSHighResolutionCapable': True
-             })
+          console=console, icon=icon)
+
+if os.name == 'nt':
+    pass
+else:
+    app = BUNDLE(exe,
+                 name='PKMidiCron.app',
+                 icon='icon.icns',
+                 bundle_identifier='com.vedanamedia.PKMidiCron',
+                 info_plist={
+                     'NSHighResolutionCapable': True
+                 })
