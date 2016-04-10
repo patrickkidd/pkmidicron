@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created: Fri Oct 16 23:23:31 2015
-#      by: PyQt5 UI code generator 5.4
+# Created by: PyQt5 UI code generator 5.5.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -218,6 +217,6 @@ class Ui_MainWindow(object):
         self.actionCheckForUpdates.setText(_translate("MainWindow", "Check for Updates..."))
         self.actionToggleToolBar.setText(_translate("MainWindow", "Tool Bar"))
 
+from .bindingproperties import BindingProperties
 from .simulator import Simulator
 from .util import ListWidget, ScrollArea
-from .bindingproperties import BindingProperties

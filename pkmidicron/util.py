@@ -231,7 +231,7 @@ class ClickToEdit(QLineEdit):
         self.disableClick = False
         self.setFocusPolicy(Qt.NoFocus)
 
-        self.textAnimation = QPropertyAnimation(self, "textColor", self)
+        self.textAnimation = QPropertyAnimation(self, b"textColor", self)
         self.textAnimation.setDuration(500)
         self.defaultFlashColor = flashColor and QColor(flashColor) or QColor("red")
         self.textAnimation.setStartValue(self.defaultFlashColor)

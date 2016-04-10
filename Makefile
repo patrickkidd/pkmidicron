@@ -1,9 +1,10 @@
 all: pkmidicron
 
-pkmidicron: build/PKMidiCron.app/Contents/MacOS/PKMidiCron
+pkmidicron: dist/PKMidiCron.app/Contents/MacOS/PKMidiCron
 
-build/PKMidiCron.app/Contents/MacOS/PKMidiCron: resources
-	python3 setup.py bdist_mac
+dist/PKMidiCron.app/Contents/MacOS/PKMidiCron: resources
+	pyinstaller pkmidicron.spec
+	cp Info.plist dist/PKMidiCron.app/Contents/
 
 install: pkmidicron
 	cp -Rf build/PKMidiCron.app /Applications
@@ -22,4 +23,4 @@ pkmidicron/resources.py: resources/resources.qrc resources/*
 clean:
 	rm -rf pkmidicron/*_form.py resources/resources.py
 	rm -rf `find . -name __pycache__`
-	rm -rf build
+	rm -rf build dist

@@ -39,7 +39,7 @@ class ActionWidget(QFrame):
         self.action = action
 
         self.titleLabel = QLabel(title, self)
-        self.removeButton = util.Button(self)
+        self.removeButton = util.Button(None, self)
         self.removeButton.clicked.connect(self._removeMe)
         self.removeButton.setFixedSize(20, 20)
         self.removeButton.setIcon(QIcon(QPixmap(":/icons/retina/multiply.png")))

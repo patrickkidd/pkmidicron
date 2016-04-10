@@ -3,32 +3,32 @@ import sys
 from cx_Freeze import setup, Executable
 
 
-
-options = {
-    # Dependencies are automatically detected, but it might need fine tuning.
-    "build_exe": {
-        "packages": ["os"],
-        "excludes": ["tkinter"],
-        "include_files": [],
-        "icon": "icon.ico",
-    },
-    "bdist_mac": {
-        "iconfile": "icon.icns",
-        "bundle_name": "PKMidiCron",
-        "custom_info_plist": "Info.plist",
-        #"qt_menu_nib": "/Applications/Qt-5.3/5.3/Src/qtbase/src/plugins/platforms/cocoa/qt_menu.nib"
-        "qt_menu_nib": "/usr/local/Cellar/qt5/5.3.2/qt_menu.nib"
-    }
-}
+options = {}
 
 if hasattr(os, 'uname'):
     base = None
     targetName = 'PKMidiCron'
+    options['bdist_mac'] = {
+        "iconfile": "icon.icns",
+        "bundle_name": "PKMidiCron",
+        "custom_info_plist": "Info.plist",
+        #"qt_menu_nib": "/Applications/Qt-5.3/5.3/Src/qtbase/src/plugins/platforms/cocoa/qt_menu.nib"
+        "qt_menu_nib": "/usr/local/Cellar/qt5/5.6.0/qt_menu.nib"
+    }
+#    options['build_exe'] = {
+#        "includes": ['_frozen_importlib_external'],
+#    }
 else:
     sysPackages = [i for i in sys.path if 'site-packages' in i][0]
     options['build_exe']['include_files'].append(*[
         os.path.relpath(os.path.join(sysPackages, 'PyQt5\LibEGL.dll'))
     ])
+    options['build_exe'] = {
+        "packages": ["os"],
+        "excludes": ["tkinter"],
+        "include_files": [],
+        "icon": "icon.ico",
+    }
     base = None
     # Comment out for a console app
     #if sys.platform == "win32":
@@ -45,7 +45,7 @@ setup(  name = "PKMidiCron",
         options = options,
         executables = [
             Executable(
-                "main.py",
+                "PKMidiCron.py",
                 targetName=targetName,
                 base=base
             )

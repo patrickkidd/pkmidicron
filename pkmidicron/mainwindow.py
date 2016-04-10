@@ -162,7 +162,7 @@ class MainWindow(QMainWindow):
         self.patch = patch
         self.patch.setParent(self)
         for binding in self.patch.bindings:
-            self.addBinding(binding)
+            self.addBinding(binding, alsoShow=False)
         self.ui.simulator.init(self.patch.simulator)
         self.patch.setDirty(False)
         self.patch.dirtyChanged.connect(self.onDirtyChanged)
@@ -391,6 +391,7 @@ class MainWindow(QMainWindow):
 
     def showBindingsList(self):
         """ ensure not visible but collapsed """
+        # util.print_stack()
         if not self.ui.bindingsList.isVisible():
             self.toggleBindings()
         else:
@@ -557,8 +558,9 @@ class MainWindow(QMainWindow):
 
     ## Functionality
 
-    def addBinding(self, binding=None):
-        self.showBindingsList()
+    def addBinding(self, binding=None, alsoShow=True):
+        if alsoShow:
+            self.showBindingsList()
         if binding is None or type(binding) == bool:
             binding = self.patch.addBinding()
         item = bindinglistitem.BindingListItem(self.ui.bindingsList, binding)

@@ -1,13 +1,18 @@
-PUNCH LIST
+v1.1
 ============================
 - user guide
+- limit max entries in log to prevent cpu overload on endless loops
+- add note-off and duration to note mode in simulator
+
 
 WISH LIST
 ============================
-- add note-off and duration to note mode in simulator
 - drag to re-order actions
 - file save on windows (huh?)
 - simulator wildcards cause loop (not sure what this means)
+- add "also send note-off" for midi simulator while in note mode
+- per-project search paths
+- fix reload imported script module
 
 TESTING
 ============================

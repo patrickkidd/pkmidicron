@@ -4,9 +4,8 @@ import types
 import sys
 import time
 import rtmidi
-import slugify
 from .util import refs
-from . import util, ports, scripteditor
+from . import util, ports, scripteditor, slugify
 from .pyqt_shim import Qt, QSettings, QObject, pyqtSignal, QFileInfo, QSize
 
 

@@ -2,22 +2,28 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>CFBundleExecutable</key>
+	<key>CFBundleName</key>
 	<string>PKMidiCron</string>
-	<key>NSHighResolutionCapable</key>
-	<true/>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleDisplayName</key>
+	<string>PKMidiCron</string>
+	<key>LSBackgroundOnly</key>
+	<string>0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.1.0</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.vedanamedia.PKMidiCron</string>
-	<key>CFBundleIconFile</key>
-	<string>icon.icns</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>1.1</string>
+	<key>CFBundleIconFile</key>
+	<string>icon.icns</string>
+	<key>CFBundleExecutable</key>
+	<string>MacOS/PKMidiCron</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

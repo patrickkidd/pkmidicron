@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/preferencesdialog.ui'
 #
-# Created: Tue Feb  3 20:10:52 2015
-#      by: PyQt5 UI code generator 5.3.2
+# Created by: PyQt5 UI code generator 5.5.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -42,8 +41,8 @@ class Ui_PreferencesDialog(object):
         self.groupBox_2 = QtWidgets.QGroupBox(self.splitter)
         self.groupBox_2.setObjectName("groupBox_2")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.groupBox_2)
-        self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setContentsMargins(-1, -1, -1, 0)
+        self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
@@ -71,8 +70,8 @@ class Ui_PreferencesDialog(object):
         self.groupBox_3 = QtWidgets.QGroupBox(self.splitter)
         self.groupBox_3.setObjectName("groupBox_3")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.groupBox_3)
-        self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setContentsMargins(-1, -1, -1, 0)
+        self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.pythonPathList = QtWidgets.QListWidget(self.groupBox_3)
         self.pythonPathList.setAcceptDrops(True)
