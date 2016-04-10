@@ -2,7 +2,7 @@ all: pkmidicron
 
 pkmidicron: dist/PKMidiCron.app/Contents/MacOS/PKMidiCron
 
-dist/PKMidiCron.app/Contents/MacOS/PKMidiCron: resources
+dist/PKMidiCron.app/Contents/MacOS/PKMidiCron: resources pkmidicron/*.py
 	pyinstaller pkmidicron.spec
 	cp Info.plist dist/PKMidiCron.app/Contents/
 

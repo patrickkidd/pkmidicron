@@ -316,9 +316,9 @@ class MainWindow(QMainWindow):
         if self.reply:
             return
         req = QNetworkRequest(util.VERSION_URL)
-        req.setRawHeader('Cache-Control', 'no-cache')
-        req.setRawHeader('Pragma', 'no-cache')
-        req.setRawHeader('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36')
+        req.setRawHeader(b'Cache-Control', b'no-cache')
+        req.setRawHeader(b'Pragma', b'no-cache')
+        req.setRawHeader(b'User-Agent', b'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36')
         self.reply = self.qnam.get(req)
         self.reply.finished.connect(self.onUpdatesReply)
 
