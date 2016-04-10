@@ -94,6 +94,7 @@ class MainWindow(QMainWindow):
         self.ui.actionToggleMainWindow.triggered.connect(self.toggleMainWindow)
         self.ui.actionToggleToolBar.triggered.connect(self.toggleToolBar)
         self.ui.actionShowHelp.triggered.connect(self.showHelp)
+        self.ui.actionGetSupport.triggered.connect(self.getSupport)
 
         # Init
 
@@ -348,7 +349,10 @@ class MainWindow(QMainWindow):
                           tr("""PKMidiCron %s\n\nvedanamedia.com""" % util.VERSION))
 
     def showHelp(self):
-        QDesktopServices.openUrl(QUrl('http://vedanamedia.com/products/pkmidicron'))
+        QMessageBox.message('Coming soon...')
+        
+    def getSupport(self):
+        QDesktopServices.openUrl(QUrl('http://vedanamedia.com/forums/forum/pkmidicron/'))
 
     def showPreferences(self):
         if self.prefsDialog is None:

@@ -183,8 +183,8 @@
      <string>Help</string>
     </property>
     <addaction name="actionShowHelp"/>
+    <addaction name="actionGetSupport"/>
     <addaction name="separator"/>
-    <addaction name="actionGo_Home"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -304,8 +304,14 @@
    </property>
   </action>
   <action name="actionShowHelp">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Show Help</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionExit">
@@ -316,12 +322,9 @@
     <string/>
    </property>
   </action>
-  <action name="actionGo_Home">
+  <action name="actionGetSupport">
    <property name="text">
-    <string>Go Home</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+J, Ctrl+G</string>
+    <string>Get Support</string>
    </property>
   </action>
   <action name="actionToggleMainWindow">
