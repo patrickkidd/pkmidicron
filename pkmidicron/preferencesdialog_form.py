@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/preferencesdialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -22,6 +22,7 @@ class Ui_PreferencesDialog(object):
         self.generalPage = QtWidgets.QWidget()
         self.generalPage.setObjectName("generalPage")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.generalPage)
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.groupBox = QtWidgets.QGroupBox(self.generalPage)
         self.groupBox.setObjectName("groupBox")
