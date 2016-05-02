@@ -17,18 +17,3 @@ TESTING
 - all criteria
 - save on exit
 
-RELEASE PROCEDURE
-============================
-- version in util.py
-- version in Info.plist
-- python3 setup.py bdist_mac
-- on RELEASE: version at http://vedanamedia.com/products/pkmidicron/version.txt
-
-APPS
-============
-https://itunes.apple.com/us/app/wunderlist-to-do-list-tasks/id410628904?mt=12
-https://itunes.apple.com/us/app/evernote/id406056744?mt=12
-https://itunes.apple.com/us/app/loop-editor/id901443398?mt=12
-https://itunes.apple.com/us/app/midi-connections/id697996969?mt=12
-http://das.nasophon.de/mididings/
-

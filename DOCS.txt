@@ -24,3 +24,18 @@ qt_menu.nib (not included in homebrew qt5)
         - wget [qt download url]
         - cp -R qt-everywhere-opensource-src-x.x.x/....../qt_menu.nib /usr/local/Cellar/qt5/x.x.x
         
+RELEASE PROCEDURE
+============================
+- version in util.py
+- version in Info.plist
+- pyinstaller pkmidicron.spec (mac & windows)
+- on RELEASE: version at http://vedanamedia.com/products/pkmidicron/version.txt
+
+APPS
+============
+https://itunes.apple.com/us/app/wunderlist-to-do-list-tasks/id410628904?mt=12
+https://itunes.apple.com/us/app/evernote/id406056744?mt=12
+https://itunes.apple.com/us/app/loop-editor/id901443398?mt=12
+https://itunes.apple.com/us/app/midi-connections/id697996969?mt=12
+http://das.nasophon.de/mididings/
+

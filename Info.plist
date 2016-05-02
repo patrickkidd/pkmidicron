@@ -11,7 +11,7 @@
 	<key>LSBackgroundOnly</key>
 	<string>0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1.0</string>
+	<string>1.1.1</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.vedanamedia.PKMidiCron</string>
 	<key>CFBundlePackageType</key>

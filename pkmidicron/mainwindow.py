@@ -345,8 +345,13 @@ class MainWindow(QMainWindow):
     ## Views
 
     def showAbout(self):
+        from PyQt5.QtCore import QT_VERSION_STR
         QMessageBox.about(self, tr("About PKMidiCron"),
-                          tr("""PKMidiCron %s\n\nvedanamedia.com""" % util.VERSION))
+                          tr("""<center>
+<p>PKMidiCron %s</p>
+<p> <a href="http://vedanamedia.com">vedanamedia.com</a> </p>
+<p> Qt: %s </p>
+</center>""" % (util.VERSION, QT_VERSION_STR)))
 
     def showHelp(self):
         QMessageBox.message('Coming soon...')
