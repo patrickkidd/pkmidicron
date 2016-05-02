@@ -1,9 +1,7 @@
 v1.1
 ============================
 - user guide
-- limit max entries in log to prevent cpu overload on endless loops
 - add note-off and duration to note mode in simulator
-
 
 WISH LIST
 ============================
@@ -18,7 +16,6 @@ TESTING
 ============================
 - all criteria
 - save on exit
-
 
 RELEASE PROCEDURE
 ============================

@@ -337,7 +337,7 @@ class MainWindow(QMainWindow):
         self.reply = None
         if util.updateAvailable(text):
             QMessageBox.information(self, 'Update available',
-                                    'There is an update available, version %s. You have version %s. <br><br><a href="http://vedanamedia.com/pkmidicron">Click here to download the latest version.</a>' % (text, util.VERSION))
+                                    'There is an update available, version %s. You have version %s. <br><br><a href="http://vedanamedia.com/our-products/pkmidicron/">Click here to download the latest version.</a>' % (text, util.VERSION))
         else:
             QMessageBox.information(self, 'You are up-to-date',
                                     'PKMidiCron %s is currently the newest version available.' % text)
@@ -622,6 +622,8 @@ class MainWindow(QMainWindow):
             self.ui.activityLog.resizeColumnsToContents()
             self.ui.activityLog.horizontalHeader().setStretchLastSection(True)
             self.firstMessage = False
+        if rows > 100:
+            self.ui.activityLog.removeRow(0)
         if bottom:
             QTimer.singleShot(0, self.ui.activityLog.scrollToBottom)
         self.patch.onMidiMessage(portName, midi)

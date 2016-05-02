@@ -1,8 +1,11 @@
+# https://github.com/Homebrew/brew/blob/master/share/doc/homebrew/Formula-Cookbook.md
+# http://formalfriday.club/2015/01/05/creating-your-own-homebrew-tap-and-formula.html
+
 class Qscintilla2 < Formula
   desc "Port to Qt of the Scintilla editing component"
   homepage "https://www.riverbankcomputing.com/software/qscintilla/intro"
-  url "https://downloads.sf.net/project/pyqt/QScintilla2/QScintilla-2.8.4/QScintilla-gpl-2.8.4.tar.gz"
-  sha256 "9b7b2d7440cc39736bbe937b853506b3bd218af3b79095d4f710cccb0fabe80f"
+  url "https://downloads.sf.net/project/pyqt/QScintilla2/QScintilla-2.9.1/QScintilla-gpl-2.9.1.tar.gz"
+  sha256 "79e9c39d51549061d3d489387bcee86ff20c1f746d1b25ac173d5165426eabaff"
 
   depends_on :python3
   depends_on "pyqt5"

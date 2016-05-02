@@ -15,6 +15,10 @@ qscintilla2 (homebrew only works for pyqt4, manual pyqt5 install below...)
         - python3 configure.py --pyqt=PyQt5 --pyqt-sipdir=/usr/local/Cellar/pyqt5/5.5.1_1/share/sip/Qt5/ --sip-incdir=/usr/local/Cellar/sip/4.17/include --verbose
         - make -j5 && make install
 
+
+qscintilla2 - homebrew formula
+        - shasum -a 256 QScintilla-2.9.1.tar.gz
+
 qt_menu.nib (not included in homebrew qt5)
         - brew edit qt5 (get qt download url)
         - wget [qt download url]
