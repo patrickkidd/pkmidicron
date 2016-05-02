@@ -7,7 +7,8 @@ import unicodedata
 import types
 import sys
 from html.entities import name2codepoint
-from unidecode import unidecode
+# pks: removed to releave extern dependency on unidecode module
+#from unidecode import unidecode
 
 # character entity reference
 CHAR_ENTITY_REXP = re.compile('&(%s);' % '|'.join(name2codepoint))
@@ -59,7 +60,8 @@ def slugify(text, entities=True, decimal=True, hexadecimal=True, max_length=0, w
         text = str(text, 'utf-8', 'ignore')
 
     # decode unicode ( 影師嗎 = Ying Shi Ma)
-    text = unidecode(text)
+    # pks: removed to releave extern dependency on unidecode module
+    # text = unidecode(text)
 
     # text back to unicode
     if not isinstance(text, str):

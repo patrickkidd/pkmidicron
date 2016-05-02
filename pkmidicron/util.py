@@ -36,7 +36,7 @@ VERSION = '%s.%s.%s' % (VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO)
 VERSION_URL = QUrl('http://vedanamedia.com/products/pkmidicron/version.txt')
 
 def verint(a, b, c):
-    print('verint', a, b, c, type(a), type(b), type(c))
+    # print('verint', a, b, c, type(a), type(b), type(c))
     return (a << 24) | (b << 16) | c
 
 def updateAvailable(text):
