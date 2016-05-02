@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pkmidicron/mainwindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -141,7 +141,6 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
         self.menuFile.addAction(self.actionSaveAs)
-        self.menuFile.addAction(self.actionAbout)
         self.menuFile.addAction(self.actionPreferences)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionCheckForUpdates)
@@ -162,6 +161,7 @@ class Ui_MainWindow(object):
         self.menuHelp.addAction(self.actionShowHelp)
         self.menuHelp.addAction(self.actionGetSupport)
         self.menuHelp.addSeparator()
+        self.menuHelp.addAction(self.actionAbout)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuView.menuAction())

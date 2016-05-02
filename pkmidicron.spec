@@ -18,7 +18,7 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
 if os.name == 'nt':
-    console = True
+    console = False
     icon = 'icon.ico'
 else:
     console = False
