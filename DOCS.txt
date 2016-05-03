@@ -27,10 +27,7 @@ qt_menu.nib (not included in homebrew qt5)
 RELEASE PROCEDURE
 ============================
 - bump version in util.py, Info.plist
-- Mac:
-  - $ make # to update plist
-- Windows
-  - pyinstaller pkmidicron.spec
+- make # (mac + windows)
 - on RELEASE: version at http://vedanamedia.com/products/pkmidicron/version.txt
 
 APPS

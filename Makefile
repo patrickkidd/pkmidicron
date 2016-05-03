@@ -4,7 +4,9 @@ pkmidicron: dist/PKMidiCron.app/Contents/MacOS/PKMidiCron
 
 dist/PKMidiCron.app/Contents/MacOS/PKMidiCron: resources pkmidicron/*.py
 	pyinstaller pkmidicron.spec
-	cp Info.plist dist/PKMidiCron.app/Contents/
+    ifeq ($(OS), Darwin) # Windows_NT
+        cp Info.plist dist/PKMidiCron.app/Contents/
+    endif
 
 install: pkmidicron
 	cp -Rf build/PKMidiCron.app /Applications
