@@ -1,12 +1,17 @@
 all: pkmidicron
 
+ifeq ($(OS), Windows_NT)
+pkmidicron: dist/PKMidiCron.exe
+else
 pkmidicron: dist/PKMidiCron.app/Contents/MacOS/PKMidiCron
+endif
 
-dist/PKMidiCron.app/Contents/MacOS/PKMidiCron: resources pkmidicron/*.py
+dist/PKMidiCron.exe:  resources pkmidicron/*.py main.py
 	pyinstaller pkmidicron.spec
-    ifeq ($(OS), Darwin) # Windows_NT
-        cp Info.plist dist/PKMidiCron.app/Contents/
-    endif
+    
+dist/PKMidiCron.app/Contents/MacOS/PKMidiCron: resources pkmidicron/*.py main.py
+	pyinstaller pkmidicron.spec
+	cp Info.plist dist/PKMidiCron.app/Contents/
 
 install: pkmidicron
 	cp -Rf build/PKMidiCron.app /Applications
@@ -23,6 +28,13 @@ pkmidicron/resources.py: resources/resources.qrc resources/*
 	pyrcc5 resources/resources.qrc -o pkmidicron/resources.py
 
 clean:
+ifeq ($(OS), Darwin) # Windows_NT
 	rm -rf pkmidicron/*_form.py resources/resources.py
 	rm -rf `find . -name __pycache__`
 	rm -rf build dist
+else
+	del pkmidicron\*_form.py 2>NUL
+	del resources\resources.py 2>NUL
+	rd /s/q build dist
+endif
+    
