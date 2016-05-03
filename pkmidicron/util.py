@@ -1,9 +1,9 @@
-import sys
-import time
+import os, sys, time
 from traceback import print_stack
 import rtmidi
 from . import pyqt_shim as qt
 from .pyqt_shim import *
+import zipfile, shutil
 
 ANY_TEXT = '** ANY **'
 ALL_TEXT = '** ALL **'
@@ -45,8 +45,50 @@ def updateAvailable(text):
     there = verint(major, minor, micro)
     here = verint(VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO)
     return here < there
-    
 
+class UpdateDialog(QProgressDialog):
+    def __init__(self):
+        super().__init__()
+        self.manager = QNetworkAccessManager()
+        self.request = None
+        self.saveFile = QTemporaryFile()
+    
+    def installVersion(self, version):
+        self.show()
+        tmpl = 'http://vedanamedia.com/products/pkmidicron/PKMidiCron-%s-current.zip'
+        if os.name == 'nt':
+            url = tmpl % 'win32'
+        else:
+            url = tmpl % 'mac'
+        self.request = QNetworkRequest(QUrl(url))
+        self.currentDownload = self.manager.get(self.request)
+        self.currentDownload.downloadProgress.connect(self.downloadProgress)
+        self.currentDownload.readyRead.connect(self.readyRead)
+        self.currentDownload.finished.connect(self.finished)
+        self.saveFile.open(QIODevice.WriteOnly)
+        
+    def downloadProgress(self, bytesReceived, bytesTotal):
+        self.setMaximum(bytesTotal)
+        self.setValue(bytesReceived)
+    
+    def readyRead(self):
+        self.saveFile.write(self.currentDownload.readAll())
+        
+    def finished(self):
+        self.setValue(self.maximum())
+        self.saveFile.close()
+        dir = QTemporaryDir()
+        zip = zipfile.ZipFile(self.saveFile.fileName())
+        zip.extractall(dir.path())
+        exe = QCoreApplication.applicationFilePath()
+        if exe.endswith('.exe'):
+            tmp = os.path.join(os.path.dirname(exe), 'deleteme.exe')
+            shutil.move(exe, tmp)
+            shutil.copy(os.path.join(dir.path(), 'PKMidiCron.exe'), exe)
+            print('restarting...')
+            os.execl(exe, exe, *sys.argv)
+
+        
 def refs(o,s=''):
     print('refs: ', s, sys.getrefcount(o), o)
 

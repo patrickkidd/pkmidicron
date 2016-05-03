@@ -4,7 +4,7 @@ import os, sys
 #import rtmidi
 #rtmidi.DEBUG = True
 from pkmidicron import MainWindow, util, ports
-from pkmidicron.pyqt_shim import Qt, QSettings, QApplication, QIcon, QWidget, QLibraryInfo, QFileSystemWatcher, QFile
+from pkmidicron.pyqt_shim import Qt, QSettings, QApplication, QIcon, QWidget, QLibraryInfo, QFileSystemWatcher, QFile, QCoreApplication
 
 STYLE_SHEET = """
 QLineEdit:read-only {
@@ -36,7 +36,15 @@ def main():
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
     app.setQuitOnLastWindowClosed(False)
     # print(app.applicationDirPath())
-
+        
+    # delete update slugs
+    exe = QCoreApplication.applicationFilePath()
+    if exe.endswith('.exe'):
+        slug = os.path.join(os.path.dirname(exe), 'deleteme.exe')
+        if QFile(slug).exists():
+            print('deleting update slug...')
+            QFile(slug).remove()
+    
     def setStyleSheet():
 #        print('setStyleSheet')
 #        text = open(styleSheet).read()
