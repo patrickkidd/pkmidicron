@@ -340,7 +340,7 @@ class MainWindow(QMainWindow):
                                     'There is an update available, version %s. You have version %s. <br><br><a href="http://vedanamedia.com/our-products/pkmidicron/">Click here to download the latest version.</a>' % (text, util.VERSION))
         else:
             QMessageBox.information(self, 'You are up-to-date',
-                                    'PKMidiCron %s is currently the newest version available.' % text)
+                                    'You have the latest version of PKMidiCron.')
 
     ## Views
 
