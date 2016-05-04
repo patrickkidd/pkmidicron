@@ -41,8 +41,8 @@ def sender(group):
         s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, ttl_bin)
 
     while True:
-        data = repr(time.time())
-        s.sendto(data + '\0', (addrinfo[4][0], MYPORT))
+        data = repr(time.time()) + '\0'
+        s.sendto(data.encode('utf-8'), (addrinfo[4][0], MYPORT))
         time.sleep(1)
 
 
