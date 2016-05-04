@@ -32,7 +32,6 @@ RELEASE PROCEDURE
 - create upload objects via wordpress, remember to check permalinks, tags
 
 
-
 APPS
 ============
 https://itunes.apple.com/us/app/wunderlist-to-do-list-tasks/id410628904?mt=12
