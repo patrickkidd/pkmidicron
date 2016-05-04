@@ -5,15 +5,19 @@ v1.2
 - don't show notifications pop-up on quitting app (windows)
 - user guide
 - add note-off and duration to note mode in simulator
+- network midi bus (bonjour, etc)!!
 
 WISH LIST
 ============================
+- seamless patch switching? (like mididings)
 - drag to re-order actions
+- python engine in seperate process
+  - watchdog feature
 - file save on windows (huh?)
 - simulator wildcards cause loop (not sure what this means)
 - add "also send note-off" for midi simulator while in note mode
 - per-project search paths
-- python engine in seperate process
+- sparkle auto-update support
 
 TESTING
 ============================

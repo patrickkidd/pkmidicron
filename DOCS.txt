@@ -33,9 +33,6 @@ RELEASE PROCEDURE
 
 APPS
 ============
-https://itunes.apple.com/us/app/wunderlist-to-do-list-tasks/id410628904?mt=12
-https://itunes.apple.com/us/app/evernote/id406056744?mt=12
-https://itunes.apple.com/us/app/loop-editor/id901443398?mt=12
-https://itunes.apple.com/us/app/midi-connections/id697996969?mt=12
 http://das.nasophon.de/mididings/
+http://www.osculator.net
 
