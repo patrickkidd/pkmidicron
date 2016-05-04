@@ -49,12 +49,15 @@ def updateAvailable(text):
 class UpdateDialog(QProgressDialog):
     def __init__(self):
         super().__init__()
+        self.setWindowModality(Qt.WindowModal)
         self.manager = QNetworkAccessManager()
         self.request = None
         self.saveFile = QTemporaryFile()
     
     def installVersion(self, version):
         self.show()
+        self._origText = 'Downloading version %s' % version
+        self.setLabelText(self._origText)
         tmpl = 'http://vedanamedia.com/products/pkmidicron/PKMidiCron-%s-current.zip'
         if os.name == 'nt':
             url = tmpl % 'win32'
@@ -68,6 +71,11 @@ class UpdateDialog(QProgressDialog):
         self.saveFile.open(QIODevice.WriteOnly)
         
     def downloadProgress(self, bytesReceived, bytesTotal):
+        if self.wasCanceled():
+            self.currentDownload.abort()
+            return
+        text = ': %iMB / %iMB' % (bytesReceived / 1000000, bytesTotal / 1000000)
+        self.setLabelText(self._origText + text)
         self.setMaximum(bytesTotal)
         self.setValue(bytesReceived)
     
@@ -77,16 +85,39 @@ class UpdateDialog(QProgressDialog):
     def finished(self):
         self.setValue(self.maximum())
         self.saveFile.close()
-        dir = QTemporaryDir()
-        zip = zipfile.ZipFile(self.saveFile.fileName())
-        zip.extractall(dir.path())
+        if self.currentDownload.error() != QNetworkReply.NoError:
+            return
+        tmpDir = QTemporaryDir()
+        zipPath = self.saveFile.fileName()
         exe = QCoreApplication.applicationFilePath()
         if exe.endswith('.exe'):
+            zip = zipfile.ZipFile(zipPath)
+            zip.extractall(tmpDir.path())
+            # only possible to rename a running exe on windows; deletme.exe is deleted on next startup
             tmp = os.path.join(os.path.dirname(exe), 'deleteme.exe')
             shutil.move(exe, tmp)
-            shutil.copy(os.path.join(dir.path(), 'PKMidiCron.exe'), exe)
-            print('restarting...')
-            os.execl(exe, exe, *sys.argv)
+            shutil.copy(os.path.join(tmpDir.path(), 'PKMidiCron.exe'), exe)
+        elif exe.endswith('/PKMidiCron'):
+            zipCmd = 'unzip %s -d %s' % (zipPath, tmpDir.path())
+            os.system(zipCmd)
+            appDir = QDir(exe)
+            appDir.cdUp()
+            appDir.cdUp()
+            appDir.cdUp()
+            app = appDir.absolutePath()            
+            def onerror(a, b, c):
+                print('ERROR deleting', a, b, c)
+            shutil.rmtree(app, False, onerror)
+            pDir = QDir(appDir)
+            pDir.cdUp()
+            parentDir = pDir.absolutePath()
+            newApp = os.path.join(tmpDir.path(), 'PKMidiCron.app')
+            shutil.move(newApp, parentDir)
+        else:
+            return
+        w = QApplication.instance().getMainWindow()
+        w.confirmSave()
+        os.execl(exe, exe, *sys.argv)        
 
         
 def refs(o,s=''):
@@ -106,6 +137,11 @@ class Application(QApplication):
                             w.open(filePath)
                     return True
         return super().event(e)
+
+    def getMainWindow(self):
+        for w in self.topLevelWidgets():
+            if isinstance(w, QMainWindow):
+                return w
 
 
 class CollectorBin(QObject, rtmidi.CollectorBin):

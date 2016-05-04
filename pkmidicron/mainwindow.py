@@ -336,11 +336,12 @@ class MainWindow(QMainWindow):
         self.reply.deleteLater()
         self.reply = None
         if True or util.updateAvailable(text):
-            ret = QMessageBox.information(self, 'Update available',
-                                          """<p>There is an update available, version %s. You have version %s.</p>
-                                          <p><a href="http://vedanamedia.com/our-products/pkmidicron/">Click here to download the latest version.</a></p>
-                                          <p>Or click "Yes" to automatically download and install it.</p>""" % (text, util.VERSION),
-                                          QMessageBox.Yes, QMessageBox.No)
+            ret = QMessageBox.question(self, 'Update available',
+                                          """<p>There is an update available, version %s.</p>
+                                          <p>Click "Yes" to automatically download and install it (the app will be restarted).</p>
+                                          <p><a href="http://vedanamedia.com/our-products/pkmidicron/">Or click here to download the latest version.</a></p>
+                                          """ % (text),
+                                          QMessageBox.No | QMessageBox.Yes, QMessageBox.Yes)
             if ret == QMessageBox.Yes:
                 self.updateDialog = util.UpdateDialog()
                 self.updateDialog.installVersion(text)

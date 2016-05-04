@@ -14,7 +14,8 @@ dist/PKMidiCron.app/Contents/MacOS/PKMidiCron: resources pkmidicron/*.py main.py
 	cp Info.plist dist/PKMidiCron.app/Contents/
 
 install: pkmidicron
-	cp -Rf build/PKMidiCron.app /Applications
+	rm -rf /Applications/PKMidiCron.app
+	cp -Rf dist/PKMidiCron.app /Applications
 
 resources: pkmidicron/mainwindow_form.py pkmidicron/preferencesdialog_form.py pkmidicron/resources.py
 
@@ -28,13 +29,13 @@ pkmidicron/resources.py: resources/resources.qrc resources/*
 	pyrcc5 resources/resources.qrc -o pkmidicron/resources.py
 
 clean:
-ifeq ($(OS), Darwin) # Windows_NT
-	rm -rf pkmidicron/*_form.py resources/resources.py
-	rm -rf `find . -name __pycache__`
-	rm -rf build dist
-else
+ifeq ($(OS), Windows_NT)
 	del pkmidicron\*_form.py 2>NUL
 	del resources\resources.py 2>NUL
 	rd /s/q build dist
+else
+	rm -rf pkmidicron/*_form.py resources/resources.py
+	rm -rf `find . -name __pycache__`
+	rm -rf build dist
 endif
     

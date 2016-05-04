@@ -37,7 +37,7 @@ def main():
     app.setQuitOnLastWindowClosed(False)
     # print(app.applicationDirPath())
         
-    # delete update slugs
+    # delete update slugs on windows
     exe = QCoreApplication.applicationFilePath()
     if exe.endswith('.exe'):
         slug = os.path.join(os.path.dirname(exe), 'deleteme.exe')
@@ -57,13 +57,14 @@ def main():
     ports.outputs(app, prefs)
 
     w = None
+    retVal = None
     try:
         w = MainWindow(prefs)
         if prefs.value('MainWindowShown', type=bool, defaultValue=True):
             w.show()
         else:
             w.trayIcon.showHello()
-        app.exec()
+        retVal = app.exec()
     except:
         print()
         import traceback
@@ -75,4 +76,6 @@ def main():
     if w:
         w.cleanup()
     rtmidi.CollectorBin.cleanup()
+#    if retVal is not None:
+#        sys.exit(retVal)
 main()

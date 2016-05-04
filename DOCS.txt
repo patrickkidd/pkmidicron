@@ -28,7 +28,10 @@ RELEASE PROCEDURE
 ============================
 - bump version in util.py, Info.plist
 - make # (mac + windows)
-- on RELEASE: version at http://vedanamedia.com/products/pkmidicron/version.txt
+- bump version at http://vedanamedia.com/products/pkmidicron/version.txt
+- create upload objects via wordpress, remember to check permalinks, tags
+
+
 
 APPS
 ============

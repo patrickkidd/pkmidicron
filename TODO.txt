@@ -1,5 +1,6 @@
 v1.1
 ============================
+- don't show notifcations pop-up on quitting app
 - user guide
 - add note-off and duration to note mode in simulator
 
@@ -11,6 +12,7 @@ WISH LIST
 - add "also send note-off" for midi simulator while in note mode
 - per-project search paths
 - fix reload imported script module
+- python engine in seperate process
 
 TESTING
 ============================
