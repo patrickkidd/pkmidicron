@@ -1,6 +1,8 @@
-v1.1
+v1.2
 ============================
-- don't show notifcations pop-up on quitting app
+- crash on edit script
+- fix reload imported script module
+- don't show notifications pop-up on quitting app (windows)
 - user guide
 - add note-off and duration to note mode in simulator
 
@@ -11,7 +13,6 @@ WISH LIST
 - simulator wildcards cause loop (not sure what this means)
 - add "also send note-off" for midi simulator while in note mode
 - per-project search paths
-- fix reload imported script module
 - python engine in seperate process
 
 TESTING

@@ -335,7 +335,7 @@ class MainWindow(QMainWindow):
         text = str(b, encoding='ascii').strip()
         self.reply.deleteLater()
         self.reply = None
-        if True or util.updateAvailable(text):
+        if util.updateAvailable(text):
             ret = QMessageBox.question(self, 'Update available',
                                           """<p>There is an update available, version %s.</p>
                                           <p>Click "Yes" to automatically download and install it (the app will be restarted).</p>
@@ -374,6 +374,7 @@ class MainWindow(QMainWindow):
     def toggleMainWindow(self):
         w = QApplication.activeWindow()
         if w == self or w is None:
+            self.trayIcon.showHello()
             self.setVisible(not self.isVisible())
         elif w:
             w.close()
