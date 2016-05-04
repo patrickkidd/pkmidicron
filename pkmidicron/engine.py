@@ -597,9 +597,9 @@ class Binding(QObject):
         self.onMatched(midi)
 
     def onMatched(self, midi):
-        self.triggerCount += 1
         self.matched.emit()
         if self.enabled:
+            self.triggerCount += 1
             self.triggered.emit()
             for action in self.actions:
                 action.trigger(midi)

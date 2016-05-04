@@ -88,9 +88,9 @@ class BindingListItem(QListWidgetItem):
         self.binding.setTitle(x)
 
     def onMatched(self):
-        self.updateTriggerCount()
         if self.binding.enabled:
             self.nameEdit.flash(QColor('red'))
+            self.updateTriggerCount()
         else:
             self.nameEdit.flash(QColor('orange').darker(150))
 
