@@ -540,7 +540,7 @@ class ClickFilter(QObject):
         return super().eventFilter(o, e)
 
 
-import socket, struct
+import socket, struct, time
 class Network(QThread):
 
     PORT = 8123
@@ -572,21 +572,33 @@ class Network(QThread):
         self.rsock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         
         self.startTimer(1000)
+        self.hostname = socket.gethostname()
         self.hosts = {}
         self._running = False
+        self.mutex = QMutex()
         self.start()
+
+    def __del__(self):
+        self.ssock.close()
         
     def timerEvent(self, e):
         """ periodically send ping to alert hosts of existance. """
-        ping_data = repr('pkmidicron:ping:' + socket.gethostname()) + '\0'
-        print('SENDING:', ping_data)
+        ping_data = 'pkmidicron:ping:' + self.hostname + '\0'
         self.ssock.sendto(ping_data.encode('utf-8'), (self.addrinfo[4][0], self.PORT))
+        # check for stale hosts
+        died = []
+        self.mutex.lock()
+        for host, tstamp in self.hosts.items():
+            if time.time() - tstamp > 3:
+                died.append(host)
+        for i in died:
+            del self.hosts[i]
+            print('host down:', i)
+        self.mutex.unlock()
 
     def stop(self):
         self._running = False
-        print('stopping...')
         self.wait()
-        print('stopped')
         
     def run(self):
         """ listen for packets, maintain host list. """
@@ -598,5 +610,13 @@ class Network(QThread):
             except socket.timeout:
                 continue
             while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
-            print (str(sender) + '  ' + repr(data))
-
+            sdata = data.decode('utf-8')
+            if sdata.startswith('pkmidicron:ping:'):
+                hostname = sdata.replace('pkmidicron:ping:', '')
+                self.mutex.lock()
+                if not hostname in self.hosts:
+                    print('host up:', hostname)
+                self.hosts[hostname] = time.time()
+                self.mutex.unlock()
+#            print (str(sender) + '  ' + repr(data))
+        self.rsock.close()
