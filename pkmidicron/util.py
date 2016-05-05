@@ -539,3 +539,64 @@ class ClickFilter(QObject):
                 return True
         return super().eventFilter(o, e)
 
+
+import socket, struct
+class Network(QThread):
+
+    PORT = 8123
+    GROUP = '225.0.0.250'
+    TTL = 1 # Increase to reach other networks
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # Look up multicast group address in name server and find out IP version
+        self.addrinfo = socket.getaddrinfo(self.GROUP, None)[0]
+
+        # sender
+        print(self.addrinfo)
+        self.ssock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
+        # Set Time-to-live (optional)
+        ttl_bin = struct.pack('@i', self.TTL)
+        self.ssock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
+
+        # receiver
+        self.rsock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
+        # Allow multiple copies of this program on one machine (not strictly needed)
+        self.rsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.rsock.settimeout(.2)
+        self.rsock.bind(('', self.PORT))
+        group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
+        # Join group
+        mreq = group_bin + struct.pack('=I', socket.INADDR_ANY)
+        self.rsock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        
+        self.startTimer(1000)
+        self.hosts = {}
+        self._running = False
+        self.start()
+        
+    def timerEvent(self, e):
+        """ periodically send ping to alert hosts of existance. """
+        ping_data = repr('pkmidicron:ping:' + socket.gethostname()) + '\0'
+        print('SENDING:', ping_data)
+        self.ssock.sendto(ping_data.encode('utf-8'), (self.addrinfo[4][0], self.PORT))
+
+    def stop(self):
+        self._running = False
+        print('stopping...')
+        self.wait()
+        print('stopped')
+        
+    def run(self):
+        """ listen for packets, maintain host list. """
+        print('listening for multicast...')
+        self._running = True
+        while self._running:
+            try:
+                data, sender = self.rsock.recvfrom(1024)
+            except socket.timeout:
+                continue
+            while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
+            print (str(sender) + '  ' + repr(data))
+
