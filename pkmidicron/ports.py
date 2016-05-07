@@ -92,14 +92,17 @@ class Network(QThread):
             if sdata.startswith('pkmidicron:ping:'): # host ping
                 hostname = sdata.replace('pkmidicron:ping:', '').split('\0',1)[0] # remove '\0'
                 self.mutex.lock()
-                if hostname != self.hostname and not hostname in self.hosts:
-                    print('host up:', hostname)
-                    self.hosts[hostname] = {
-                        'ping': time.time(),
-                        'ip': sender[0],
-                        'port': sender[1],
+                if self.hostname != hostname:
+                    if not hostname in self.hosts:
+                        print('host up:', hostname)
+                        self.hosts[hostname] = {
+                            'ping': time.time(),
+                            'ip': sender[0],
+                            'port': sender[1],
                         'name': hostname
-                    }
+                        }
+                    else:
+                        self.hosts[hostname]['ping'] = time.time()
                 self.mutex.unlock()
                 outputs().update()
                 inputs().update()
