@@ -159,6 +159,10 @@ class CollectorBin(QObject, rtmidi.CollectorBin):
     def callback(self, collector, msg):
         self.message.emit(collector.portName, msg)
 
+    def _networkMessage(self, name, msg):
+        print('IGNORING util.CollectorBin._networkMessage:', name, msg)
+        #self.message.emit(name, msg)
+
     def setPortEnabled(self, name, x):
         if x:
             self._add(name)
@@ -540,83 +544,3 @@ class ClickFilter(QObject):
         return super().eventFilter(o, e)
 
 
-import socket, struct, time
-class Network(QThread):
-
-    PORT = 8123
-    GROUP = '225.0.0.250'
-    TTL = 1 # Increase to reach other networks
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        # Look up multicast group address in name server and find out IP version
-        self.addrinfo = socket.getaddrinfo(self.GROUP, None)[0]
-
-        # sender
-        print(self.addrinfo)
-        self.ssock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
-        # Set Time-to-live (optional)
-        ttl_bin = struct.pack('@i', self.TTL)
-        self.ssock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
-
-        # receiver
-        self.rsock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
-        # Allow multiple copies of this program on one machine (not strictly needed)
-        self.rsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.rsock.settimeout(.2)
-        self.rsock.bind(('', self.PORT))
-        group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
-        # Join group
-        mreq = group_bin + struct.pack('=I', socket.INADDR_ANY)
-        self.rsock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-        
-        self.startTimer(1000)
-        self.hostname = socket.gethostname()
-        self.hosts = {}
-        self._running = False
-        self.mutex = QMutex()
-        self.start()
-
-    def __del__(self):
-        self.ssock.close()
-        
-    def timerEvent(self, e):
-        """ periodically send ping to alert hosts of existance. """
-        ping_data = 'pkmidicron:ping:' + self.hostname + '\0'
-        self.ssock.sendto(ping_data.encode('utf-8'), (self.addrinfo[4][0], self.PORT))
-        # check for stale hosts
-        died = []
-        self.mutex.lock()
-        for host, tstamp in self.hosts.items():
-            if time.time() - tstamp > 3:
-                died.append(host)
-        for i in died:
-            del self.hosts[i]
-            print('host down:', i)
-        self.mutex.unlock()
-
-    def stop(self):
-        self._running = False
-        self.wait()
-        
-    def run(self):
-        """ listen for packets, maintain host list. """
-        print('listening for multicast...')
-        self._running = True
-        while self._running:
-            try:
-                data, sender = self.rsock.recvfrom(1024)
-            except socket.timeout:
-                continue
-            while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
-            sdata = data.decode('utf-8')
-            if sdata.startswith('pkmidicron:ping:'):
-                hostname = sdata.replace('pkmidicron:ping:', '')
-                self.mutex.lock()
-                if not hostname in self.hosts:
-                    print('host up:', hostname)
-                self.hosts[hostname] = time.time()
-                self.mutex.unlock()
-#            print (str(sender) + '  ' + repr(data))
-        self.rsock.close()

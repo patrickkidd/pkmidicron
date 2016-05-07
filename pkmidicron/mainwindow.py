@@ -2,8 +2,8 @@ import sys
 import rtmidi
 from .pyqt_shim import *
 from . import util, engine, mainwindow_form, bindinglistitem, preferencesdialog_form, preferencesdialog
-from .ports import inputs
-from .util import refs, Network
+from .ports import inputs, Network
+from .util import refs
 
 
 CONFIRM_SAVE = True
@@ -20,8 +20,6 @@ class MainWindow(QMainWindow):
         self.trayIcon.show()
 
         self.qnam = QNetworkAccessManager(self)
-
-        self.network = Network(self)
 
         self.ui.innerSplitter.setStretchFactor(0, 0)
         self.ui.innerSplitter.setStretchFactor(1, 1)
@@ -134,7 +132,6 @@ class MainWindow(QMainWindow):
 
     def onQuit(self):
         if self.confirmSave():
-            self.network.stop()
             self.writePrefs()
             QApplication.quit()
 
