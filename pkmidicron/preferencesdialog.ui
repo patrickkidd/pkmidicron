@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>415</width>
-    <height>449</height>
+    <width>437</width>
+    <height>575</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -41,7 +41,23 @@
       <number>0</number>
      </property>
      <widget class="QWidget" name="generalPage">
-      <layout class="QVBoxLayout" name="verticalLayout_4">
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>General</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QCheckBox" name="enableNetworkingBox">
+            <property name="text">
+             <string>Enable Networking</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
@@ -206,6 +222,9 @@
         </widget>
        </item>
       </layout>
+      <zorder>groupBox</zorder>
+      <zorder>splitter</zorder>
+      <zorder>groupBox_4</zorder>
      </widget>
      <widget class="QWidget" name="pythonPage"/>
     </widget>

@@ -36,6 +36,8 @@ class MainWindow(QMainWindow):
         inputs().portAdded.connect(self.onInputPortAdded)
         inputs().portAdded.connect(self.onInputPortRemoved)
         self.collector.start()
+
+        Network.instance().hostAdded.connect(self.onHostAdded)
         
         self.reply = None
         self.ui.actionCheckForUpdates.setMenuRole(QAction.ApplicationSpecificRole)
@@ -267,6 +269,10 @@ class MainWindow(QMainWindow):
             self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         else:
             self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        #
+        self.enableNetworking = self.prefs.value('EnableNetworking', type=bool, defaultValue=True)
+        if self.enableNetworking:
+            Network.instance().start()
         #
         self.enableAllInputs = self.prefs.value('EnableAllInputs', defaultValue=True, type=bool)
         self.prefs.beginGroup('InputPorts')
@@ -544,6 +550,15 @@ class MainWindow(QMainWindow):
 
     ## MIDI Ports
 
+    def setEnableNetworking(self, on):
+        on = bool(on)
+        if on:
+            Network.instance().start()
+        else:
+            Network.instance().stop()
+        self.enableNetworking = on
+        self.prefs.setValue('EnableNetworking', on)
+
     def setEnableAllInputs(self, on):
         self.enableAllInputs = on
         for name in inputs().names():
@@ -640,6 +655,12 @@ class MainWindow(QMainWindow):
         if bottom:
             QTimer.singleShot(0, self.ui.activityLog.scrollToBottom)
         self.patch.onMidiMessage(portName, midi)
+
+    def status(self, msg):
+        self.statusBar().showMessage(msg, 60 * 1000)
+
+    def onHostAdded(self, hostname):
+        self.status('Host up: ' + hostname)
 
 
 class TrayIcon(QSystemTrayIcon):

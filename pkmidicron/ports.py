@@ -17,9 +17,8 @@ class Network(QThread):
     hostAdded = pyqtSignal(str)
     hostRemoved = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, prefs):
         super().__init__(parent)
-
         if Network._self:
             raise ValueError('only one instance of Network class allowed')
         Network._self = self
@@ -29,22 +28,21 @@ class Network(QThread):
         self.ssock = None
         self.rsock = None
         self.hostname = socket.gethostname()
+        self.prefs = prefs
         self.hosts = {}
         self._running = False
+        self.timer = None
         self.mutex = QMutex()
-        self.start()
         self.startTimer(1000)
 
     @staticmethod
-    def instance():
+    def instance(prefs=None):
         if not Network._self:
-            Network._self = Network(QCoreApplication.instance())
+            Network._self = Network(QCoreApplication.instance(), prefs)
         return Network._self
         
     def timerEvent(self, e):
         """ periodically send ping to alert hosts of existance. """
-        if not self._running:
-            return
         if not self.ssock:
             self.ssock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
             # Set Time-to-live (optional)
@@ -68,8 +66,6 @@ class Network(QThread):
 
     def run(self):
         """ listen for packets, maintain host list. """
-        print('listening for multicast...')
-        self._running = True
         if self.rsock:
             raise ValueError('recieve socket already running')
         self.rsock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
@@ -100,7 +96,7 @@ class Network(QThread):
                 if self.hostname != hostname:
                     self.mutex.lock()
                     if not hostname in self.hosts:
-                        print('host up:', hostname, sender)
+                        # print('host up:', hostname, sender)
                         self.hosts[hostname] = {
                             'ping': time.time(),
                             'ip': sender[0],
@@ -118,24 +114,43 @@ class Network(QThread):
                 if info:
                     w = QApplication.instance().getMainWindow()
                     if w:
-                        msg = rtmidi.MidiMessage(data)
-                        w.collector.postMessage(info['name'], msg)
+                        name = info['name']
+                        enabled = self.prefs.value('InputPorts/' + name + '/enabled', type=bool, defaultValue=True)
+                        if w.enableAllInputs or enabled:
+                            msg = rtmidi.MidiMessage(data)
+                            if w.collector: # lots of msgs coming in before mainwindow is initialized
+                                w.collector.postMessage(name, msg)
         self.rsock.close()
         self.rsock = None
 
+    def start(self):
+        if self._running:
+            return
+        self._running = True
+        super().start()
+        self.timer = self.startTimer(1000)
+
     def stop(self):
+        if not self._running:
+            return
         self._running = False
         self.wait()
         if self.ssock:
             self.ssock.close()
             self.ssock = None
+        # clear the ports list
+        for name, info in self.hosts.items():
+            self.hostRemoved.emit(name)
+        self.hosts = {}
+        self.killTimer(self.timer)
+        self.timer = None
         
     def isHostUp(self, sender):
         for hostname, info in self.hosts.items():
             if sender[1] == info['port']: # not sure why I can't check IP too from parallels...
                 return info
         return False
-        
+
     def isEnabled(self):
         return self._running
 
@@ -223,7 +238,8 @@ class PortList(QObject):
         if self.isInput:
             self._names_cached = self._names_cached + Network.instance().portNames()
         else:
-            self._names_cached.append('Network Bus')
+            if Network.instance().isEnabled():
+                self._names_cached.append("Network Bus")
         return self._names_cached
 
     def names_cached(self):

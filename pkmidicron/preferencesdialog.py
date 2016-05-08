@@ -88,6 +88,8 @@ class PreferencesDialog(QDialog):
 
         #self.actionDeleteBinding.setShortcut(_translate("MainWindow", "Backspace"))
 
+        self.ui.enableNetworkingBox.setChecked(self.mainwindow.enableNetworking)
+        self.ui.enableNetworkingBox.toggled.connect(self.mainwindow.setEnableNetworking)
 
         x = self.mainwindow.toolbar.toolButtonStyle()
         self.ui.iconOnlyButton.setChecked(x == Qt.ToolButtonIconOnly)

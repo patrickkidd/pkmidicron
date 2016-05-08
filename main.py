@@ -29,8 +29,11 @@ QToolButton {
 def main():
     import rtmidi
     prefs = util.Settings('vedanamedia', 'PKMidiCron')
-    isDefault = not QFile(prefs.fileName()).exists()
+#    isDefault = not QFile(prefs.fileName()).exists()
 #    print('PREFERENCES (isDefault: %s): %s' % (isDefault, prefs.fileName()))
+#    for key in prefs.allKeys():
+#        if key.startswith('InputPorts'):
+#            print(key, prefs.value(key))
     prefs.setAutoSave(True)
     app = util.Application(sys.argv)
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
@@ -53,6 +56,7 @@ def main():
 #    watcher = QFileSystemWatcher([styleSheet])
 #    watcher.fileChanged.connect(setStyleSheet)
     setStyleSheet()
+    ports.Network.instance(prefs)
     ports.inputs(app, prefs)
     ports.outputs(app, prefs)
 
