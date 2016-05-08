@@ -68,10 +68,14 @@ def receiver(group):
     else:
         mreq = group_bin + struct.pack('@I', 0)
         s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
-
+    s.setblocking(False)
+    s.settimeout(.5)
     # Loop, printing any data we receive
     while True:
-        data, sender = s.recvfrom(1500)
+        try:
+            data, sender = s.recvfrom(1500)
+        except socket.timeout:
+            continue
         while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
         print (str(sender) + '  ' + repr(data))
 
