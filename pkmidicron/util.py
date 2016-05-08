@@ -146,7 +146,7 @@ class Application(QApplication):
 
 class CollectorBin(QObject, rtmidi.CollectorBin):
 
-    message = pyqtSignal(str, rtmidi.MidiMessage)
+    message = pyqtSignal([str, rtmidi.MidiMessage], [str, bytes])
 
     def __init__(self, **kwargs):
         kwargs['callback'] = self.callback
@@ -159,9 +159,9 @@ class CollectorBin(QObject, rtmidi.CollectorBin):
     def callback(self, collector, msg):
         self.message.emit(collector.portName, msg)
 
-    def _networkMessage(self, name, msg):
-        print('IGNORING util.CollectorBin._networkMessage:', name, msg)
-        #self.message.emit(name, msg)
+    def postMessage(self, name, msg):
+        """ Called from network socket """
+        self.message.emit(name, msg)
 
     def setPortEnabled(self, name, x):
         if x:

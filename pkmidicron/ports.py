@@ -1,5 +1,5 @@
 import rtmidi
-from .pyqt_shim import QObject, pyqtSignal, QTimer, QCoreApplication, QThread, QMutex
+from .pyqt_shim import QObject, pyqtSignal, QTimer, QCoreApplication, QApplication, QThread, QMutex
 
 
 import socket, struct, time
@@ -74,7 +74,7 @@ class Network(QThread):
         # Allow multiple copies of this program on one machine (not strictly needed)
         self.rsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.rsock.settimeout(.2)
-        self.rsock.bind((self.GROUP, self.PORT))
+        self.rsock.bind(('', self.PORT))
         group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
         # Join group
         mreq = group_bin + struct.pack('=I', socket.INADDR_ANY)
@@ -91,11 +91,11 @@ class Network(QThread):
                 sdata = data.decode('utf-8')
             except UnicodeDecodeError:
                 sdata = None
+            hostname = None
             if sdata and sdata.startswith('pkmidicron:ping:'): # host ping
                 hostname = sdata.replace('pkmidicron:ping:', '').split('\0',1)[0] # remove '\0'
                 added = False
                 if self.hostname != hostname:
-                    print('>>>>', sdata, sender)
                     self.mutex.lock()
                     if not hostname in self.hosts:
                         print('host up:', hostname, sender)
@@ -103,7 +103,7 @@ class Network(QThread):
                             'ping': time.time(),
                             'ip': sender[0],
                             'port': sender[1],
-                        'name': hostname
+                            'name': hostname
                         }
                         added = True
                     else:
@@ -111,10 +111,13 @@ class Network(QThread):
                     self.mutex.unlock()
                 if added:
                     self.hostAdded.emit(hostname)
-            elif self.isHostUp(sender): # midi message
-                w = QApplication.instance().getMainWindow()
-                if w:
-                    w.collector._networkMessage(name, data)
+            else: # recv midi message
+                info = self.isHostUp(sender)
+                if info:
+                    w = QApplication.instance().getMainWindow()
+                    if w:
+                        msg = rtmidi.MidiMessage(data)
+                        w.collector.postMessage(info['name'], msg)
         self.rsock.close()
         self.rsock = None
 
@@ -126,11 +129,9 @@ class Network(QThread):
             self.ssock = None
         
     def isHostUp(self, sender):
-        print('isHostUp:', sender, self.hosts)
         for hostname, info in self.hosts.items():
             if sender[0] == info['ip'] and sender[1] == info['port']:
-                print('MATCHED HOST: ', hostname)
-                return True
+                return info
         return False
 
     def portNames(self):
@@ -266,7 +267,6 @@ class OutputPorts(PortList):
         Network.instance().hostRemoved.connect(self.update)
 
     def sendMessage(self, portName, m):
-        print('sendMessage', portName, m)
         if not portName in self.ports:
             raise ValueError('No midi output port with the name \"%s\"' % portName)
         port = self.ports[portName]
