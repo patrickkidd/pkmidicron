@@ -1,11 +1,12 @@
 v1.2
 ============================
-- crash on edit script
+- network:
+  - enable/disable ports
+  - sending from huor to patrick-pc arrives on turin
 - fix reload imported script module
 - don't show notifications pop-up on quitting app (windows)
 - user guide
 - add note-off and duration to note mode in simulator
-- network midi bus (bonjour, etc)!!
 
 WISH LIST
 ============================

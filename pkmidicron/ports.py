@@ -130,7 +130,7 @@ class Network(QThread):
         
     def isHostUp(self, sender):
         for hostname, info in self.hosts.items():
-            if sender[0] == info['ip'] and sender[1] == info['port']:
+            if sender[1] == info['port']: # not sure why I can't check IP too from parallels...
                 return info
         return False
 
@@ -138,6 +138,7 @@ class Network(QThread):
         return list(self.hosts)
 
     def sendMessage(self, name, msg):
+        """ just send to the whole group and let them filter on the recieving side. """
         self.ssock.sendto(msg.getRawData(), (self.addrinfo[4][0], self.PORT))
         
 
