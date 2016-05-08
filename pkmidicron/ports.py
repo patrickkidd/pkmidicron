@@ -43,6 +43,8 @@ class Network(QThread):
         
     def timerEvent(self, e):
         """ periodically send ping to alert hosts of existance. """
+        if not self._running:
+            return
         if not self.ssock:
             self.ssock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
             # Set Time-to-live (optional)
@@ -133,6 +135,9 @@ class Network(QThread):
             if sender[1] == info['port']: # not sure why I can't check IP too from parallels...
                 return info
         return False
+        
+    def isEnabled(self):
+        return self._running
 
     def portNames(self):
         return list(self.hosts)
@@ -203,7 +208,7 @@ class PortList(QObject):
         removed = set(self.ports.keys()) - set(newNames)
         networkNames = Network.instance().portNames()
         for name in added:
-            if name in networkNames:
+            if name in networkNames + ['Network Bus']:
                 self.ports[name] = NetworkPort(name)
             else:
                 self.ports[name] = self.ctor()
@@ -215,7 +220,10 @@ class PortList(QObject):
 
     def names(self):
         self._names_cached = [self.dev.getPortName(i) for i in range(self.dev.getPortCount())]
-        self._names_cached = self._names_cached + Network.instance().portNames()
+        if self.isInput:
+            self._names_cached = self._names_cached + Network.instance().portNames()
+        else:
+            self._names_cached.append('Network Bus')
         return self._names_cached
 
     def names_cached(self):
@@ -281,7 +289,6 @@ class OutputPorts(PortList):
 _outputs = None
 def outputs(parent=None, prefs=None):
     global _outputs
-    Network.instance()
     if _outputs is None:
         if parent is None:
             parent = QCoreApplication.instance()
@@ -291,7 +298,6 @@ def outputs(parent=None, prefs=None):
 _inputs = None
 def inputs(parent=None, prefs=None):
     global _inputs
-    Network.instance()
     if _inputs is None:
         if parent is None:
             parent = QCoreApplication.instance()
