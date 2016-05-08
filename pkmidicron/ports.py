@@ -4,7 +4,10 @@ from .pyqt_shim import QObject, pyqtSignal, QTimer, QCoreApplication, QThread, Q
 
 import socket, struct, time
 class Network(QThread):
-
+    """The engine for sending midi over network.  We basically just send
+    over UDP multicast, and a periodic ping keeps the list of hosts
+    alive. Super simple.
+    """
     PORT = 8123
     GROUP = '225.0.0.250'
     TTL = 1 # Increase to reach other networks
@@ -55,18 +58,12 @@ class Network(QThread):
                 died.append(name)
         for name in died:
             del self.hosts[name]
+            self.hostRemoved.emit(name)
         if len(died) > 0:
             outputs().update()
             inputs().update()
         self.mutex.unlock()
 
-    def stop(self):
-        self._running = False
-        self.wait()
-        if self.ssock:
-            self.ssock.close()
-            self.ssock = None
-        
     def run(self):
         """ listen for packets, maintain host list. """
         print('listening for multicast...')
@@ -77,47 +74,62 @@ class Network(QThread):
         # Allow multiple copies of this program on one machine (not strictly needed)
         self.rsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.rsock.settimeout(.2)
-        self.rsock.bind(('', self.PORT))
+        self.rsock.bind((self.GROUP, self.PORT))
         group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
         # Join group
         mreq = group_bin + struct.pack('=I', socket.INADDR_ANY)
         self.rsock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        self.rsock.setblocking(False)
+        self.rsock.settimeout(.5)
         while self._running:
             try:
                 data, sender = self.rsock.recvfrom(1024)
             except socket.timeout:
                 continue
             while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
-            sdata = data.decode('utf-8')
-            if sdata.startswith('pkmidicron:ping:'): # host ping
+            try:
+                sdata = data.decode('utf-8')
+            except UnicodeDecodeError:
+                sdata = None
+            if sdata and sdata.startswith('pkmidicron:ping:'): # host ping
                 hostname = sdata.replace('pkmidicron:ping:', '').split('\0',1)[0] # remove '\0'
-                self.mutex.lock()
+                added = False
                 if self.hostname != hostname:
+                    print('>>>>', sdata, sender)
+                    self.mutex.lock()
                     if not hostname in self.hosts:
-                        print('host up:', hostname)
+                        print('host up:', hostname, sender)
                         self.hosts[hostname] = {
                             'ping': time.time(),
                             'ip': sender[0],
                             'port': sender[1],
                         'name': hostname
                         }
+                        added = True
                     else:
                         self.hosts[hostname]['ping'] = time.time()
-                self.mutex.unlock()
-                outputs().update()
-                inputs().update()
-            elif self.hostIsUp(sender): # midi message
+                    self.mutex.unlock()
+                if added:
+                    self.hostAdded.emit(hostname)
+            elif self.isHostUp(sender): # midi message
                 w = QApplication.instance().getMainWindow()
                 if w:
                     w.collector._networkMessage(name, data)
         self.rsock.close()
         self.rsock = None
 
-    def hostIsUp(self, sender):
-        print('hostIsUp:', sender)
-        for host in self.hosts.items():
-            if sender[0] == host['ip'] and sender[1] == host['port']:
-                print('MATCHED HOST: ', host['name'])
+    def stop(self):
+        self._running = False
+        self.wait()
+        if self.ssock:
+            self.ssock.close()
+            self.ssock = None
+        
+    def isHostUp(self, sender):
+        print('isHostUp:', sender, self.hosts)
+        for hostname, info in self.hosts.items():
+            if sender[0] == info['ip'] and sender[1] == info['port']:
+                print('MATCHED HOST: ', hostname)
                 return True
         return False
 
@@ -125,10 +137,25 @@ class Network(QThread):
         return list(self.hosts)
 
     def sendMessage(self, name, msg):
-        data = 'pkmidicron:midi:' + self.name + ':' + msg + '\0'
-        self.ssock.sendto(data.encode('utf-8'), (self.addrinfo[4][0], self.PORT))
+        self.ssock.sendto(msg.getRawData(), (self.addrinfo[4][0], self.PORT))
         
 
+class NetworkPort:
+    """ Network stand-in for RtMidi dev """
+    def __init__(self, name):
+        self.name = name
+
+    def isPortOpen(self):
+        """ Dummy """
+        return True
+
+    def closePort(self):
+        """ dummy """
+        pass
+
+    def sendMessage(self, m):
+        Network.instance().sendMessage(self.name, m)
+        
 
 import time
 class PortList(QObject):
@@ -172,14 +199,12 @@ class PortList(QObject):
         newNames = self.names()
         added = set(newNames) - set(self.ports.keys())
         removed = set(self.ports.keys()) - set(newNames)
+        networkNames = Network.instance().portNames()
         for name in added:
-            self.ports[name] = self.ctor()
-            # print("OPEN %i: %s" % (self._getPortIndex(name), name))
-            # try:
-            #     self.ports[name].openPort(self._getPortIndex(name))
-            # except rtmidi.Error:
-            #     import traceback
-            #     traceback.print_exc()
+            if name in networkNames:
+                self.ports[name] = NetworkPort(name)
+            else:
+                self.ports[name] = self.ctor()
             self.portAdded.emit(name)
         for name in removed:
             self.ports[name].closePort()
@@ -231,13 +256,17 @@ class PortList(QObject):
 class InputPorts(PortList):
     def __init__(self, parent, prefs):
         super().__init__(parent, prefs, True)
-
+        Network.instance().hostAdded.connect(self.update)
+        Network.instance().hostRemoved.connect(self.update)
 
 class OutputPorts(PortList):
     def __init__(self, parent, prefs):
         super().__init__(parent, prefs, False)
+        Network.instance().hostAdded.connect(self.update)
+        Network.instance().hostRemoved.connect(self.update)
 
     def sendMessage(self, portName, m):
+        print('sendMessage', portName, m)
         if not portName in self.ports:
             raise ValueError('No midi output port with the name \"%s\"' % portName)
         port = self.ports[portName]
