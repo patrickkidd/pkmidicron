@@ -30,8 +30,8 @@ EXTENSIONS = ['pmc']
 FILE_TYPES = "PKMidiCron files (%s)" % ','.join(['*.'+i for i in EXTENSIONS])
 
 VERSION_MAJOR = 1
-VERSION_MINOR = 1
-VERSION_MICRO = 1
+VERSION_MINOR = 2
+VERSION_MICRO = 0
 VERSION = '%s.%s.%s' % (VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO)
 VERSION_URL = QUrl('http://vedanamedia.com/products/pkmidicron/version.txt')
 
@@ -170,7 +170,7 @@ class CollectorBin(QObject, rtmidi.CollectorBin):
             self._remove(name)
 
     def _add(self, name):
-        self.addCollector(name)
+        self.addCollector(name, start=True)
 
     def _remove(self, name):
         self.removeCollector(name)

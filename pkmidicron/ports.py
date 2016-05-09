@@ -42,7 +42,10 @@ class Network(QThread):
         return Network._self
         
     def timerEvent(self, e):
-        """ periodically send ping to alert hosts of existance. """
+        """ 
+        - Periodically send ping to alert hosts of existance.
+        - Expire old hosts who haven't pinged in a while.
+        """
         if not self.ssock:
             self.ssock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
             # Set Time-to-live (optional)
@@ -71,7 +74,6 @@ class Network(QThread):
         self.rsock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
         # Allow multiple copies of this program on one machine (not strictly needed)
         self.rsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.rsock.settimeout(.2)
         self.rsock.bind(('', self.PORT))
         group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
         # Join group

@@ -1,12 +1,10 @@
 v1.2
 ============================
-- network:
-  - enable/disable ports
-  - sending from huor to patrick-pc arrives on turin
 - fix reload imported script module
-- don't show notifications pop-up on quitting app (windows)
-- user guide
+- don't show notifications pop-up on quitting app
 - add note-off and duration to note mode in simulator
+- optimize quit time (socket timeout?)
+- user guide
 
 WISH LIST
 ============================

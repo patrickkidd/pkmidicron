@@ -233,7 +233,7 @@ class ActionBox(util.CollapsableBox):
         self.addBox.addItem('Send Message')
         self.addBox.addItem('Run Command')
         self.addBox.addItem('Open File')
-        self.addBox.addItem('Execute Script')
+        self.addBox.addItem('Execute Python Script')
         self.addBox.setCurrentIndex(-1)
         self.addBox.activated.connect(self.addAction)
         self.addBox.installEventFilter(self)

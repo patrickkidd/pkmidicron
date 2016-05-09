@@ -1,3 +1,4 @@
 v1.2
 ====
 - Fixed crash on opening script editor on mac
+- Fixed adding python search path

@@ -217,6 +217,8 @@ class PreferencesDialog(QDialog):
         self.prefs().endGroup()
 
     def addPythonPath(self, path=QDir.homePath()):
+        if type(path) == bool: # default argument
+            path = QDir.homePath()
         self.block = True
         item = QListWidgetItem(path, self.ui.pythonPathList)
         item.setFlags(item.flags() | Qt.ItemIsEditable)
