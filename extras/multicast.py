@@ -18,6 +18,8 @@ import time
 import struct
 import socket
 import sys
+import netifaces
+
 
 def main():
     group = MYGROUP_6 if "-6" in sys.argv[1:] else MYGROUP_4
@@ -45,6 +47,32 @@ def sender(group):
         s.sendto(data.encode('utf-8'), (addrinfo[4][0], MYPORT))
         time.sleep(1)
 
+
+def sender2(group):
+    import netifaces
+
+    sockets = []
+    ifs = netifaces.interfaces()
+    for name in ifs:
+        info = netifaces.ifaddresses(name)
+        if netifaces.AF_INET in info:
+            addr = info[netifaces.AF_INET][0]['addr']
+            if addr != '127.0.0.1':
+                print('ADDR', name, addr)
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                ttl_bin = struct.pack('@i', MYTTL) # optional
+                s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
+                s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(addr))
+                sockets.append(s)
+
+    addrinfo = socket.getaddrinfo(group, None)[0]
+    while True:
+        data = repr(time.time()) + '\0'
+        print(addrinfo)
+        for s in sockets:
+            s.sendto(data.encode('utf-8'), (addrinfo[4][0], MYPORT))
+        time.sleep(1)
+    
 
 def receiver(group):
     # Look up multicast group address in name server and find out IP version

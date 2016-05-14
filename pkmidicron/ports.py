@@ -3,6 +3,7 @@ from .pyqt_shim import QObject, pyqtSignal, QTimer, QCoreApplication, QApplicati
 
 
 import socket, struct, time
+import netifaces
 class Network(QThread):
     """The engine for sending midi over network.  We basically just send
     over UDP multicast, and a periodic ping keeps the list of hosts
@@ -25,7 +26,7 @@ class Network(QThread):
 
         # Look up multicast group address in name server and find out IP version
         self.addrinfo = socket.getaddrinfo(self.GROUP, None)[0]
-        self.ssock = None
+        self.ssocks = {}
         self.rsock = None
         self.hostname = socket.gethostname()
         self.prefs = prefs
@@ -41,32 +42,6 @@ class Network(QThread):
             Network._self = Network(QCoreApplication.instance(), prefs)
         return Network._self
         
-    def timerEvent(self, e):
-        """ 
-        - Periodically send ping to alert hosts of existance.
-        - Expire old hosts who haven't pinged in a while.
-        """
-        if not self.ssock:
-            self.ssock = socket.socket(self.addrinfo[0], socket.SOCK_DGRAM)
-            # Set Time-to-live (optional)
-            ttl_bin = struct.pack('@i', self.TTL)
-            self.ssock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
-        ping_data = 'pkmidicron:ping:' + self.hostname
-        self.ssock.sendto(ping_data.encode('utf-8'), (self.addrinfo[4][0], self.PORT))
-        # check for stale hosts
-        died = []
-        self.mutex.lock()
-        for name, host in self.hosts.items():
-            if time.time() - host['ping'] > 3:
-                died.append(name)
-        for name in died:
-            del self.hosts[name]
-            self.hostRemoved.emit(name)
-        if len(died) > 0:
-            outputs().update()
-            inputs().update()
-        self.mutex.unlock()
-
     def run(self):
         """ listen for packets, maintain host list. """
         if self.rsock:
@@ -125,6 +100,54 @@ class Network(QThread):
         self.rsock.close()
         self.rsock = None
 
+    def timerEvent(self, e):
+        """ 
+        - Periodically send ping to alert hosts of existance.
+        - Expire old hosts who haven't pinged in a while.
+        """
+        ifs = netifaces.interfaces()
+        for name in ifs:
+            # add new interface
+            if not name in self.ssocks:
+                info = netifaces.ifaddresses(name)
+                if netifaces.AF_INET in info:
+                    addr = info[netifaces.AF_INET][0]['addr']
+                    if addr != '127.0.0.1':
+                        print('ADDED IF:', name, addr)
+                        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                        ttl_bin = struct.pack('@i', self.TTL) # optional
+                        s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
+                        s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(addr))
+                        self.ssocks[name] = s
+        # remove old interface
+        for name, s in dict(self.ssocks).items():
+            if not name in ifs:
+                self.ssocks[name].close()
+                del self.ssocks[name]
+                print('REMOVED IF:', name, addr)
+        # send 'up' ping
+        ping_data = 'pkmidicron:ping:' + self.hostname
+        for name, s in self.ssocks.items():
+            s.sendto(ping_data.encode('utf-8'), (self.addrinfo[4][0], self.PORT))
+        # check for stale hosts
+        died = []
+        self.mutex.lock()
+        for name, host in self.hosts.items():
+            if time.time() - host['ping'] > 3:
+                died.append(name)
+        for name in died:
+            del self.hosts[name]
+            self.hostRemoved.emit(name)
+        if len(died) > 0:
+            outputs().update()
+            inputs().update()
+        self.mutex.unlock()
+
+    def sendMessage(self, name, msg):
+        """ just send to the whole group and let them filter on the recieving side. """
+        for name, s in self.ssocks.items():
+            s.sendto(msg.getRawData(), (self.addrinfo[4][0], self.PORT))
+        
     def start(self):
         if self._running:
             return
@@ -137,14 +160,14 @@ class Network(QThread):
             return
         self._running = False
         self.wait()
-        if self.ssock:
-            self.ssock.close()
-            self.ssock = None
+        self.killTimer(self.timer)
+        for name, s in self.ssocks.items():
+            self.ssocks[name].close()
+        self.ssocks = {}
         # clear the ports list
         for name, info in self.hosts.items():
             self.hostRemoved.emit(name)
         self.hosts = {}
-        self.killTimer(self.timer)
         self.timer = None
         
     def isHostUp(self, sender):
@@ -159,9 +182,6 @@ class Network(QThread):
     def portNames(self):
         return list(self.hosts)
 
-    def sendMessage(self, name, msg):
-        """ just send to the whole group and let them filter on the recieving side. """
-        self.ssock.sendto(msg.getRawData(), (self.addrinfo[4][0], self.PORT))
         
 
 class NetworkPort:
