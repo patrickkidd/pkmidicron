@@ -34,7 +34,6 @@ class Network(QThread):
         self._running = False
         self.timer = None
         self.mutex = QMutex()
-        self.startTimer(1000)
 
     @staticmethod
     def instance(prefs=None):
@@ -113,7 +112,6 @@ class Network(QThread):
                 if netifaces.AF_INET in info:
                     addr = info[netifaces.AF_INET][0]['addr']
                     if addr != '127.0.0.1':
-                        print('ADDED IF:', name, addr)
                         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                         ttl_bin = struct.pack('@i', self.TTL) # optional
                         s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl_bin)
@@ -124,7 +122,6 @@ class Network(QThread):
             if not name in ifs:
                 self.ssocks[name].close()
                 del self.ssocks[name]
-                print('REMOVED IF:', name, addr)
         # send 'up' ping
         ping_data = 'pkmidicron:ping:' + self.hostname
         for name, s in self.ssocks.items():
@@ -161,6 +158,7 @@ class Network(QThread):
         self._running = False
         self.wait()
         self.killTimer(self.timer)
+        self.timer = None
         for name, s in self.ssocks.items():
             self.ssocks[name].close()
         self.ssocks = {}
