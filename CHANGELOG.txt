@@ -2,3 +2,5 @@ v1.2
 ====
 - Fixed crash on opening script editor on mac
 - Fixed adding python search path
+- Updated to pyrtmidi-2.2 to support serializing midi objects
+- Added network support via UDP multicast.
