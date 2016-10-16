@@ -1,5 +1,5 @@
 import rtmidi
-from .pyqt_shim import QObject, pyqtSignal, QTimer, QCoreApplication, QApplication, QThread, QMutex
+from .pyqt_shim import QObject, pyqtSignal, QTimer, QCoreApplication, QApplication, QThread, QMutex, QMessageBox, QEvent
 
 
 import socket, struct, time
@@ -52,7 +52,14 @@ class Network(QThread):
         group_bin = socket.inet_pton(self.addrinfo[0], self.addrinfo[4][0])
         # Join group
         mreq = group_bin + struct.pack('=I', socket.INADDR_ANY)
-        self.rsock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        try:
+            self.rsock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        except OSError:
+            QApplication.instance().showMessageBox('Network error', 'There was a problem joining the network. Bummer.')
+            # TODO: unset the prefs checkbox and set prefs value...
+            self.rsock.close()
+            self.rsock = None
+            return
         self.rsock.setblocking(False)
         self.rsock.settimeout(.5)
         while self._running:

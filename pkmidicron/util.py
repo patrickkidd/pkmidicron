@@ -123,6 +123,15 @@ class UpdateDialog(QProgressDialog):
 def refs(o,s=''):
     print('refs: ', s, sys.getrefcount(o), o)
 
+
+EVENT_SHOWMESSAGE = QEvent.User + 1
+    
+class ShowMessageEvent(QEvent):
+    def __init__(self, a, b):
+        super().__init__(EVENT_SHOWMESSAGE)
+        self.data = (a, b)
+        
+
 class Application(QApplication):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -136,12 +145,17 @@ class Application(QApplication):
                         if isinstance(w, QMainWindow):
                             w.open(filePath)
                     return True
+        elif e.type() == EVENT_SHOWMESSAGE:
+            QMessageBox.critical(self.getMainWindow(), e.data[0], e.data[1])
         return super().event(e)
 
     def getMainWindow(self):
         for w in self.topLevelWidgets():
             if isinstance(w, QMainWindow):
                 return w
+            
+    def showMessageBox(self, a, b):
+        self.postEvent(self, ShowMessageEvent(a, b))
 
 
 class CollectorBin(QObject, rtmidi.CollectorBin):

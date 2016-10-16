@@ -1,7 +1,7 @@
-v1.2
+v1.3
 ============================
 - fix reload imported script module
-- don't show notifications pop-up on quitting app
+- don't show notifications pop-up on quitting app (hard to reproduce)
 - add note-off and duration to note mode in simulator
 - optimize quit time (socket timeout?)
 - user guide
