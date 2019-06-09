@@ -6,6 +6,7 @@ import os, sys
 from pkmidicron import MainWindow, util, ports
 from pkmidicron.pyqt_shim import Qt, QSettings, QApplication, QIcon, QWidget, QLibraryInfo, QFileSystemWatcher, QFile, QCoreApplication
 
+
 STYLE_SHEET = """
 QLineEdit:read-only {
     border: 0;
@@ -82,4 +83,5 @@ def main():
     rtmidi.CollectorBin.cleanup()
 #    if retVal is not None:
 #        sys.exit(retVal)
+
 main()

@@ -1,3 +1,13 @@
+v1.2.1
+==============================
+- Build using pyqtdeploy on mac
+- Build using pyqtdeploy on windows
+
+v1.2.2
+==============================
+- Fix errors when midi ports have unicode names
+
+
 v1.3
 ============================
 - fix reload imported script module
