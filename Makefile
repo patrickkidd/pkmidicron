@@ -11,8 +11,10 @@ FORMS = pkmidicron/mainwindow_form.py \
 
 SOURCES = pkmidicron.pdy pkmidicron/*.py pkmidicron/build_uuid.py
 
+RTMIDI_SO := pyrtmidi/build/lib/rtmidi/_rtmidi.cpython-36m-darwin.so
 
-all: $(SOURCES) $(FORMS) rtmidi
+
+all: $(SOURCES) $(FORMS) $(RTMIDI_SO)
 
 pkmidicron/mainwindow_form.py: pkmidicron/mainwindow.ui
 	pyuic5 pkmidicron/mainwindow.ui -o pkmidicron/mainwindow_form.py
@@ -32,18 +34,15 @@ forms: $(FORMS)
 
 sources: $(SOURCES)
 
-RTMIDI_PATH=pyrtmidi/build/`python bin/distutils_dir.py`
-RTMIDI_SO=$(RTMIDI_PATH)/rtmidi/_rtmidi.cpython-36m-darwin.so
 
 ##
 ## rtmidi
 ##
 
-$(RTMIDI_SO):
-	cd pyrtmidi && python setup.py build
+$(RTMIDI_SO): pyrtmidi/setup.py pyrtmidi/cpp_src/*
+	cd pyrtmidi && python setup.py build --build-lib=build/lib
 
 rtmidi: $(RTMIDI_SO)
-	echo $(RTMIDI_SO)
 
 clean-rtmidi:
 	rm -rf pyrtmidi/build
@@ -54,11 +53,10 @@ clean-rtmidi:
 
 run: all pkmidicron/resources.py
 	@ # QT_LOGGING_RULES=qt.qpa=true
-	echo $(RTMIDI_PATH)
-	@PYTHONPATH=$(RTMIDI_PATH) python main.py # 2>&1 | grep -v "_q_startOperation was called more than once"
+	@PYTHONPATH=pyrtmidi/build/lib python main.py # 2>&1 | grep -v "_q_startOperation was called more than once"
 
 module: $(SOURCES) $(FORMS) pkmidicron/resources.py
-	@PYTHONPATH=`pwd`/vendor python main.py --module ${name} # 2>&1 | grep -v "QMacCGContext"
+	@PYTHONPATH=pyrtmidi/build/lib python main.py --module ${name} # 2>&1 | grep -v "QMacCGContext"
 
 
 debug: $(SOURCES) $(FORMS)
@@ -95,7 +93,7 @@ build/osx/PKMidiCron.xcodeproj/project.pbxproj: build/osx/PKMidiCron.pro build/o
 	rsync -avzq resources/* build/osx/resources
 	cd build/osx && qmake -spec macx-xcode CONFIG+=debug
 
-osx: all build/osx/PKMidiCron.xcodeproj/project.pbxproj
+osx: $(SOURCES) $(FORMS) build/osx/PKMidiCron.xcodeproj/project.pbxproj
 	# bin/filter_xcodeproj.rb osx "PKMidiCron" "darwin64.S" 2> /dev/null
 	open build/osx/PKMidiCron.xcodeproj
 
