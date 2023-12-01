@@ -69,21 +69,21 @@ The Basics
 
 To create a script, add a new binding with an action to execute a script. Then click the '...' button to open the script editor. The easiest way to get start is to copy and paste the following script into the editor, and hit compile:
 
-'''
+```
 print('This is executed when the compile button is pressed.')
-'''
+```
 
 Next hit the "Console" button to show the debugging console. Then the "Compile" button and notice that your first message has been printed to the console. This shows that your code will be re-executed every time you hit the compile button. 
 
 You can also add other python-legal statements and keep hitting the compile button to test for typos and run the code, like so:
 
-'''
+```
 12 + 3
 x = 1
 n = 32
 z = n * (X - n)
 print(x, n, z)
-'''
+```
 
 Upon successful compilation and execution, The left gutter of the editor (where the line numebrs are) will show green. It will show yellow when you have un-saved changes in the code. If there is an error, the gutter turns red and the details of the error will be displayed in the console.
 
@@ -93,11 +93,11 @@ Responding to Midi
 
 Being able to compile and run code is great, but that doesn't help us unless we are just trying to learning the basics of writing python. In order to be really useful we'll need to start responding to midi messages, and for this we'll need to write a *callback*.
 
-''''
+```
 def onMidiMessage(midi):
     print('This is executed when a matching midi message is recieved')
     print('...and here is the message:', midi)
-'''
+```
 
 A callback is a function that is "called back in" by some other piece of code when something meaningful happens. It's telling a little kid, "so when you hear your Daddy come through the door, yell SURPRISE! OK?". Daddying coming through the door is the something meaningful, and yelling SURPRISE! is the callback containing the instructions to carry out when that something happens.
 
@@ -110,10 +110,10 @@ The "midi" argument passed to the "onMidiMessage" callback is a special object w
 
 You can use the built-in ""outputs" function to send a message to a particular midi port. For example, to send a note-on message to the "IAC Bus 3" output port, you would do this:
 
-'''
+```
 m = MidiMessage.noteOn(1, 64, 100)
 outputs().sendMessage('IAC Bus 3', m)
-'''
+```
 
 The first call creates a new note-on message for channel 1, note number 64, and velocity of 100. The second call sends the message to the output port named "IAC Bus 3"?. There object returned byt the "outputs()" call has several other methods for accessing the output ports, described [here http://vedanamedia.com/products/pkmidicron#ports].
 
@@ -129,19 +129,23 @@ For example, in generic Python you would import a module like this:
 
 my_mod.py
 ----------------------------------
+```
 def GreatFunc(x):
     y = x + 2
     print('GreatFunc: I can do math, see?', y)
+```
 
 your_mod.py
 ----------------------------------
+```
 import my_mod
 print('your_mod')
 my_mod.GreatFunc(1)
 my_mod.GreatFunc(5)
+```
 
 Then you could run the code like this
-'''
+```
 $ python3 my_mod.py 
 my_mod: Here I am!
 $ python3 your_mod.py 
@@ -150,7 +154,7 @@ your_mod: Here we are!
 GreatFunc: I can do math, see? 3
 GreatFunc: I can do math, see? 7
 $ 
-'''
+```
 
 Notice how your_mod is importing my_mod and calling it's function. So, to do the same in PKMidiCron, we would just create a couple of actions, one named my_mod and one named your_mod, and leave the rest of the code the same.
 
@@ -164,7 +168,7 @@ It is possible to create complex graphical interfaces that respond in real-time 
 
 The following is a simple example of how to pop a window that shows the last message recieved, along with a button to close it:
 
-'''
+```
 from PyQt5.QtWidgets import *
 
 class Widget(QWidget):
@@ -184,11 +188,11 @@ def onMidiMessage(m):
     w.raise_()
     w.label.setText(str(m))
     outputs().sendMessage('IAC Bus 3', m)
-'''
+```
 
 Here is the same code, but with comments explaining every detail:
 
-'''
+```
 from PyQt5.QtWidgets import *
 
 # these are the blueprints of the widget we want to create
@@ -229,7 +233,7 @@ def onMidiMessage(m):
 
     # forward the message on to "IAC Bus 3". Beware infinite loops!!!
     outputs().sendMessage('IAC Bus 3', m)
-'''
+```
 
 - For more infomation on defining classes in Python: http://python.org/
 - For more information on programming with Qt: http://qt-project.org/
